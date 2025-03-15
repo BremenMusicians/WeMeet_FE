@@ -3,8 +3,7 @@ import { createGlobalStyle } from 'styled-components';
 const GlobalStyle = createGlobalStyle`
     @font-face {
         font-family: 'Pretendard';
-        font-weight: 700;
-        font-style: bold;
+        font-weight: 700; 
         src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Bold.woff')
             format('woff2');
         font-display: swap;
@@ -13,7 +12,6 @@ const GlobalStyle = createGlobalStyle`
     @font-face {
         font-family: 'Pretendard';
         font-weight: 500;
-        font-style: medium;
         src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Medium.woff')
             format('woff2');
         font-display: swap;
@@ -22,7 +20,6 @@ const GlobalStyle = createGlobalStyle`
     @font-face {
         font-family: 'Pretendard';
         font-weight: 400;
-        font-style: normal;
         src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff')
             format('woff2');
         font-display: swap;
