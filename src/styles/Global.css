@@ -9,14 +9,15 @@
     --gray300: #D4D4D8;
     --gray200: #E4E4E7;
     --gray100: #F4F4F5;
-    --orange900: #111827;
-    --orange800: #1F2937;
-    --orange700: #374151;
-    --orange600: #4B5563;
-    --orange500: #6B7280;
-    --orange400: #9CA3Af;
-    --orange300: #D1D5DB;
-    --orange200: #E5E7EB;
-    --orange100: #F3F4F6;
-    --orange50: #F9FAFB;
+    --orange950: #561D09;
+    --orange900: #6E250C;
+    --orange800: #933110;
+    --orange700: #B83E14;
+    --orange600: #D8421A;
+    --orange500: #F64422;
+    --orange400: #F75C3C;
+    --orange300: #F9795D;
+    --orange200: #FBA28E;
+    --orange100: #FDCBBF;
+    --orange50: #FEE9E1;
 }
