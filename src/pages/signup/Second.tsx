@@ -6,8 +6,8 @@ function Second() {
   return (
     <>
       <InputBox>
-        <Input type="password" name="" value="" label="비밀번호" placeholder="⦁⦁⦁⦁⦁⦁⦁⦁" onChange={() => {}} />
-        <Input type="password" name="" value="" label="비밀번호 확인" placeholder="⦁⦁⦁⦁⦁⦁⦁⦁" onChange={() => {}} />
+        <Input type="password" name="password" value="" label="비밀번호" placeholder="⦁⦁⦁⦁⦁⦁⦁⦁" onChange={() => {}} />
+        <Input type="password" name="confirmPassword" value="" label="비밀번호 확인" placeholder="⦁⦁⦁⦁⦁⦁⦁⦁" onChange={() => {}} />
       </InputBox>
       <Button disabled bigSize onClick={() => {}}>
         다음
