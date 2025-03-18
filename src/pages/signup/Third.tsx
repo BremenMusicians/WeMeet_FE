@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { useState } from 'react'
 
 function Third() {
   const position = ['드럼', '기타', '피아노', '신스', '보컬', '그 외']
@@ -17,7 +16,7 @@ function Third() {
         <SelectTagBox>
           <Label>포지션</Label>
           <TagBox>
-            {position.map((item, idx) => (
+            {position.map((item) => (
               <Tag>{item}</Tag>
             ))}
           </TagBox>
