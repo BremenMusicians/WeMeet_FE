@@ -3,6 +3,7 @@ import { PositionType } from "../../utils/type"
 import { Input } from "../../components/Input"
 import { Banner, Check, Plus, Profile } from "../../assets"
 import { useState } from "react"
+import { Button } from "../../components/Button"
 
 export const EditMyPage = () => {
     const positionList: PositionType[] = ["피아노", "신스", "보컬", "드럼", "기타", "그 외"];
@@ -40,7 +41,10 @@ export const EditMyPage = () => {
                 <ContentContainer>
                     <ContentWrap>
                         <p>닉네임 <Essential>*</Essential></p>
-                        <Input name="" type="text" value="" onChange={() => { }} />
+                        <NickName>
+                            <Input name="" type="text" value="" onChange={() => { }} />
+                            <Button width={92} bigSize onClick={() => { }}>중복 확인</Button>
+                        </NickName>
                         <Length>1/20 자</Length>
                     </ContentWrap>
                     <ContentWrap>
@@ -96,6 +100,11 @@ const ContentContainer = styled.div`
     flex-direction: column;
     gap: 40px;
     padding: 24px;
+`
+
+const NickName = styled.div`
+    display: flex;
+    gap: 8px;
 `
 
 const Content = styled.div`
