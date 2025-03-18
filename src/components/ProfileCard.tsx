@@ -8,10 +8,12 @@ interface ProfileCard {
     name: string;
     introduce: string;
     position: string[]; // api 연동 시 enum으로 수정
-    profileImg?: string
+    profileImg?: string;
+    onClick: () => void;
+    onClickEvent?: () => void
 }
 
-export const ProfileCard = ({ type, name, introduce, position, profileImg }: ProfileCard) => {
+export const ProfileCard = ({ type, name, introduce, position, profileImg, onClick, onClickEvent }: ProfileCard) => {
     const [deleteFriend, setDeleteFriend] = useState<boolean>(false);
 
     const handleDeleteFriend = () => {
@@ -33,14 +35,14 @@ export const ProfileCard = ({ type, name, introduce, position, profileImg }: Pro
                     <Introduce>{introduce}</Introduce>
                 </Column>
             </Flex>
-            {type === "add" && <ClickOption src={AddFriend} onClick={() => { }} />}
-            {type === "accept" &&
+            {type === "add" && <ClickOption src={AddFriend} onClick={onClick} />}
+            {type === "accept" && onClickEvent &&
                 <RightContainer>
-                    <ClickOption src={Accept} onClick={() => { }} />
-                    <ClickOption src={Refusal} onClick={() => { }} />
+                    <ClickOption src={Accept} onClick={onClick} />
+                    <ClickOption src={Refusal} onClick={onClickEvent} />
                 </RightContainer>}
             {type === "chat" && <RightContainer>
-                <ClickOption src={Chat} onClick={() => { }} />
+                <ClickOption src={Chat} onClick={onClick} />
                 <MoreIcon src={More} onClick={() => setDeleteFriend(true)} />
                 {deleteFriend && <DeleteFriend onClick={handleDeleteFriend} />}
             </RightContainer>}
