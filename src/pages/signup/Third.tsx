@@ -8,7 +8,7 @@ function Third() {
     <>
       <InputBox>
         <EmailInput>
-          <Input type="text" name="" value="" label="닉네임" placeholder="닉네임" onChange={() => {}} />
+          <Input type="text" name="nickname" value="" label="닉네임" placeholder="닉네임" onChange={() => {}} />
           <Button bigSize onClick={() => {}}>
             중복 확인
           </Button>
@@ -17,7 +17,7 @@ function Third() {
           <Label>포지션</Label>
           <TagBox>
             {position.map((item) => (
-              <Tag>{item}</Tag>
+              <Tag key={item}>{item}</Tag>
             ))}
           </TagBox>
         </SelectTagBox>
