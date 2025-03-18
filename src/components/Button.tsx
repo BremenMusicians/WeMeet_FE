@@ -6,14 +6,16 @@ interface ButtonProps {
     onClick: () => void;
     bigSize?: boolean;
     disabled?: boolean;
+    width?: number
 }
 
-export const Button = ({ children, onClick, bigSize = false, disabled = false }: ButtonProps) => {
+export const Button = ({ children, onClick, bigSize = false, disabled = false, width }: ButtonProps) => {
     return (
         <ButtonContainer
             onClick={onClick}
             $disabled={disabled}
             $bigSize={bigSize}
+            $width={width}
             aria-disabled={disabled}
         >
             {children}
@@ -21,7 +23,7 @@ export const Button = ({ children, onClick, bigSize = false, disabled = false }:
     )
 }
 
-const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean }>`
+const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean, $width?: number }>`
     display: flex;
     justify-content: center;
     align-items: center;
@@ -32,8 +34,9 @@ const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean }>
     height: ${({ $bigSize }) => $bigSize ? "48px" : "40px"};
     padding: ${({ $bigSize }) => ($bigSize ? "16px" : "0px 16px")};
     cursor: pointer;
-    width: 100%;
+    width: ${({ $width }) => $width ? `${$width}px` : '100%'};
     &:hover {
         background-color: ${({ theme, $disabled }) => !$disabled && theme.color.orange400};
     }
+    ${({ theme }) => theme.font.body5}
 `
