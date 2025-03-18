@@ -55,11 +55,7 @@ export const Friend = () => {
                                     (
                                         <ClickOption
                                             src={item.status === "not" ? AddFriend : undefined}
-                                            onClick={() =>
-                                                item.status === "friend"
-                                                    ? handleSendMessage()
-                                                    : handleAddFriend()
-                                            }
+                                            onClick={() => handleAddFriend}
                                         />
                                     )
                                 )}
