@@ -7,12 +7,12 @@ function First() {
     <>
       <InputBox>
         <EmailInput>
-          <Input type="text" name="" value="" label="이메일" placeholder="you@example.com" onChange={() => {}} />
+          <Input type="text" name="email" value="" label="이메일" placeholder="you@example.com" onChange={() => {}} />
           <Button bigSize onClick={() => {}}>
             인증
           </Button>
         </EmailInput>
-        <Input type="text" name="" value="" label="인증 코드" placeholder="123456" onChange={() => {}} />
+        <Input type="text" name="verificationCode" value="" label="인증 코드" placeholder="123456" onChange={() => {}} />
       </InputBox>
       <Button disabled bigSize onClick={() => {}}>
         다음
