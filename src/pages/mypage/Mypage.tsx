@@ -1,12 +1,16 @@
 import styled from "styled-components"
-import { Banner, EditPencil, Profile, UserAdd } from "../../assets"
+import { Banner, Chat, EditPencil, More, Profile, UserAdd } from "../../assets"
 import { SearchInput } from "../../components/SearchInput"
 import { ProfileCard } from "../../components/ProfileCard"
 import { useNavigate } from "react-router-dom"
+import { DeleteFriend } from "../../components/DeleteFriend"
+import { useState } from "react"
 
 export const MyPage = () => {
 
     const position = ['드럼', '피아노']
+    const [deleteFriend, setDeleteFriend] = useState<boolean>(false);
+
 
     const router = useNavigate();
 
@@ -37,23 +41,39 @@ export const MyPage = () => {
                         <p>{100/**api연동 */}명의 친구</p>
                         <SearchInput width={480} placeholder="검색어를 입력해주세요" name="" value="" onChange={() => { }} />{/**api연동 시 수정 */}
                     </FriendTopBar>
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
-                    <ProfileCard type="chat" onClick={() => { }} name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']} />
+                    <ProfileCard name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']}>
+                        <RightContainer>
+                            <ClickOption src={Chat} onClick={() => { }} />
+                            <MoreIcon src={More} onClick={() => setDeleteFriend(true)} />
+                            {deleteFriend && <DeleteFriend onClick={() => { }} />} {/**api연동 */}
+                        </RightContainer>
+                    </ProfileCard>
                 </FriendContent>
             </Content>
         </Container>
     )
 }
+
+const ClickOption = styled.img`
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+`
+
+const RightContainer = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: space-between;
+`
+
+const MoreIcon = styled.img`
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    margin-left: auto; 
+`;
+
 
 const Container = styled.div`
     margin: 0 auto;
@@ -84,7 +104,6 @@ const ProfileImg = styled.img`
     top: -60px;
     left: 24px;
     background-color: #fff;
-
 `
 
 const ButtonWrap = styled.div`
