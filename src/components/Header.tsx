@@ -9,9 +9,14 @@ export const Header = () => {
     const routerList = [{
         router: '/main',
         name: "메인"
-    }, {
+    },
+    {
         router: '/instrment',
         name: '가상악기'
+    },
+    {
+        router: '/friend',
+        name: '친구'
     }]
 
     const location = useLocation();
@@ -84,7 +89,7 @@ const Box = styled.div`
     width: 100%;
     max-width: 1280px;
     margin: 0 auto;
-    padding: 8px 20px;
+    padding: 8px 0px;
 `;
 
 const ProfileContainer = styled.div`
