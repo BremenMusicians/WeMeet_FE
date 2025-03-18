@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { Logo, Profile } from "../assets"
+import { Letters_Logo, Profile } from "../assets"
 import { Tab } from "./Tab"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Button } from "./Button"
@@ -28,7 +28,7 @@ export const Header = () => {
         <HeaderContainer>
             <Box>
                 <LeftContainer>
-                    <LogoImg src={Logo} alt="로고" onClick={() => router('/')} />
+                    <LogoImg src={Letters_Logo} alt="로고" onClick={() => router('/')} />
                     <FlexBox>
                         {routerList.map((item) => (
                             <Tab
