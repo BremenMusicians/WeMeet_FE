@@ -47,7 +47,7 @@ const Container = styled.div`
 const AuthContainer = styled.div`
   max-width: 786px;
   width: 100%;
-  padding: 24px 24px 40px;
+  padding: 16px 16px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -68,11 +68,11 @@ const HouseButton = styled.button`
   display: flex;
   padding: 8px;
   border-radius: 6px;
-  background-color: var(--gray100);
-  border: 1px solid var(--gray200);
+  background-color: ${({ theme }) => theme.color.gray100};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   cursor: pointer;
   &:hover {
-    background-color: var(--gray200);
+    background-color: ${({ theme }) => theme.color.gray200};
   }
 
   transition-property: all;
@@ -98,7 +98,7 @@ const SideBanner = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--orange500);
+  background-color: ${({ theme }) => theme.color.orange500};
   @media (max-width: 960px) {
     display: none;
   }
