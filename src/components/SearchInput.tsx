@@ -7,6 +7,7 @@ interface InputProp {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     name?: string;
     value: string;
+    width?: number
 }
 
 export const SearchInput = ({
@@ -14,6 +15,7 @@ export const SearchInput = ({
     name = '',
     onChange,
     value,
+    width
 }: InputProp) => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +24,7 @@ export const SearchInput = ({
 
 
     return (
-        <InputContainer>
+        <InputContainer $width={width}>
             <img src={Search} alt="Icon" width={24} />
             <SearchInputContainer
                 autoComplete="off"
@@ -35,7 +37,7 @@ export const SearchInput = ({
     );
 };
 
-const InputContainer = styled.div`
+const InputContainer = styled.div<{ $width?: number }>`
     display: flex;
     align-items: center;
     padding: 16px 20px;
@@ -43,6 +45,7 @@ const InputContainer = styled.div`
     border: 1px solid ${({ theme }) => theme.color.gray200};
     background-color: ${({ theme }) => theme.color.gray50};
     gap: 20px;
+    width: ${({ $width }) => $width ? `${$width}px` : '100%'};
 `;
 
 const SearchInputContainer = styled.input`
