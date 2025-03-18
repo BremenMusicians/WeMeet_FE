@@ -6,8 +6,8 @@ import Second from './Second'
 import Third from './Third'
 
 function Signup() {
-  const [step, setStep] = useState<number>(2)
-  const signupPage = [<First />, <Second />, <Third />]
+  const [step, setStep] = useState<number>(0)
+  const signupPage = [<First key="first" />, <Second key="second" />, <Third key="third" />]
   return (
     <AuthLayout title="회원가입" description="온라인 합주를 시작해볼까요">
       <SignupFormBox>
