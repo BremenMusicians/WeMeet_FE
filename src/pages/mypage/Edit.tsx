@@ -131,7 +131,7 @@ const Essential = styled.span`
     color: ${({ theme }) => theme.color.orange400};
 `
 
-const Textarea = styled.textarea`
+const Textarea = styled.textarea.attrs({ maxLength: 50 })`
     padding: 10px 16px;
     border: 1px solid ${({ theme }) => theme.color.gray200};
     background-color: ${({ theme }) => theme.color.gray100};
