@@ -16,6 +16,7 @@ export const theme = {
         gray300: "var(--gray300)",
         gray200: "var(--gray200)",
         gray100: "var(--gray100)",
+        gray50: "var(--gray50)",
         orange900: "var(--orange900)",
         orange800: "var(--orange800)",
         orange700: "var(--orange700)",
