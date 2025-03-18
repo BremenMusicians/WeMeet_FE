@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { Logo, Profile } from "../assets"
+import { Letters_Logo, Profile } from "../assets"
 import { Tab } from "./Tab"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Button } from "./Button"
@@ -9,9 +9,14 @@ export const Header = () => {
     const routerList = [{
         router: '/main',
         name: "메인"
-    }, {
+    },
+    {
         router: '/instrment',
         name: '가상악기'
+    },
+    {
+        router: '/friend',
+        name: '친구'
     }]
 
     const location = useLocation();
@@ -23,7 +28,7 @@ export const Header = () => {
         <HeaderContainer>
             <Box>
                 <LeftContainer>
-                    <LogoImg src={Logo} alt="로고" onClick={() => router('/')} />
+                    <LogoImg src={Letters_Logo} alt="로고" onClick={() => router('/')} />
                     <FlexBox>
                         {routerList.map((item) => (
                             <Tab
@@ -84,7 +89,7 @@ const Box = styled.div`
     width: 100%;
     max-width: 1280px;
     margin: 0 auto;
-    padding: 8px 20px;
+    padding: 8px 0px;
 `;
 
 const ProfileContainer = styled.div`

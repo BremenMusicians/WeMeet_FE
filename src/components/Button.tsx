@@ -31,5 +31,5 @@ const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean }>
   &:hover {
     background-color: ${({ theme, $disabled }) => !$disabled && theme.color.orange400};
   }
-  ${({ theme }) => theme.font.body4}
+  ${({ theme }) => theme.font.body5}
 `
