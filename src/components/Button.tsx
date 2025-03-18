@@ -2,21 +2,22 @@ import React from 'react'
 import styled from 'styled-components'
 
 interface ButtonProps {
-  children: React.ReactNode
-  onClick: () => void
-  bigSize?: boolean
-  disabled?: boolean
+    children: React.ReactNode
+    onClick: () => void
+    bigSize?: boolean
+    disabled?: boolean
+    width?: number
 }
 
-export const Button = ({ children, onClick, bigSize = false, disabled = false }: ButtonProps) => {
-  return (
-    <ButtonContainer onClick={onClick} $disabled={disabled} $bigSize={bigSize} aria-disabled={disabled}>
-      {children}
-    </ButtonContainer>
-  )
+export const Button = ({ children, onClick, bigSize = false, disabled = false, width }: ButtonProps) => {
+    return (
+        <ButtonContainer $width={width} onClick={onClick} $disabled={disabled} $bigSize={bigSize} aria-disabled={disabled}>
+            {children}
+        </ButtonContainer>
+    )
 }
 
-const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean }>`
+const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean; $width?: number }>`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -27,9 +28,9 @@ const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean }>
   height: ${({ $bigSize }) => ($bigSize ? '48px' : '40px')};
   padding: ${({ $bigSize }) => ($bigSize ? '16px' : '0px 16px')};
   cursor: pointer;
-  width: 100%;
+  width: ${({ $width }) => $width ? `${$width}px` : '100%'};
   &:hover {
     background-color: ${({ theme, $disabled }) => !$disabled && theme.color.orange400};
-  }
+}
   ${({ theme }) => theme.font.body5}
 `
