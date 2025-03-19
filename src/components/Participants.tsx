@@ -12,7 +12,7 @@ export const Participants = ({ name, value, onChange }: ParticipantsProp) => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = Number(e.target.value);
-        if (!isNaN(newValue) && newValue >= 1 && newValue <= 5) {
+        if (!isNaN(newValue) && newValue >= 2 && newValue <= 5) {
             onChange(newValue);
         }
     };
