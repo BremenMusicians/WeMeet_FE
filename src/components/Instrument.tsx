@@ -4,6 +4,7 @@ import { Check, Drum, Guitar, Piano, Slider } from "../assets"
 
 interface InstrumentListProps {
     activeInstrument?: InstrumentType
+    onSelect?: (instrument: InstrumentType) => void
 }
 
 const instrumentList: InstrumentType[] = ['피아노', '드럼', '신스', '기타']
@@ -15,7 +16,7 @@ const iconMap = {
     "신스": Slider
 }
 
-export const InstrumentList = ({ activeInstrument }: InstrumentListProps) => {
+export const InstrumentList = ({ activeInstrument, onSelect }: InstrumentListProps) => {
     return (
         <Container>
             {instrumentList.map((item) => {
@@ -23,7 +24,7 @@ export const InstrumentList = ({ activeInstrument }: InstrumentListProps) => {
                 const isActive = activeInstrument === item
 
                 return (
-                    <InstrumentWrap key={item} $isActive={isActive}>
+                    <InstrumentWrap key={item} $isActive={isActive} onClick={() => onSelect && onSelect(item)}>
                         <InstrumentLeft>
                             <Icon Fill={isActive ? "#F75C3C" : "#A1A1AA"} />
                             <p>{item}</p>
