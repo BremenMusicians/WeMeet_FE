@@ -8,6 +8,10 @@ function Chat() {
   const [isOpen, setIsOpen] = useState(false)
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
+  const handleSendMessage = () => { // 채팅 전송
+    
+  }
+  
   const toggleMenu = () => {
     setIsOpen((prev) => !prev)
   }
@@ -63,9 +67,9 @@ function Chat() {
         <FriendListBox>
           <FriendNumber>45명의 친구</FriendNumber>
           <FriendList>
-            {data.map(({ id, name, introduce, position }) => (
-              <ProfileBox key={id}>
-                <ProfileCard name={name} introduce={introduce} position={position}></ProfileCard>
+            {data.map((item) => (
+              <ProfileBox key={item.id}>
+                <ProfileCard name={item.name} introduce={item.introduce} position={item.position}></ProfileCard>
               </ProfileBox>
             ))}
           </FriendList>
@@ -103,7 +107,7 @@ function Chat() {
           </ChatScreen>
           <InputBox>
             <Input placeholder="메시지 입력" />
-            <SendButton>
+            <SendButton onClick={handleSendMessage}>
               <Icon src={PaperPlane} />
             </SendButton>
           </InputBox>
@@ -199,7 +203,7 @@ const UserNicknameBox = styled.div`
   gap: 8px;
 `
 
-const UserNickname = styled.div`
+const UserNickname = styled.p`
   ${({ theme }) => theme.font.title3}
 `
 
@@ -225,6 +229,7 @@ const ChatScreen = styled.div`
   background-color: ${({ theme }) => theme.color.gray50};
   height: 100%;
   position: relative;
+  overflow-y: auto;
 `
 
 const PartnerChatBox = styled.div`
