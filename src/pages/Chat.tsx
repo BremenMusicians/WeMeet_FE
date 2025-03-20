@@ -63,9 +63,9 @@ function Chat() {
         <FriendListBox>
           <FriendNumber>45명의 친구</FriendNumber>
           <FriendList>
-            {data.map(({ id, name, introduce, position, status }) => (
+            {data.map(({ id, name, introduce, position }) => (
               <ProfileBox key={id}>
-                <ProfileCard name={name} introduce={introduce} position={position} children={undefined} />
+                <ProfileCard name={name} introduce={introduce} position={position}></ProfileCard>
               </ProfileBox>
             ))}
           </FriendList>
