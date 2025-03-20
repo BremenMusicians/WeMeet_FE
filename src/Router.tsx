@@ -4,6 +4,8 @@ import { MyPage } from "./pages/mypage/Mypage";
 import { EditMyPage } from "./pages/mypage/Edit";
 import { Friend } from "./pages/Friend";
 import { Room } from "./pages/Room";
+import { ConcertRoom } from "./pages/ConcertRoom";
+
 
 export const Router = () => {
     return (
@@ -11,9 +13,10 @@ export const Router = () => {
             <Header />
             <Routes>
                 <Route path="/mypage" element={<MyPage />} />
-                <Route path="/main/edit" element={<EditMyPage />} />
+                <Route path="/mypage/edit" element={<EditMyPage />} />
                 <Route path="/friend" element={<Friend />} />
                 <Route path="/main" element={<Room />} />
+                <Route path="/concertRoom" element={<ConcertRoom />} />
             </Routes>
         </BrowserRouter>
     );
