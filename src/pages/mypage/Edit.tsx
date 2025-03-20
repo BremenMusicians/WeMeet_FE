@@ -34,7 +34,7 @@ export const EditMyPage = () => {
                         <AddProfile type="file" id="profile" onChange={handleImageChange} />
                     </ProfileImgWrap>
                     <FeatureButton>
-                        <img src={Check} alt="완료" />
+                        <Check Fill="#fff" />
                         <p>완료</p>
                     </FeatureButton>
                 </TopBar>

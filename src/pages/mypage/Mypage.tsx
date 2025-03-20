@@ -44,7 +44,7 @@ export const MyPage = () => {
                     <ProfileCard name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']}>
                         <RightContainer>
                             <ClickOption src={Chat} onClick={() => { }} />
-                            <MoreIcon src={More} onClick={() => setDeleteFriend(true)} />
+                            <More Fill="#A1A1AA" onClick={() => setDeleteFriend(true)} />
                             {deleteFriend && <DeleteFriend onClick={() => { }} />} {/**api연동 */}
                         </RightContainer>
                     </ProfileCard>
@@ -66,14 +66,6 @@ const RightContainer = styled.div`
     gap: 16px;
     justify-content: space-between;
 `
-
-const MoreIcon = styled.img`
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    margin-left: auto; 
-`;
-
 
 const Container = styled.div`
     margin: 0 auto;
