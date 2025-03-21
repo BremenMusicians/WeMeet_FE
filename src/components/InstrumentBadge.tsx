@@ -39,6 +39,15 @@ export const InstrumentBadge = () => {
                         whileTap={{ scale: 0.95 }} 
                         $isActive={isActive} 
                         onClick={() => router(`/instrument?name=${item.name}`)} 
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${item.name} 악기 선택`}
+                        aria-pressed={isActive}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                            router(`/instrument?name=${item.name}`);
+                            }
+                        }}
                     >
                         <motion.div 
                             initial={{ opacity: 0, y: 5 }} 

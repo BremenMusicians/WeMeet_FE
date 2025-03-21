@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useEffect, useRef, useState } from "react";
 import { Piano } from "@tonejs/piano/build/piano/Piano";
-import { BarLoader, PacmanLoader } from 'react-spinners'
+import { BarLoader } from 'react-spinners'
 import { theme } from "../styles/Theme";
 
 const pianoNotes: string[] = [
