@@ -93,7 +93,7 @@ function Chat() {
           <ChatScreen>
             {chatMessages.map((item) =>
               name === '상대방' ? (
-                <PartnerChatBox key={itemid}>
+                <PartnerChatBox key={item.id}>
                   <PartnerChat>{item.message}</PartnerChat>
                   <Time>{timeFormatting(item.time)}</Time>
                 </PartnerChatBox>
