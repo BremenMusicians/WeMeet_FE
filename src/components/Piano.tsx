@@ -24,7 +24,6 @@ export const PianoComponents = () => {
 
             piano.load().then(() => {
                 setLoaded(true);
-                console.log("🎹 피아노 로드 완료!");
             });
 
             pianoRef.current = piano;
