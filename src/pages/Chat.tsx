@@ -9,7 +9,8 @@ function Chat() {
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   const handleSendMessage = () => {
-    // 채팅 전송
+    // 메시지 입력값 검증 및 전송 로직 구현 필요
+    // API 호출 또는 상태 업데이트 로직 추가
   }
 
   const toggleMenu = () => {
@@ -92,7 +93,7 @@ function Chat() {
 
           <ChatScreen>
             {chatMessages.map((item) =>
-              name === '상대방' ? (
+              item.name === '상대방' ? (
                 <PartnerChatBox key={item.id}>
                   <PartnerChat>{item.message}</PartnerChat>
                   <Time>{timeFormatting(item.time)}</Time>
