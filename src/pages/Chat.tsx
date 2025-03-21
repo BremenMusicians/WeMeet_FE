@@ -32,7 +32,7 @@ function Chat() {
   const timeFormatting = (date: string) => {
     const [, time] = date.split(' ')
     const [hour, minute] = time.split(':').map(Number)
-    return `${hour >= 12 ? '오후' : '오전'} ${hour == 12 ? 12 : hour % 12}:${minute}`
+    return `${hour >= 12 ? '오후' : '오전'} ${hour === 12 ? 12 : hour % 12}:${minute}`
   }
 
   const data = [
@@ -91,16 +91,16 @@ function Chat() {
           </TopBar>
 
           <ChatScreen>
-            {chatMessages.map(({ id, name, time, message }) =>
+            {chatMessages.map((item) =>
               name === '상대방' ? (
-                <PartnerChatBox key={id}>
-                  <PartnerChat>{message}</PartnerChat>
-                  <Time>{timeFormatting(time)}</Time>
+                <PartnerChatBox key={itemid}>
+                  <PartnerChat>{item.message}</PartnerChat>
+                  <Time>{timeFormatting(item.time)}</Time>
                 </PartnerChatBox>
               ) : (
-                <UserChatBox key={id}>
-                  <Time>{timeFormatting(time)}</Time>
-                  <UserChat>{message}</UserChat>
+                <UserChatBox key={item.id}>
+                  <Time>{timeFormatting(item.time)}</Time>
+                  <UserChat>{item.message}</UserChat>
                 </UserChatBox>
               ),
             )}
