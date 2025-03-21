@@ -11,7 +11,7 @@ export const Header = () => {
         name: "메인"
     },
     {
-        router: '/instrment',
+        router: '/instrument',
         name: '가상악기'
     },
     {

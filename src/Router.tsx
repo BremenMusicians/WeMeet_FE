@@ -5,6 +5,7 @@ import { EditMyPage } from "./pages/mypage/Edit";
 import { Friend } from "./pages/Friend";
 import { Room } from "./pages/Room";
 import { ConcertRoom } from "./pages/ConcertRoom";
+import { Instrument } from "./pages/Instrument";
 
 
 export const Router = () => {
@@ -17,6 +18,7 @@ export const Router = () => {
                 <Route path="/friend" element={<Friend />} />
                 <Route path="/main" element={<Room />} />
                 <Route path="/concertRoom" element={<ConcertRoom />} />
+                <Route path="/instrument" element={<Instrument/>}/>
             </Routes>
         </BrowserRouter>
     );
