@@ -8,10 +8,10 @@ function Chat() {
   const [isOpen, setIsOpen] = useState(false)
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
-  const handleSendMessage = () => { // 채팅 전송
-    
+  const handleSendMessage = () => {
+    // 채팅 전송
   }
-  
+
   const toggleMenu = () => {
     setIsOpen((prev) => !prev)
   }
@@ -30,7 +30,7 @@ function Chat() {
   }, [])
 
   const timeFormatting = (date: string) => {
-    const [_, time] = date.split(' ')
+    const [, time] = date.split(' ')
     const [hour, minute] = time.split(':').map(Number)
     return `${hour >= 12 ? '오후' : '오전'} ${hour == 12 ? 12 : hour % 12}:${minute}`
   }
@@ -69,7 +69,7 @@ function Chat() {
           <FriendList>
             {data.map((item) => (
               <ProfileBox key={item.id}>
-                <ProfileCard name={item.name} introduce={item.introduce} position={item.position}></ProfileCard>
+                <ProfileCard name={item.name} introduce={item.introduce} position={item.position} children={null} />
               </ProfileBox>
             ))}
           </FriendList>
@@ -85,7 +85,7 @@ function Chat() {
               </UserNicknameBox>
             </UserInfo>
             <ContextMenu ref={contextMenuRef}>
-              <Icon onClick={toggleMenu} width={24} src={More} />
+              <More onClick={toggleMenu} width={24} />
               {isOpen && <DeleteFriend top={28} onClick={() => setIsOpen(false)} />}
             </ContextMenu>
           </TopBar>
