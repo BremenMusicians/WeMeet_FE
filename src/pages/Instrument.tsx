@@ -28,6 +28,6 @@ const Content = styled.div`
     padding: 100px 24px 24px 24px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 24px;
     width: 100%;
 `;

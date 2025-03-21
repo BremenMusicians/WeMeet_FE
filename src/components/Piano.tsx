@@ -129,6 +129,6 @@ const Container = styled.div`
     display: flex;
     align-items: center;
     width: 100%;
-    height: 80dvh;
+    height: 70dvh;
     background-color: ${({theme}) => theme.color.gray50};
 `;
