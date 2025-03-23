@@ -19,7 +19,8 @@ export const Router = () => {
                 <Route path="/main" element={<Room />} />
                 <Route path="/concertRoom" element={<ConcertRoom />} />
                 <Route path="/instrument" element={<Instrument/>}/>
-            </Routes>
-        </BrowserRouter>
-    );
-};
+                <Route path="/chat" element={<Chat />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
