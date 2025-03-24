@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import * as Tone from 'tone'
 
 const SyntNotes: string[] = [
@@ -11,7 +11,7 @@ const SyntNotes: string[] = [
 ];
 
 export const Synthesizer = () => {
-    const synth = new Tone.Synth().toDestination();
+    const synth = React.useMemo(() => new Tone.Synth().toDestination(), []);
 
     const noteMap: { [key: string]: string } = {
         "KeyA": "C4",

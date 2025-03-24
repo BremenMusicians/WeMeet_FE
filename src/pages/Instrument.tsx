@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { PianoComponents } from "../components/Piano";
 import { InstrumentBadge } from "../components/InstrumentBadge";
 import { useLocation } from "react-router-dom";
-import { Synthesizer } from "../components/synthesizer";
+import { Synthesizer } from "../components/Synthesizer";
 
 export const Instrument = () => {
     const location = useLocation();
