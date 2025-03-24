@@ -6,6 +6,7 @@ import { Friend } from "./pages/Friend";
 import { Room } from "./pages/Room";
 import { ConcertRoom } from "./pages/ConcertRoom";
 import { Instrument } from "./pages/Instrument";
+import Chat from "./pages/Chat";
 
 
 export const Router = () => {

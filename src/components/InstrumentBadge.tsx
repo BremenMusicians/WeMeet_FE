@@ -16,6 +16,8 @@ export const InstrumentBadge = () => {
     const searchParams = new URLSearchParams(location.search);
     const currentInstrument = searchParams.get("name");
 
+    
+
     const data: Instrument[] = [
         {icon: <Piano Fill={currentInstrument === "피아노" ? "#F75C3C" : "#A1A1AA"} />, name: '피아노'},
         {icon: <Drum Fill={currentInstrument === "드럼" ? "#F75C3C" : "#A1A1AA"} />, name: "드럼"},
@@ -91,5 +93,5 @@ const Content = styled.div<{$isActive?: boolean}>`
     cursor: pointer;
     ${({theme}) => theme.font.body6}
     background: ${({$isActive}) => $isActive ? "rgba(247, 92, 60, 0.20)" : "transparent"};
-    color: ${({theme, $isActive}) => $isActive ? theme.color.orange400 : ""};
+    color: ${({theme, $isActive}) => $isActive ? theme.color.orange400 : "transparent"};
 `;
