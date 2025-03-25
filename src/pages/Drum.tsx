@@ -10,12 +10,12 @@ export const Drum = () => {
     audio.play()
   }
 
-  const keyMap: any = {
+  const keyMap: Record<string, string> = {
     KeyX: KickSound,
     KeyZ: PedalSound,
   }
 
-  const onKeyDown = (event: any) => {
+  const onKeyDown = (event: KeyboardEvent) => {
     if (keyMap[event.code]) {
       play(keyMap[event.code])
     }
@@ -32,7 +32,7 @@ export const Drum = () => {
     <Container>
       <Layout>
         <ImageBox>
-          <BackgroundImage src={DrumImage} />
+          <img src={DrumImage} />
           <DrumElement type="cymbal" note="KeyQ" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play(HiHatSound)} />
           <DrumElement type="cymbal" note="KeyW" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play(CrashSound)} />
           <DrumElement type="cymbal" note="KeyE" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play(RideSound)} />
@@ -72,8 +72,6 @@ const ImageBox = styled.div`
   height: fit-content;
   position: relative;
 `
-
-const BackgroundImage = styled.img``
 
 const PedalImg = styled.img`
   top: 376px;

@@ -5,7 +5,6 @@ import { EditMyPage } from './pages/mypage/Edit'
 import { Friend } from './pages/Friend'
 import { Room } from './pages/Room'
 import { ConcertRoom } from './pages/ConcertRoom'
-import { Drum } from './pages/Drum'
 
 export const Router = () => {
   return (

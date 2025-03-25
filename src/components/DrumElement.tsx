@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import styled, { CSSProperties } from 'styled-components'
 
 interface ElementProps {
-  src?: any
+  src?: string
   style?: CSSProperties
   onClick: () => void
   note: string
@@ -18,7 +18,7 @@ export const DrumElement = ({ src, style, onClick, note, type = 'tom' }: Element
     setTimeout(() => setIsHit(false), 300)
   }
 
-  const onKeyDown = (event: any) => {
+  const onKeyDown = (event: KeyboardEvent) => {
     if (note === event.code) {
       handleMouseDown()
     }
