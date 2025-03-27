@@ -60,6 +60,7 @@ export const Header = () => {
 const HeaderContainer = styled.div`
     margin: 0 auto;
     position: fixed;
+    padding: 0px 24px;
     top: 0;
     left: 0;
     width: 100%;
