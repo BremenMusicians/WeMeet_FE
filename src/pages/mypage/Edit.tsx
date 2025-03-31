@@ -3,13 +3,13 @@ import { Input } from "../../components/Input";
 import { Banner, Check, Plus, Profile } from "../../assets";
 import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button";
-import { useDuplicateCheck, useEditMypage, useGetMyInfomation } from "../../apis/user";
+import { useDuplicateCheck, useEditMypage, useGetMyInformation } from "../../apis/user";
 import { editMypage, position, positionEnum } from "../../apis/user/type";
 import { useNavigate } from "react-router-dom";
 
 export const EditMyPage = () => {
     const navigator = useNavigate();
-    const { data: MyData } = useGetMyInfomation();
+    const { data: MyData } = useGetMyInformation();
     const positionList: position[] = ["PIANO", "SYNTH", "VOCAL", "DRUM", "GUITAR", "ETC"];
     
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export const EditMyPage = () => {
                         </Label>
                         <AddProfile type="file" id="profile" onChange={handleImageChange} />
                     </ProfileImgWrap>
-                    <FeatureButton disabled={isDisabled} onClick={()=>editMypageMutate}>
+                    <FeatureButton disabled={isDisabled} onClick={() => editMypageMutate()}>
                         <Check Fill="#fff" />
                         <p>완료</p>
                     </FeatureButton>

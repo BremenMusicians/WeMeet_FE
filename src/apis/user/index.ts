@@ -4,7 +4,7 @@ import { editMypage, myPageType } from "./type"
 
 const router = '/user'
 
-export const useGetMyInfomation = () => {
+export const useGetMyInformation = () => {
     return useQuery({
         queryKey: ['mypage'],
         queryFn: async () => {

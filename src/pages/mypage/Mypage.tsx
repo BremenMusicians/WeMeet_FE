@@ -5,11 +5,12 @@ import { ProfileCard } from "../../components/ProfileCard"
 import { useNavigate } from "react-router-dom"
 import { DeleteFriend } from "../../components/DeleteFriend"
 import { useState } from "react"
-import { useGetMyInfomation } from "../../apis/user"
 import { positionEnum } from "../../apis/user/type"
+import {ClipLoader} from 'react-spinners'
+import { useGetMyInformation } from "../../apis/user"
 
 export const MyPage = () => {  
-    const {data} = useGetMyInfomation()
+    const {data, isLoading} = useGetMyInformation()
     const [deleteFriend, setDeleteFriend] = useState<boolean>(false);
     const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -23,6 +24,8 @@ export const MyPage = () => {
         friend.accountId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         friend.aboutMe?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
+
+    if(isLoading) return <ClipLoader color="#F55219"/>;
 
     return (
         <Container>
