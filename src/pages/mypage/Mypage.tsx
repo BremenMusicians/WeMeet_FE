@@ -5,21 +5,31 @@ import { ProfileCard } from "../../components/ProfileCard"
 import { useNavigate } from "react-router-dom"
 import { DeleteFriend } from "../../components/DeleteFriend"
 import { useState } from "react"
+import { useGetMyInfomation } from "../../apis/user"
+import { positionEnum } from "../../apis/user/type"
 
-export const MyPage = () => {
-
-    const position = ['드럼', '피아노']
+export const MyPage = () => {  
+    const {data} = useGetMyInfomation()
     const [deleteFriend, setDeleteFriend] = useState<boolean>(false);
-
+    const [searchTerm, setSearchTerm] = useState<string>("");
 
     const router = useNavigate();
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+    }
+
+    const filteredFriends = data?.friends?.filter(friend => 
+        friend.accountId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        friend.aboutMe?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
     return (
         <Container>
             <Content>
-                <img src={Banner} alt="배너" width={1232} height={160} />
+                <img src={Banner} alt="배너" width="100%" height={160} />
                 <TopBar>
-                    <ProfileImg src={Profile} width={120} alt="" />
+                    <ProfileImg src={data?.profile||Profile} width={120} alt="프로필" />
                     <ButtonWrap>
                         <FeatureButton onClick={() => router('/friend')}><img src={UserAdd} alt="유저추가" /><p>친구 추가</p></FeatureButton>
                         <FeatureButton onClick={() => router('edit')}><img src={EditPencil} alt="편집" /><p>편집</p></FeatureButton>
@@ -27,27 +37,29 @@ export const MyPage = () => {
                 </TopBar>
                 <Title>
                     <Flex>
-                        <NickName>위밋</NickName>
+                        <NickName>{data?.accountId}</NickName>
                         <ButtonWrap>
-                            {position.map((item) => (
-                                <Position key={item}>{item}</Position>
+                            {data?.position?.map((item) => ( 
+                                <Position key={item}>{positionEnum[item]}</Position>
                             ))}
                         </ButtonWrap>
                     </Flex>
-                    <Introduce>소개글 햄부기부기햄ㅂㅜ기</Introduce>
+                    <Introduce>{data?.aboutMe}</Introduce>
                 </Title>
                 <FriendContent>
                     <FriendTopBar>
-                        <p>{100/**api연동 */}명의 친구</p>
-                        <SearchInput width={480} placeholder="검색어를 입력해주세요" name="" value="" onChange={() => { }} />{/**api연동 시 수정 */}
+                        <p>{data?.friendsCnt}명의 친구</p>
+                        <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchTerm} onChange={handleSearchChange} />
                     </FriendTopBar>
-                    <ProfileCard name="햄부기" introduce="햄버거 먹고싶다" position={['드럼', '신스']}>
+                    {filteredFriends.map((item) => (
+                    <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
                         <RightContainer>
                             <ClickOption src={Chat} onClick={() => { }} />
                             <More Fill="#A1A1AA" onClick={() => setDeleteFriend(true)} />
                             {deleteFriend && <DeleteFriend onClick={() => { }} />} {/**api연동 */}
                         </RightContainer>
                     </ProfileCard>
+                    ))}
                 </FriendContent>
             </Content>
         </Container>
@@ -69,7 +81,7 @@ const RightContainer = styled.div`
 
 const Container = styled.div`
     margin: 0 auto;
-    width: 1280px;
+    max-width: 1280px;
 `
 
 const Content = styled.div`
