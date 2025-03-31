@@ -6,6 +6,10 @@ const BASEURL = import.meta.env.VITE_SERVER_BASE_URL;
 export const instance: AxiosInstance = axios.create({
   baseURL: BASEURL,
   timeout: 10000,
+  headers: {
+    'Accept': 'application/json',
+    "ngrok-skip-browser-warning": true
+  },
 });
 
 export const refreshInstance: AxiosInstance = axios.create({
