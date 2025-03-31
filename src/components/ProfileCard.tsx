@@ -1,11 +1,12 @@
 import styled from "styled-components"
-import { Profile } from "../assets";// api연동시 기본 이미지 넘어오면 삭제
+import { Profile } from "../assets";
 import React from "react";
+import { position, positionEnum } from "../apis/user/type";
 
 interface ProfileCard {
     name: string;
-    introduce: string;
-    position: string[]; // api 연동 시 enum으로 수정
+    introduce: string | null;
+    position: position[];
     profileImg?: string;
     children: React.ReactNode
 }
@@ -20,7 +21,7 @@ export const ProfileCard = ({ name, introduce, position, profileImg, children }:
                     <Flex>
                         <Name>{name}</Name>
                         {position?.map((item) => (
-                            <PositionBadge key={item}>{item}</PositionBadge>
+                            <PositionBadge key={item}>{positionEnum[item]}</PositionBadge>
                         ))}
                     </Flex>
                     <Introduce>{introduce}</Introduce>
