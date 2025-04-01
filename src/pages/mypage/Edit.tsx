@@ -53,6 +53,7 @@ export const EditMyPage = () => {
     };
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if(e.target.name === "accountId") setIsUsernameChecked(false);
         setData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
     
