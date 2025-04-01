@@ -58,7 +58,7 @@ export const EditMyPage = () => {
         }));
     };
     
-    const isDisabled = duplicate === true || !data.accountId.trim() || data.position.length === 0;
+    const isDisabled = duplicate !== false || !data.accountId.trim() || data.position.length === 0;
     
     return (
         <Container>
