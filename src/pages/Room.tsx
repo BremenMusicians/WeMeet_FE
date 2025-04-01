@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { SearchInput } from "../components/SearchInput";
 import { Lock, PlusIcon, User } from "../assets";
@@ -7,13 +7,50 @@ import { CodeInput } from "../components/Code";
 import { Input } from "../components/Input";
 import { Participants } from "../components/Participants";
 import { CustomRadioComponents } from "../components/Radio";
+import { useCreateRoom, useGetConcertRoom } from "../apis/room";
+import { createRoomType } from "../apis/room/type";
+import { useNavigate } from "react-router-dom";
 
 export const Room = () => {
     const [privateModal, setPrivateModal] = useState(false);
     const [roomOpen, setRoomOpen] = useState(false);
     const [participants, setParticipants] = useState(2);
     const [isPrivate, setIsPrivate] = useState(false);
+    const navigate = useNavigate();
+    const {data} = useGetConcertRoom()
+    
+    const [createData, setCreateData] = useState<createRoomType>({
+        name:'',
+        maxMember: participants,
+        info:'',
+        password:''
+    })
 
+    const handleCreateRoomChange = (e:React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => {
+        const {name, value} = e.target
+        setCreateData({
+            ...createData,
+            [name] : value
+        })
+    }
+    
+    const {mutate: createRoom} = useCreateRoom({
+        onSuccess: (res) => {
+            navigate(`concertRoom/${res.roomId}`)
+        },
+        onError: () => {
+            alert('잠시 후 다시 시도해주세요'); 
+            setRoomOpen(false)
+        }
+    },{ ...createData, maxMember: participants });
+
+    const navigateConcertRoom = (publicMode:boolean, id:string) => {
+        if(publicMode) {
+            setPrivateModal(true)
+        }else {
+            navigate(`concertRoom/${id}`)
+        }
+    }
 
     return (
         <Container>
@@ -25,22 +62,24 @@ export const Room = () => {
                             <img src={PlusIcon} width={28} height={28} alt="검색" />
                         </PlusButton>
                     </SearchContainer>
-                    <Title>{99 /**api연동 */}개의 방</Title>
+                    <Title>{data?.roomCount}개의 방</Title>
                 </Topbar>
                 <RoomList>
-                    <RoomContent onClick={() => setPrivateModal(true)}>
+                    {data?.rooms.map((item) => (
+                    <RoomContent key={item.id} onClick={() => navigateConcertRoom(item.isPublic, item.id)}>
                         <TitleWrap>
                             <TitleContainer>
-                                <img src={Lock} alt="비공개" width={22} height={22} /> {/**api연동 시 수정 */}
-                                <RoomTitle>룸 제목</RoomTitle>
+                                {item.isPublic && <img src={Lock} alt="비공개" width={22} height={22} /> }
+                                <RoomTitle>{item.name}</RoomTitle>
                             </TitleContainer>
-                            <Description>룸 설명</Description>
+                            <Description>{item.info}</Description>
                         </TitleWrap>
                         <TotalWrap>
                             <img src={User} alt="사람" />
-                            <TotalPeople>{participants}/5명</TotalPeople>
+                            <TotalPeople>{item.currentMember}/{item.maxMember}명</TotalPeople>
                         </TotalWrap>
                     </RoomContent>
+                    ))}
                 </RoomList>
                 {privateModal && (
                     <Modal onClick={() => { /**api연동 시 연결 */ }} onClose={() => setPrivateModal(false)}>
@@ -54,7 +93,7 @@ export const Room = () => {
                     </Modal>
                 )}
                 {roomOpen && (
-                    <Modal onClick={() => { }} onClose={() => setRoomOpen(false)}>
+                    <Modal onClick={() => createRoom({ ...createData, maxMember: participants })} onClose={() => setRoomOpen(false)}>
                         <ModalContent>
                             <ModalTitleWrap>
                                 <ModalTitle>합주방 만들기</ModalTitle>
@@ -62,8 +101,8 @@ export const Room = () => {
                             </ModalTitleWrap>
                             <ContentWrap>
                                 <p>방 제목 <Essential>*</Essential></p> {/*api연동 시 수정 */}
-                                <Input type="text" name="" value="" placeholder="제목을 입력해주세요" onChange={() => { }} />
-                                <Length>0/50 자</Length>
+                                <Input type="text" name="name" value={createData.name} placeholder="제목을 입력해주세요" onChange={handleCreateRoomChange} />
+                                <Length>{createData.name.length}/50 자</Length>
                             </ContentWrap>
                             <ContentWrap>
                                 <p>참여 인원 <Essential>*</Essential></p> {/*api연동 시 수정 */}
@@ -72,8 +111,8 @@ export const Room = () => {
                             </ContentWrap>
                             <ContentWrap>
                                 <p>설명</p>
-                                <Textarea placeholder="설명을 입력해주세요" />
-                                <Length>{0/**추후 api연동 */}/100 자</Length>
+                                <Textarea placeholder="설명을 입력해주세요" onChange={handleCreateRoomChange} name="info" value={createData.info} />
+                                <Length>{createData.info.length}/100 자</Length>
                             </ContentWrap>
                             <RadioWrap>
                                 <CustomRadioComponents
@@ -93,9 +132,9 @@ export const Room = () => {
                                     onChange={() => setIsPrivate(true)}
                                 />  </RadioWrap>
                             {isPrivate && (
-                                <ContentWrap> {/*api연동 시 수정 */}
+                                <ContentWrap>
                                     <p>참여 코드 <Essential>*</Essential></p>
-                                    <Input type="text" name="code" value="" placeholder="숫자 4자리 입력" onChange={() => { }} />
+                                    <Input type="text" name="password" value={createData.password} placeholder="숫자 4자리 입력" onChange={handleCreateRoomChange} />
                                     <LeftEx>숫자 4글자를 조합해 작성해주세요.</LeftEx>
                                 </ContentWrap>
                             )}
