@@ -13,7 +13,6 @@ export const EditMyPage = () => {
     const positionList: position[] = ["PIANO", "SYNTH", "VOCAL", "DRUM", "GUITAR", "ETC"];
     
     const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [selectedPositions, setSelectedPositions] = useState<position[]>([]);
     const [data, setData] = useState<editMypage>({ accountId: "", aboutMe: "", position: [] });
     const [duplicate, setDuplicate] = useState<boolean | null>(null);
     
@@ -24,19 +23,18 @@ export const EditMyPage = () => {
                 aboutMe: MyData.aboutMe || "",
                 position: MyData.position || [],
             });
-            setSelectedPositions(MyData.position || []);
         }
     }, [MyData]);
     
     const { mutate: duplicateCheck } = useDuplicateCheck({
         onSuccess: () => setDuplicate(false),
         onError: () => setDuplicate(true)
-    },data.accountId);
+    }, data.accountId);
     
     const { mutate: editMypageMutate } = useEditMypage({
         onSuccess: () => navigator('/mypage'),
         onError: () => alert("잠시 후 시도해주세요")
-    },{...data, position: selectedPositions});
+    }, data);
     
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -52,12 +50,15 @@ export const EditMyPage = () => {
     };
     
     const togglePosition = (item: position) => {
-        setSelectedPositions(prev =>
-            prev.includes(item) ? prev.filter(pos => pos !== item) : [...prev, item]
-        );
+        setData(prev => ({
+            ...prev,
+            position: prev.position.includes(item) 
+                ? prev.position.filter(pos => pos !== item) 
+                : [...prev.position, item]
+        }));
     };
     
-    const isDisabled = duplicate === true || !data.accountId.trim() || selectedPositions.length === 0;
+    const isDisabled = duplicate === true || !data.accountId.trim() || data.position.length === 0;
     
     return (
         <Container>
@@ -81,7 +82,7 @@ export const EditMyPage = () => {
                         <p>닉네임 <Essential>*</Essential></p>
                         <NickName>
                             <Input name='accountId' type="text" value={data.accountId} onChange={handleChange} />
-                            <Button width={92} bigSize onClick={duplicateCheck}>중복 확인</Button>
+                            <Button width={92} bigSize onClick={() => duplicateCheck()}>중복 확인</Button>
                         </NickName>
                         <Length>{data.accountId?.length || 0}/20 자</Length>
                         {duplicate && <Length style={{color:"red"}}>이미 사용중인 닉네임입니다.</Length>}
@@ -92,7 +93,7 @@ export const EditMyPage = () => {
                             {positionList.map(item => (
                                 <Position
                                     key={item}
-                                    $isActive={selectedPositions.includes(item)}
+                                    $isActive={data.position.includes(item)}
                                     onClick={() => togglePosition(item)}
                                 >
                                     {positionEnum[item]}
@@ -102,7 +103,7 @@ export const EditMyPage = () => {
                     </ContentWrap>
                     <ContentWrap>
                         <p>설명</p>
-                        <Textarea name="aboutMe" value={data.aboutMe!} onChange={handleChange} />
+                        <Textarea name="aboutMe" value={data.aboutMe || ''} onChange={handleChange} />
                         <Length>{data.aboutMe?.length || 0}/50 자</Length>
                     </ContentWrap>
                 </ContentContainer>
@@ -110,6 +111,7 @@ export const EditMyPage = () => {
         </Container>
     );
 };
+
 
 
 const Position = styled.div<{ $isActive: boolean }>`

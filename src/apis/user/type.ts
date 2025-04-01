@@ -25,9 +25,8 @@ export interface myPageType {
     friends: friendType[]
 }
 
-export interface editMypage 
-    {
-        accountId: string,
-        aboutMe: string | null, 
-        position: position[]
-    }
+export interface editMypage {
+    accountId: string,
+    aboutMe: string | null, 
+    position: position[]
+}
