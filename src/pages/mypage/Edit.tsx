@@ -14,7 +14,8 @@ export const EditMyPage = () => {
     
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [data, setData] = useState<editMypage>({ accountId: "", aboutMe: "", position: [] });
-    const [duplicate, setDuplicate] = useState<boolean | null>(null);
+    const [isUsernameChecked, setIsUsernameChecked] = useState(true);
+    const [isUsernameDuplicate, setIsUsernameDuplicate] = useState(false);
     
     useEffect(() => {
         if (MyData) {
@@ -27,8 +28,14 @@ export const EditMyPage = () => {
     }, [MyData]);
     
     const { mutate: duplicateCheck } = useDuplicateCheck({
-        onSuccess: () => setDuplicate(false),
-        onError: () => setDuplicate(true)
+        onSuccess: () => {
+            setIsUsernameChecked(true);
+            setIsUsernameDuplicate(false)
+        },
+        onError: () => {
+            setIsUsernameChecked(true);
+            setIsUsernameDuplicate(true)
+        }
     }, data.accountId);
     
     const { mutate: editMypageMutate } = useEditMypage({
@@ -58,8 +65,8 @@ export const EditMyPage = () => {
         }));
     };
     
-    const isDisabled = duplicate !== false || !data.accountId.trim() || data.position.length === 0;
-    
+    const isDisabled = !isUsernameChecked || isUsernameDuplicate || !data.accountId.trim() || data.position.length === 0;
+
     return (
         <Container>
             <Content>
@@ -85,7 +92,7 @@ export const EditMyPage = () => {
                             <Button width={92} bigSize onClick={() => duplicateCheck()}>중복 확인</Button>
                         </NickName>
                         <Length>{data.accountId?.length || 0}/20 자</Length>
-                        {duplicate && <Length style={{color:"red"}}>이미 사용중인 닉네임입니다.</Length>}
+                        {isUsernameDuplicate && <Length style={{color:"red"}}>이미 사용중인 닉네임입니다.</Length>}
                     </ContentWrap>
                     <ContentWrap>
                         <p>포지션 <Essential>*</Essential></p>
