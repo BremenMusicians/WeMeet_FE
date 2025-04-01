@@ -1,30 +1,77 @@
-import styled from "styled-components"
-import { PositionType } from "../../utils/type"
-import { Input } from "../../components/Input"
-import { Banner, Check, Plus, Profile } from "../../assets"
-import { useState } from "react"
-import { Button } from "../../components/Button"
+import styled from "styled-components";
+import { Input } from "../../components/Input";
+import { Banner, Check, Plus, Profile } from "../../assets";
+import React, { useEffect, useState } from "react";
+import { Button } from "../../components/Button";
+import { useDuplicateCheck, useEditMypage, useGetMyInformation } from "../../apis/user";
+import { editMypage, position, positionEnum } from "../../apis/user/type";
+import { useNavigate } from "react-router-dom";
 
 export const EditMyPage = () => {
-    const positionList: PositionType[] = ["피아노", "신스", "보컬", "드럼", "기타", "그 외"];
+    const navigator = useNavigate();
+    const { data: MyData } = useGetMyInformation();
+    const positionList: position[] = ["PIANO", "SYNTH", "VOCAL", "DRUM", "GUITAR", "ETC"];
+    
     const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
-
+    const [data, setData] = useState<editMypage>({ accountId: "", aboutMe: "", position: [] });
+    const [isUsernameChecked, setIsUsernameChecked] = useState(true);
+    const [isUsernameDuplicate, setIsUsernameDuplicate] = useState(false);
+    
+    useEffect(() => {
+        if (MyData) {
+            setData({
+                accountId: MyData.accountId || "",
+                aboutMe: MyData.aboutMe || "",
+                position: MyData.position || [],
+            });
+        }
+    }, [MyData]);
+    
+    const { mutate: duplicateCheck } = useDuplicateCheck({
+        onSuccess: () => {
+            setIsUsernameChecked(true);
+            setIsUsernameDuplicate(false)
+        },
+        onError: () => {
+            setIsUsernameChecked(true);
+            setIsUsernameDuplicate(true)
+        }
+    }, data.accountId);
+    
+    const { mutate: editMypageMutate } = useEditMypage({
+        onSuccess: () => navigator('/mypage'),
+        onError: () => alert("잠시 후 시도해주세요")
+    }, data);
+    
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImage(reader.result as string);
-            };
+            reader.onloadend = () => setProfileImage(reader.result as string);
             reader.readAsDataURL(file);
         }
     };
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if(e.target.name === "accountId") setIsUsernameChecked(false);
+        setData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+    
+    const togglePosition = (item: position) => {
+        setData(prev => ({
+            ...prev,
+            position: prev.position.includes(item) 
+                ? prev.position.filter(pos => pos !== item) 
+                : [...prev.position, item]
+        }));
+    };
+    
+    const isDisabled = !isUsernameChecked || isUsernameDuplicate || !data.accountId.trim() || data.position.length === 0;
 
     return (
         <Container>
             <Content>
-                <img src={Banner} alt="배너" width={1232} height={160} />
+                <img src={Banner} alt="배너" width="100%" height={160} />
                 <TopBar>
                     <ProfileImgWrap>
                         <ProfileImg src={profileImage || Profile} alt="프로필" />
@@ -33,7 +80,7 @@ export const EditMyPage = () => {
                         </Label>
                         <AddProfile type="file" id="profile" onChange={handleImageChange} />
                     </ProfileImgWrap>
-                    <FeatureButton>
+                    <FeatureButton disabled={isDisabled} onClick={() => editMypageMutate()}>
                         <Check Fill="#fff" />
                         <p>완료</p>
                     </FeatureButton>
@@ -42,35 +89,38 @@ export const EditMyPage = () => {
                     <ContentWrap>
                         <p>닉네임 <Essential>*</Essential></p>
                         <NickName>
-                            <Input name="" type="text" value="" onChange={() => { }} />
-                            <Button width={92} bigSize onClick={() => { }}>중복 확인</Button>
+                            <Input name='accountId' type="text" value={data.accountId} onChange={handleChange} />
+                            <Button width={92} bigSize onClick={() => duplicateCheck()}>중복 확인</Button>
                         </NickName>
-                        <Length>1/20 자</Length>
+                        <Length>{data.accountId?.length || 0}/20 자</Length>
+                        {isUsernameDuplicate && <Length style={{color:"red"}}>이미 사용중인 닉네임입니다.</Length>}
                     </ContentWrap>
                     <ContentWrap>
-                        <p>포지션 <Essential>*</Essential></p> {/**일단 중복선택 불가능하게 하고 나중에 api연동 시 추가 */}
+                        <p>포지션 <Essential>*</Essential></p>
                         <PositionWrap>
-                            {positionList.map((item) => (
+                            {positionList.map(item => (
                                 <Position
                                     key={item}
-                                    $isActive={selectedPosition === item}
-                                    onClick={() => setSelectedPosition(item)}
+                                    $isActive={data.position.includes(item)}
+                                    onClick={() => togglePosition(item)}
                                 >
-                                    {item}
+                                    {positionEnum[item]}
                                 </Position>
                             ))}
                         </PositionWrap>
                     </ContentWrap>
                     <ContentWrap>
                         <p>설명</p>
-                        <Textarea />
-                        <Length>0/50 자</Length>
+                        <Textarea name="aboutMe" value={data.aboutMe || ''} onChange={handleChange} />
+                        <Length>{data.aboutMe?.length || 0}/50 자</Length>
                     </ContentWrap>
                 </ContentContainer>
             </Content>
         </Container>
     );
 };
+
+
 
 const Position = styled.div<{ $isActive: boolean }>`
     ${({ theme }) => theme.font.body6}
@@ -92,7 +142,7 @@ const Length = styled.p`
 
 const Container = styled.div`
     margin: 0 auto;
-    width: 1280px;
+    max-width: 1280px;
 `
 
 const ContentContainer = styled.div`
@@ -148,12 +198,12 @@ const TopBar = styled.div`
     padding: 10px 24px;
 `
 
-const FeatureButton = styled.button`
+const FeatureButton = styled.button<{disabled: boolean}>`
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 16px 16px 16px 12px;
-    background-color: ${({ theme }) => theme.color.orange400};
+    background-color: ${({ theme, disabled }) => disabled ? theme.color.gray400 : theme.color.orange400};
     border-radius: 8px;
     height: 40px;
     cursor: pointer;
