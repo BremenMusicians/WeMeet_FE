@@ -1,26 +1,95 @@
-import React, { useState } from 'react'
-import styled, { keyframes } from 'styled-components'
+import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+import * as Tone from 'tone'
 
 function GuitarComponents() {
-  // 기타줄 크기
   const guitarFrets = [2, 2.4, 3, 3.6, 4.2, 5]
-  // 마커 위치
   const inlayPositions = [2, 4, 6, 8, 11]
-  // 한줄에 마커 두개 위치
   const doubleInlayPositions = [11]
+
+  const [synth, setSynth] = useState<Tone.PolySynth<Tone.Synth<Tone.SynthOptions>> | null>(null)
+  const [shiftPressed, setShiftPressed] = useState(false)
+
+  const openStringNotes = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4']
+
+  const keyBindings = ['ZXCVBNM,./', "ASDFGHJKL;'", 'QWERTYUIOP[]]\\', '1234567890-=', 'QWERTYUIOP[]|', '!@#$%^&*()_+']
+
+  useEffect(() => {
+    const newSynth = new Tone.PolySynth(Tone.Synth).toDestination()
+    newSynth.set({
+      oscillator: {
+        type: 'fmsine',
+      },
+      envelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.5,
+        release: 1.5,
+      },
+    })
+    setSynth(newSynth)
+
+    return () => {
+      if (newSynth) {
+        newSynth.dispose()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        setShiftPressed(true)
+        return
+      }
+
+      keyBindings.forEach((keys, stringIndex) => {
+        const fretIndex = keys.indexOf(event.key.slice(-1))
+        if (fretIndex !== -1) {
+          playString(stringIndex, fretIndex)
+        }
+      })
+    }
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        setShiftPressed(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
+  const getNoteFromFret = (stringIndex: number, fretIndex: number) => {
+    const baseNote = openStringNotes[stringIndex]
+    if (fretIndex === 0) return baseNote
+    return Tone.Frequency(baseNote).transpose(fretIndex).toNote()
+  }
+
+  const playString = (stringIndex: number, fretIndex: number) => {
+    if (synth) {
+      const note = getNoteFromFret(stringIndex, fretIndex)
+      synth.triggerAttackRelease(note, '8n')
+    }
+  }
 
   return (
     <Container>
       <Fretboard>
         {guitarFrets.map((h, lineIndex) => (
-          <React.Fragment key={`string-${lineIndex}`}>
-            <FretBox>
-              <String height={h} />
-              {Array.from({ length: 13 }).map((_, fretIndex) => (
-                <Fret key={`fret-${lineIndex}-${fretIndex}`}>{lineIndex === 2 && inlayPositions.includes(fretIndex) && <InlayDot double={doubleInlayPositions.includes(fretIndex)} />}</Fret>
-              ))}
-            </FretBox>
-          </React.Fragment>
+          <FretBox key={`string-${lineIndex}`}>
+            <String height={h} />
+            {Array.from({ length: 13 }).map((_, fretIndex) => (
+              <Fret key={`fret-${lineIndex}-${fretIndex}`} onClick={() => playString(lineIndex, fretIndex)}>
+                {lineIndex === 2 && inlayPositions.includes(fretIndex) && <InlayDot double={doubleInlayPositions.includes(fretIndex)} />}
+              </Fret>
+            ))}
+          </FretBox>
         ))}
       </Fretboard>
     </Container>
@@ -29,13 +98,14 @@ function GuitarComponents() {
 
 const Container = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 70dvh;
 `
 
 const FretBox = styled.div`
-  width: 900px;
+  width: 860px;
   display: flex;
   position: relative;
 `
@@ -68,7 +138,7 @@ const Fretboard = styled.div`
   border: 1px solid ${({ theme }) => theme.color.gray200};
 `
 
-const String = styled.span<{ height: number }>`
+const String = styled.span<{ height: number; isActive?: boolean }>`
   height: ${({ height }) => height}px;
   background-color: ${({ theme }) => theme.color.gray300};
   stroke: ${({ theme }) => theme.color.gray300};
@@ -79,6 +149,7 @@ const String = styled.span<{ height: number }>`
   position: absolute;
   align-self: center;
   width: 100%;
+  box-shadow: 10px 5px 2px rgba(0, 0, 0, 0.1);
 `
 
 const InlayDot = styled.div<{ double?: boolean }>`
