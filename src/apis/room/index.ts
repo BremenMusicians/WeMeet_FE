@@ -17,21 +17,11 @@ export const useCreateRoom = (
     });
 };
 
-export const useGetConcertRoom = () => {
+export const useGetConcertRoom = (page = 0) => {
     return useQuery({
         queryKey: ["concertRoom"],
         queryFn: async () => {
-            const {data} = await instance.get<concertRoomResponse>(`${router}?page=0`);
-            return data
-        }
-    })
-}
-
-export const useEntryConcertRoom = (option: MutateOptions, id:string) => {
-    return useMutation({
-        ...option,
-        mutationFn: async () => {
-            const {data} = await instance.get(`${router}/${id}`)
+            const {data} = await instance.get<concertRoomResponse>(`${router}?page=${page}`);
             return data
         }
     })

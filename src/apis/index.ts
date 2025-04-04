@@ -48,7 +48,7 @@ instance.interceptors.response.use(
         const refreshToken = cookie.get('refresh_token');
         try {
           await axios
-            .put(`${BASEURL}/refresh`, null, {
+            .put(`${BASEURL}/user/refresh`, null, {
               headers: {
                 'X-Refresh-Token': `${refreshToken}`,
               },

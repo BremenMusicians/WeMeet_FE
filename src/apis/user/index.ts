@@ -35,3 +35,15 @@ export const useDuplicateCheck = (option:MutateOptions, accountId: string) => {
         }
     })
 }
+
+export const useChangeProfileImg = (option: MutateOptions, file:File) => {
+    return useMutation({
+        ...option,
+      mutationFn: async () => {
+          const formData = new FormData();
+            formData.append('file', file);
+          const { data } = await instance.patch(`${router}/profile`, formData);
+          return data;
+      },
+    });
+  };
