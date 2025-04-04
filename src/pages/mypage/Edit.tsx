@@ -54,7 +54,6 @@ export const EditMyPage = () => {
         const file = event.target.files?.[0];
         if (file) {
             setProfileImage(file);
-            changeProfileImg();
         }
     };
 
@@ -75,6 +74,12 @@ export const EditMyPage = () => {
                 : [...prev.position, item]
         }));
     };
+
+    useEffect(() => {
+        if (profileImage) {
+            changeProfileImg();
+        }
+    }, [profileImage]);
 
     const isDisabled = !isUsernameChecked || isUsernameDuplicate || !data.accountId.trim() || data.position.length === 0;
 
