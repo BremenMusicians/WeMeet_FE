@@ -3,7 +3,7 @@ import { Input } from "../../components/Input";
 import { Banner, Check, Plus, Profile } from "../../assets";
 import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button";
-import { useDuplicateCheck, useEditMypage, useGetMyInformation } from "../../apis/user";
+import { useChangeProfileImg, useDuplicateCheck, useEditMypage, useGetMyInformation } from "../../apis/user";
 import { editMypage, position, positionEnum } from "../../apis/user/type";
 import { useNavigate } from "react-router-dom";
 
@@ -11,12 +11,24 @@ export const EditMyPage = () => {
     const navigator = useNavigate();
     const { data: MyData } = useGetMyInformation();
     const positionList: position[] = ["PIANO", "SYNTH", "VOCAL", "DRUM", "GUITAR", "ETC"];
-    
-    const [profileImage, setProfileImage] = useState<string | null>(null);
+
+    const [profileImage, setProfileImage] = useState<File | null>(null);
     const [data, setData] = useState<editMypage>({ accountId: "", aboutMe: "", position: [] });
-    const [isUsernameChecked, setIsUsernameChecked] = useState(true);
-    const [isUsernameDuplicate, setIsUsernameDuplicate] = useState(false);
-    
+    const [isUsernameChecked, setIsUsernameChecked] = useState<boolean>(true);
+    const [isUsernameDuplicate, setIsUsernameDuplicate] = useState<boolean>(false);
+
+    const { mutate: changeProfileImg } = useChangeProfileImg({
+        onSuccess: () => {
+            alert("프로필 이미지가 변경되었습니다.");
+        },
+        onError: () => alert("잠시 후 시도해주세요")
+    }, profileImage as File);
+
+    const { mutate: editMypageMutate } = useEditMypage({
+        onSuccess: () => navigator('/mypage'),
+        onError: () => alert("잠시 후 시도해주세요")
+    }, data);
+
     useEffect(() => {
         if (MyData) {
             setData({
@@ -26,46 +38,44 @@ export const EditMyPage = () => {
             });
         }
     }, [MyData]);
-    
+
     const { mutate: duplicateCheck } = useDuplicateCheck({
         onSuccess: () => {
             setIsUsernameChecked(true);
-            setIsUsernameDuplicate(false)
+            setIsUsernameDuplicate(false);
         },
         onError: () => {
             setIsUsernameChecked(true);
-            setIsUsernameDuplicate(true)
+            setIsUsernameDuplicate(true);
         }
     }, data.accountId);
-    
-    const { mutate: editMypageMutate } = useEditMypage({
-        onSuccess: () => navigator('/mypage'),
-        onError: () => alert("잠시 후 시도해주세요")
-    }, data);
-    
+
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setProfileImage(reader.result as string);
-            reader.readAsDataURL(file);
+            setProfileImage(file);
+            changeProfileImg();
         }
     };
-    
+
+    const getProfileImageSrc = () => {
+        return profileImage ? URL.createObjectURL(profileImage) : MyData?.profile || Profile;
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if(e.target.name === "accountId") setIsUsernameChecked(false);
+        if (e.target.name === "accountId") setIsUsernameChecked(false);
         setData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
-    
+
     const togglePosition = (item: position) => {
         setData(prev => ({
             ...prev,
-            position: prev.position.includes(item) 
-                ? prev.position.filter(pos => pos !== item) 
+            position: prev.position.includes(item)
+                ? prev.position.filter(pos => pos !== item)
                 : [...prev.position, item]
         }));
     };
-    
+
     const isDisabled = !isUsernameChecked || isUsernameDuplicate || !data.accountId.trim() || data.position.length === 0;
 
     return (
@@ -74,7 +84,7 @@ export const EditMyPage = () => {
                 <img src={Banner} alt="배너" width="100%" height={160} />
                 <TopBar>
                     <ProfileImgWrap>
-                        <ProfileImg src={profileImage || Profile} alt="프로필" />
+                        <ProfileImg src={getProfileImageSrc()} alt="프로필" />
                         <Label htmlFor="profile">
                             <img src={Plus} alt="프로필 변경" />
                         </Label>
@@ -93,7 +103,7 @@ export const EditMyPage = () => {
                             <Button width={92} bigSize onClick={() => duplicateCheck()}>중복 확인</Button>
                         </NickName>
                         <Length>{data.accountId?.length || 0}/20 자</Length>
-                        {isUsernameDuplicate && <Length style={{color:"red"}}>이미 사용중인 닉네임입니다.</Length>}
+                        {isUsernameDuplicate && <Length style={{ color: "red" }}>이미 사용중인 닉네임입니다.</Length>}
                     </ContentWrap>
                     <ContentWrap>
                         <p>포지션 <Essential>*</Essential></p>
@@ -119,8 +129,6 @@ export const EditMyPage = () => {
         </Container>
     );
 };
-
-
 
 const Position = styled.div<{ $isActive: boolean }>`
     ${({ theme }) => theme.font.body6}
