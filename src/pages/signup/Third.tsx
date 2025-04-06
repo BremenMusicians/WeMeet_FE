@@ -1,33 +1,91 @@
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
+import { position, SignupFormType } from '../../apis/user/type'
+import { Dispatch, SetStateAction, useState } from 'react'
+import { checkIdDuplication, signup } from '../../apis/auth'
 
-function Third() {
+type SetStateType = { form: SignupFormType; setForm: Dispatch<SetStateAction<SignupFormType>> }
+type ErrorType = { accountId: string; position: position[] }
+
+function Third({ form, setForm }: SetStateType) {
+  const [input, setInput] = useState<ErrorType>({ accountId: '', position: [] })
+  const [errors, setErrors] = useState({ accountId: '', position: '' })
+
+  const validation = () => {
+    let newErrors = { accountId: '', position: '' }
+    if (!input.accountId.trim()) newErrors.accountId = '닉네임을 입력해주세요'
+    if (!input.position.length) newErrors.position = '포지션을 선택해주세요'
+
+    setErrors(newErrors)
+    return Object.values(newErrors).every((error) => error === '')
+  }
+
+  const handleSubmit = async () => {
+    if (validation()) {
+      const finalForm: SignupFormType = { ...form, accountId: input.accountId, position: input.position }
+      try {
+        await signup(finalForm)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+
+  const handleCheckId = async () => {
+    try {
+      await checkIdDuplication(input.accountId)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleTogglePosition = (item: position) => {
+    const updated = input.position.includes(item) ? input.position.filter((p) => p !== item) : [...input.position, item]
+    setInput({ ...input, position: updated })
+  }
+
   const position = ['드럼', '기타', '피아노', '신스', '보컬', '그 외']
   return (
     <>
-      <InputBox>
-        <EmailInput>
-          <Input type="text" name="nickname" value="" label="닉네임" placeholder="닉네임" onChange={() => {}} />
-          <Button bigSize onClick={() => {}}>
-            중복 확인
-          </Button>
-        </EmailInput>
+      <InputContainer>
+        <InputBox>
+          <EmailInput>
+            <Input type="text" name="accountId" value={input.accountId} label="닉네임" placeholder="닉네임" onChange={(e) => setInput({ ...input, accountId: e.target.value })} />
+            <Button width={128} bigSize onClick={handleCheckId}>
+              중복 확인
+            </Button>
+          </EmailInput>
+          <ErrorMessage>{errors.accountId}</ErrorMessage>
+        </InputBox>
         <SelectTagBox>
           <Label>포지션</Label>
           <TagBox>
-            {position.map((item) => (
-              <Tag key={item}>{item}</Tag>
+            {position.map((item: any) => (
+              <Tag key={item} onClick={() => handleTogglePosition(item)} className={input.position.includes(item) ? 'selected' : ''}>
+                {item}
+              </Tag>
             ))}
           </TagBox>
+          <ErrorMessage>{errors.position}</ErrorMessage>
         </SelectTagBox>
-      </InputBox>
-      <Button bigSize onClick={() => {}}>
+      </InputContainer>
+      <Button disabled={!(input.accountId.length && input.position.length)} bigSize onClick={handleSubmit}>
         회원가입
       </Button>
     </>
   )
 }
+
+const InputBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`
+const ErrorMessage = styled.p`
+  color: ${({ theme }) => theme.color.orange500};
+  ${({ theme }) => theme.font.body6}
+`
 
 const SelectTagBox = styled.div`
   display: flex;
@@ -45,7 +103,7 @@ const EmailInput = styled.div`
   align-items: end;
 `
 
-const InputBox = styled.div`
+const InputContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -70,6 +128,11 @@ const Tag = styled.button`
     background-color: ${({ theme }) => theme.color.gray100};
   }
   ${({ theme }) => theme.font.body5}
+  &.selected {
+    background-color: ${({ theme }) => theme.color.orange100};
+    color: ${({ theme }) => theme.color.orange500};
+    border-color: ${({ theme }) => theme.color.orange200};
+  }
 `
 
 export default Third

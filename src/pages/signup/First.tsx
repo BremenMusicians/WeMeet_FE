@@ -1,25 +1,82 @@
+import { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
+import { MailPayload, SignupFormType } from '../../apis/user/type'
+import { confirmMailCode, requestMailVerification } from '../../apis/auth/mail'
 
-function First() {
+type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupFormType>> }
+
+function First({ setStep, setForm }: SetStateType) {
+  const [input, setInput] = useState<MailPayload>({ mail: '', code: '' })
+  const [errors, setErrors] = useState<MailPayload>({ mail: '', code: '' })
+  const [isSent, setIsSent] = useState<boolean>(false)
+
+  const mailRegExp = /^[a-zA-Z0-9+-\_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/
+  const validation = () => {
+    let newErrors = { mail: '', code: '' }
+    if (!input.mail.trim()) {
+      newErrors.mail = '이메일을 입력해주세요'
+    } else if (!mailRegExp.test(input.mail)) {
+      newErrors.mail = '유효한 이메일 형식이 아닙니다'
+    }
+    setErrors(newErrors)
+    return Object.values(newErrors).every((error) => error === '')
+  }
+
+  const handleMailSent = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault()
+    if (validation()) {
+      try {
+        const isMailSent = await requestMailVerification(input)
+        setIsSent(isMailSent.data)
+      } catch (error) {
+        console.log('메일인증보내기:', error)
+      }
+    }
+  }
+
+  const handleVerifyCode = async () => {
+    try {
+      await confirmMailCode(input)
+      setForm((prev) => ({ ...prev, mail: input.mail }))
+      setStep((prev) => prev + 1)
+    } catch (error: any) {
+      if (error.response?.status == 401) setErrors((prev) => ({ ...prev, code: '인증 코드가 일치하지 않습니다' }))
+      else console.log(error)
+    }
+  }
+
   return (
     <>
-      <InputBox>
-        <EmailInput>
-          <Input type="text" name="email" value="" label="이메일" placeholder="you@example.com" onChange={() => {}} />
-          <Button bigSize onClick={() => {}}>
-            인증
-          </Button>
-        </EmailInput>
-        <Input type="text" name="verificationCode" value="" label="인증 코드" placeholder="123456" onChange={() => {}} />
-      </InputBox>
-      <Button disabled bigSize onClick={() => {}}>
+      <InputContainer>
+        <InputBox>
+          <EmailInput>
+            <Input type="text" name="email" value={input.mail} label="이메일" placeholder="you@example.com" onChange={(e) => setInput({ ...input, mail: e.target.value })} />
+            <Button disabled={!input.mail.trim()} width={64} bigSize onClick={handleMailSent}>
+              인증
+            </Button>
+          </EmailInput>
+          {isSent && <SuccessMessage>이메일로 인증 코드를 전송했습니다</SuccessMessage>}
+          <ErrorMessage>{errors.mail}</ErrorMessage>
+        </InputBox>
+        <InputBox>
+          <Input type="text" name="verificationCode" value={input.code} label="인증 코드" placeholder="123456" onChange={(e) => setInput({ ...input, code: e.target.value })} />
+          <ErrorMessage>{errors.code}</ErrorMessage>
+        </InputBox>
+      </InputContainer>
+      <Button disabled={!input.code.trim() || !isSent} bigSize onClick={handleVerifyCode}>
         다음
       </Button>
     </>
   )
 }
+
+const InputBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`
 
 const EmailInput = styled.div`
   display: flex;
@@ -27,11 +84,21 @@ const EmailInput = styled.div`
   align-items: end;
 `
 
-const InputBox = styled.div`
+const InputContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
+`
+
+const SuccessMessage = styled.p`
+  color: ${({ theme }) => theme.color.gray400};
+  ${({ theme }) => theme.font.body6}
+`
+
+const ErrorMessage = styled.p`
+  color: ${({ theme }) => theme.color.orange500};
+  ${({ theme }) => theme.font.body6}
 `
 
 export default First
