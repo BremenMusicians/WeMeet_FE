@@ -24,8 +24,7 @@ function First({ setStep, setForm }: SetStateType) {
     return Object.values(newErrors).every((error) => error === '')
   }
 
-  const handleMailSent = async (e?: React.MouseEvent<HTMLButtonElement>) => {
-    e?.preventDefault()
+  const handleMailSent = async () => {
     if (validation()) {
       try {
         const isMailSent = await requestMailVerification(input)
@@ -41,7 +40,7 @@ function First({ setStep, setForm }: SetStateType) {
       await confirmMailCode(input)
       setForm((prev) => ({ ...prev, mail: input.mail }))
       setStep((prev) => prev + 1)
-    } catch (error: any) {
+    } catch (error) {
       if (error.response?.status == 401) setErrors((prev) => ({ ...prev, code: '인증 코드가 일치하지 않습니다' }))
       else console.log(error)
     }
