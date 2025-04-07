@@ -2,10 +2,10 @@ import { useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { position, positionEnum, SignupFormType } from '../../apis/user/type'
+import { position, positionEnum, SignupResponseType } from '../../apis/user/type'
 import { checkIdDuplication, signup } from '../../apis/auth'
 
-type SetStateType = { form: SignupFormType }
+type SetStateType = { form: SignupResponseType }
 type ErrorType = { accountId: string; position: position[] }
 
 function Third({ form }: SetStateType) {
@@ -24,11 +24,11 @@ function Third({ form }: SetStateType) {
 
   const handleSubmit = async () => {
     if (validation()) {
-      const finalForm: SignupFormType = { ...form, accountId: input.accountId, position: input.position }
+      const finalForm: SignupResponseType = { ...form, accountId: input.accountId, position: input.position }
       try {
         await signup(finalForm)
       } catch (error) {
-        console.log(error)
+        setErrors((prev) => ({ ...prev, position: error.response?.data.message || '회원가입 중 오류가 발생했습니다' }))
       }
     }
   }
@@ -38,7 +38,7 @@ function Third({ form }: SetStateType) {
       await checkIdDuplication(input.accountId)
       setChecked(true)
     } catch (error) {
-      console.log(error)
+      setErrors((prev) => ({ ...prev, accountId: error.response?.data.message || '해당 닉네임이 존재합니다' }))
     }
   }
 

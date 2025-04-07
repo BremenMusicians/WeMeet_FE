@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }: AuthChildrenType) => {
     cookie.remove('accessToken')
     cookie.remove('refreshToken')
     setIsLoggedIn(false)
-    console.log('로그아웃')
   }
 
   return <AuthContext.Provider value={{ isLoggedIn, login, logout }}>{children}</AuthContext.Provider>

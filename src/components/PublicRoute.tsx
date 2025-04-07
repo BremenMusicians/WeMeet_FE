@@ -6,7 +6,7 @@ type PublicRouteType = { children: React.ReactNode }
 const PublicRoute = ({ children }: PublicRouteType) => {
   const { isLoggedIn } = useContext(AuthContext)
   if (isLoggedIn) {
-    // return <Navigate to="/" />
+    return <Navigate to="/" />
   }
   return children
 }

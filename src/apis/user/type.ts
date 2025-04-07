@@ -9,12 +9,12 @@ export enum positionEnum {
   'ETC' = '그 외',
 }
 
-export interface LoginFormType {
+export interface LoginResponseType {
   mail: string
   password: string
 }
 
-export interface SignupFormType {
+export interface SignupResponseType {
   mail: string
   password: string
   accountId: string

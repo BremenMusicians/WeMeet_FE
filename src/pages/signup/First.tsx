@@ -2,17 +2,17 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { MailPayload, SignupFormType } from '../../apis/user/type'
+import { MailPayload, SignupResponseType } from '../../apis/user/type'
 import { confirmMailCode, requestMailVerification } from '../../apis/auth/mail'
+import { mailRegExp } from '../../utils/RegExp'
 
-type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupFormType>> }
+type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupResponseType>> }
 
 function First({ setStep, setForm }: SetStateType) {
   const [input, setInput] = useState<MailPayload>({ mail: '', code: '' })
   const [errors, setErrors] = useState<MailPayload>({ mail: '', code: '' })
   const [isSent, setIsSent] = useState<boolean>(false)
 
-  const mailRegExp = /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/
   const validation = () => {
     const newErrors = { mail: '', code: '' }
     if (!input.mail.trim()) {
@@ -30,7 +30,7 @@ function First({ setStep, setForm }: SetStateType) {
         const isMailSent = await requestMailVerification(input)
         setIsSent(isMailSent.data)
       } catch (error) {
-        console.log('메일인증보내기:', error)
+        setErrors((prev) => ({ ...prev, mail: error.response?.data.message || '이메일 전송 중 오류가 발생했습니다' }))
       }
     }
   }
@@ -42,7 +42,6 @@ function First({ setStep, setForm }: SetStateType) {
       setStep((prev) => prev + 1)
     } catch (error) {
       if (error.response?.status == 401) setErrors((prev) => ({ ...prev, code: '인증 코드가 일치하지 않습니다' }))
-      else console.log(error)
     }
   }
 

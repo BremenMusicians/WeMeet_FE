@@ -24,14 +24,7 @@ export const Router = () => {
             </PublicRoute>
           }
         />
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <Signup />
-            </PublicRoute>
-          }
-        />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/edit" element={<EditMyPage />} />
         <Route path="/friend" element={<Friend />} />

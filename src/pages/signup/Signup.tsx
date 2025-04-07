@@ -4,10 +4,10 @@ import First from './First'
 import { useState } from 'react'
 import Second from './Second'
 import Third from './Third'
-import { SignupFormType } from '../../apis/user/type'
+import { SignupResponseType } from '../../apis/user/type'
 
 function Signup() {
-  const [form, setForm] = useState<SignupFormType>({
+  const [form, setForm] = useState<SignupResponseType>({
     mail: '',
     password: '',
     accountId: '',
