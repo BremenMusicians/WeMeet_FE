@@ -14,7 +14,7 @@ function Login() {
 
   const mailRegExp = /^[a-zA-Z0-9+-\_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/
   const validation = () => {
-    let newErrors = { mail: '', password: '' }
+    const newErrors = { mail: '', password: '' }
     if (!form.mail.trim()) {
       newErrors.mail = '이메일을 입력해주세요'
     } else if (!mailRegExp.test(form.mail)) {

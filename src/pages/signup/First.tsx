@@ -12,9 +12,9 @@ function First({ setStep, setForm }: SetStateType) {
   const [errors, setErrors] = useState<MailPayload>({ mail: '', code: '' })
   const [isSent, setIsSent] = useState<boolean>(false)
 
-  const mailRegExp = /^[a-zA-Z0-9+-\_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/
+  const mailRegExp = /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/
   const validation = () => {
-    let newErrors = { mail: '', code: '' }
+    const newErrors = { mail: '', code: '' }
     if (!input.mail.trim()) {
       newErrors.mail = '이메일을 입력해주세요'
     } else if (!mailRegExp.test(input.mail)) {

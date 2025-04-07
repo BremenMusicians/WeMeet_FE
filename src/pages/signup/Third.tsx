@@ -14,7 +14,7 @@ function Third({ form }: SetStateType) {
   const [checked, setChecked] = useState<boolean>(false)
 
   const validation = () => {
-    let newErrors = { accountId: '', position: '' }
+    const newErrors = { accountId: '', position: '' }
     if (!input.accountId.trim()) newErrors.accountId = '닉네임을 입력해주세요'
     if (!input.position.length) newErrors.position = '포지션을 선택해주세요'
 
@@ -36,7 +36,7 @@ function Third({ form }: SetStateType) {
   const handleCheckId = async () => {
     try {
       await checkIdDuplication(input.accountId)
-      setChecked(false)
+      setChecked(true)
     } catch (error) {
       console.log(error)
     }

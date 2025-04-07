@@ -13,7 +13,7 @@ function Second({ setStep, setForm }: SetStateType) {
   const passwordRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+]{4,20}$/
 
   const validation = () => {
-    let newErrors = { password: '', checkPassword: '' }
+    const newErrors = { password: '', checkPassword: '' }
     if (!input.password.trim()) {
       newErrors.password = '비밀번호을 입력해주세요'
     } else if (!passwordRegExp.test(input.password)) {
