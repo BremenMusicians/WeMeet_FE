@@ -2,9 +2,9 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { SignupResponseType } from '../../apis/user/type'
+import { SignupRequestType } from '../../apis/user/type'
 
-type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupResponseType>> }
+type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupRequestType>> }
 
 function Second({ setStep, setForm }: SetStateType) {
   const [input, setInput] = useState({ password: '', checkPassword: '' })

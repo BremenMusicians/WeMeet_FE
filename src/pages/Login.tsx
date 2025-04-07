@@ -5,13 +5,13 @@ import { Button } from '../components/Button'
 import { AuthLayout } from '../components/AuthLayout'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../apis/auth'
-import { LoginResponseType } from '../apis/user/type'
-import { mailRegExp } from '../utils/RegExp'
+import { LoginRequestType } from '../apis/user/type'
+import { mailRegExp } from '../utils/regExp'
 
 function Login() {
   const navigate = useNavigate()
-  const [form, setForm] = useState<LoginResponseType>({ mail: '', password: '' })
-  const [errors, setErrors] = useState<LoginResponseType>({ mail: '', password: '' })
+  const [form, setForm] = useState<LoginRequestType>({ mail: '', password: '' })
+  const [errors, setErrors] = useState<LoginRequestType>({ mail: '', password: '' })
 
   const validation = () => {
     const newErrors = { mail: '', password: '' }
@@ -31,7 +31,8 @@ function Login() {
     if (validation()) {
       try {
         await login(form)
-        navigate('/main')
+          .then(() => navigate('/main'))
+          .catch((error) => setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' })))
       } catch (error) {
         setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' }))
       }

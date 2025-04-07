@@ -4,11 +4,11 @@ import { MailPayload } from '../user/type'
 const router = '/mail'
 
 export const requestMailVerification = async (data: MailPayload) => {
-  const response = await instance.post(router, data.mail)
-  return response
+  const { status } = await instance.post(router, data.mail)
+  return status
 }
 
 export const confirmMailCode = async (data: MailPayload) => {
-  const response = await instance.post(`${router}/check`, data)
-  return response
+  const { status } = await instance.post(`${router}/check`, data)
+  return status
 }

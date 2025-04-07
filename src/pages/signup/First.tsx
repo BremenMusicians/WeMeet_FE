@@ -2,11 +2,11 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { MailPayload, SignupResponseType } from '../../apis/user/type'
+import { MailPayload, SignupRequestType } from '../../apis/user/type'
 import { confirmMailCode, requestMailVerification } from '../../apis/auth/mail'
-import { mailRegExp } from '../../utils/RegExp'
+import { mailRegExp } from '../../utils/regExp'
 
-type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupResponseType>> }
+type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupRequestType>> }
 
 function First({ setStep, setForm }: SetStateType) {
   const [input, setInput] = useState<MailPayload>({ mail: '', code: '' })
@@ -42,6 +42,7 @@ function First({ setStep, setForm }: SetStateType) {
       setStep((prev) => prev + 1)
     } catch (error) {
       if (error.response?.status == 401) setErrors((prev) => ({ ...prev, code: '인증 코드가 일치하지 않습니다' }))
+      else setErrors((prev) => ({ ...prev, code: error.response?.data.message || '인증 중 오류가 발생했습니다' }))
     }
   }
 

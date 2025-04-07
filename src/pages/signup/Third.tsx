@@ -2,13 +2,15 @@ import { useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { position, positionEnum, SignupResponseType } from '../../apis/user/type'
+import { position, positionEnum, SignupRequestType } from '../../apis/user/type'
 import { checkIdDuplication, signup } from '../../apis/auth'
+import { useNavigate } from 'react-router-dom'
 
-type SetStateType = { form: SignupResponseType }
+type SetStateType = { form: SignupRequestType }
 type ErrorType = { accountId: string; position: position[] }
 
 function Third({ form }: SetStateType) {
+  const navigate = useNavigate()
   const [input, setInput] = useState<ErrorType>({ accountId: '', position: [] })
   const [errors, setErrors] = useState<Record<string, string>>({ accountId: '', position: '' })
   const [checked, setChecked] = useState<boolean>(false)
@@ -24,9 +26,9 @@ function Third({ form }: SetStateType) {
 
   const handleSubmit = async () => {
     if (validation()) {
-      const finalForm: SignupResponseType = { ...form, accountId: input.accountId, position: input.position }
+      const finalForm: SignupRequestType = { ...form, accountId: input.accountId, position: input.position }
       try {
-        await signup(finalForm)
+        await signup(finalForm).then(() => navigate('/main'))
       } catch (error) {
         setErrors((prev) => ({ ...prev, position: error.response?.data.message || '회원가입 중 오류가 발생했습니다' }))
       }
