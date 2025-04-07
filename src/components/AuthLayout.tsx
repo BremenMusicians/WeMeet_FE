@@ -106,7 +106,7 @@ const SideBanner = styled.div`
 
 const SideBannerImg = styled.img`
   object-fit: scale-down;
-  width: 100%;
+  height: 100%;
 `
 
 const NoticeText = styled.p`
