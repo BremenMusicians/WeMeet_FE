@@ -27,8 +27,7 @@ function First({ setStep, setForm }: SetStateType) {
   const handleMailSent = async () => {
     if (validation()) {
       try {
-        const isMailSent = await requestMailVerification(input)
-        setIsSent(isMailSent.data)
+        await requestMailVerification(input).then(() => setIsSent(true))
       } catch (error) {
         setErrors((prev) => ({ ...prev, mail: error.response?.data.message || '이메일 전송 중 오류가 발생했습니다' }))
       }
