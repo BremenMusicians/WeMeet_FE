@@ -1,16 +1,17 @@
+import { useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { position, SignupFormType } from '../../apis/user/type'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { position, positionEnum, SignupFormType } from '../../apis/user/type'
 import { checkIdDuplication, signup } from '../../apis/auth'
 
-type SetStateType = { form: SignupFormType; setForm: Dispatch<SetStateAction<SignupFormType>> }
+type SetStateType = { form: SignupFormType }
 type ErrorType = { accountId: string; position: position[] }
 
-function Third({ form, setForm }: SetStateType) {
+function Third({ form }: SetStateType) {
   const [input, setInput] = useState<ErrorType>({ accountId: '', position: [] })
-  const [errors, setErrors] = useState({ accountId: '', position: '' })
+  const [errors, setErrors] = useState<Record<string, string>>({ accountId: '', position: '' })
+  const [checked, setChecked] = useState<boolean>(false)
 
   const validation = () => {
     let newErrors = { accountId: '', position: '' }
@@ -35,6 +36,7 @@ function Third({ form, setForm }: SetStateType) {
   const handleCheckId = async () => {
     try {
       await checkIdDuplication(input.accountId)
+      setChecked(false)
     } catch (error) {
       console.log(error)
     }
@@ -45,7 +47,7 @@ function Third({ form, setForm }: SetStateType) {
     setInput({ ...input, position: updated })
   }
 
-  const position = ['드럼', '기타', '피아노', '신스', '보컬', '그 외']
+  const positionList: position[] = ['PIANO', 'SYNTH', 'VOCAL', 'DRUM', 'GUITAR', 'ETC']
   return (
     <>
       <InputContainer>
@@ -61,16 +63,16 @@ function Third({ form, setForm }: SetStateType) {
         <SelectTagBox>
           <Label>포지션</Label>
           <TagBox>
-            {position.map((item: any) => (
+            {positionList.map((item) => (
               <Tag key={item} onClick={() => handleTogglePosition(item)} className={input.position.includes(item) ? 'selected' : ''}>
-                {item}
+                {positionEnum[item]}
               </Tag>
             ))}
           </TagBox>
           <ErrorMessage>{errors.position}</ErrorMessage>
         </SelectTagBox>
       </InputContainer>
-      <Button disabled={!(input.accountId.length && input.position.length)} bigSize onClick={handleSubmit}>
+      <Button disabled={!(input.accountId.length && input.position.length && checked)} bigSize onClick={handleSubmit}>
         회원가입
       </Button>
     </>

@@ -14,7 +14,7 @@ function Signup() {
     position: [],
   })
   const [step, setStep] = useState<number>(2)
-  const signupPage = [<First setForm={setForm} setStep={setStep} key="first" />, <Second setForm={setForm} setStep={setStep} key="second" />, <Third form={form} setForm={setForm} key="third" />]
+  const signupPage = [<First setForm={setForm} setStep={setStep} key="first" />, <Second setForm={setForm} setStep={setStep} key="second" />, <Third form={form} key="third" />]
   return (
     <AuthLayout title="회원가입" description="온라인 합주를 시작해볼까요">
       <SignupFormBox>
