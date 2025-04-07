@@ -12,7 +12,7 @@ export const AuthContext = createContext<AuthContextType>({ isLoggedIn: false, l
 type AuthChildrenType = { children: React.ReactNode }
 
 export const AuthProvider = ({ children }: AuthChildrenType) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!sessionStorage.getItem('accessToken'))
+  const [isLoggedIn, setIsLoggedIn] = useState(!!cookie.get('accessToken'))
 
   const login = () => {
     setIsLoggedIn(true)
@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: AuthChildrenType) => {
   const logout = () => {
     cookie.remove('accessToken')
     cookie.remove('refreshToken')
+    setIsLoggedIn(false)
     console.log('로그아웃')
   }
 
