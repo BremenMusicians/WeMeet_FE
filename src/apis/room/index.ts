@@ -26,3 +26,13 @@ export const useGetConcertRoom = (page = 0) => {
         }
     })
 }
+
+export const useExitConcertRoom = (option: MutateOptions, roomId: string) => {
+    return useMutation({
+        ...option,
+        mutationFn: async () => {
+            const {data} = await instance.delete(`${router}/${roomId}`)
+            return data
+        }
+    })
+}
