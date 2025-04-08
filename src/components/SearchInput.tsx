@@ -1,59 +1,45 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Search } from '../assets';
+import React from 'react'
+import styled from 'styled-components'
+import { Search } from '../assets'
 
 interface InputProp {
-    placeholder?: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    name?: string;
-    value: string;
-    width?: number
+  placeholder?: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  name?: string
+  value: string
+  width?: number
 }
 
-export const SearchInput = ({
-    placeholder,
-    name = '',
-    onChange,
-    value,
-    width
-}: InputProp) => {
+export const SearchInput = ({ placeholder, name = '', onChange, value, width }: InputProp) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e) // 추후 api 명세보고 수정 할 예정
+  }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange(e) // 추후 api 명세보고 수정 할 예정
-    };
-
-
-    return (
-        <InputContainer $width={width}>
-            <img src={Search} alt="Icon" width={24} />
-            <SearchInputContainer
-                autoComplete="off"
-                placeholder={placeholder}
-                name={name}
-                value={value}
-                onChange={handleChange}
-            />
-        </InputContainer>
-    );
-};
+  return (
+    <InputContainer $width={width}>
+      <img src={Search} alt="Icon" width={24} />
+      <SearchInputContainer autoComplete="off" placeholder={placeholder} name={name} value={value} onChange={handleChange} />
+    </InputContainer>
+  )
+}
 
 const InputContainer = styled.div<{ $width?: number }>`
-    display: flex;
-    align-items: center;
-    padding: 16px 20px;
-    border-radius: 100px;
-    border: 1px solid ${({ theme }) => theme.color.gray200};
-    background-color: ${({ theme }) => theme.color.gray50};
-    gap: 20px;
-    width: ${({ $width }) => $width ? `${$width}px` : '100%'};
-`;
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-radius: 100px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  background-color: ${({ theme }) => theme.color.gray50};
+  gap: 20px;
+  width: ${({ $width }) => ($width ? `${$width}px` : '100%')};
+`
 
 const SearchInputContainer = styled.input`
-    width: 100%;
-    height: 100%;
-    background-color: ${({ theme }) => theme.color.gray50};
-    &::placeholder{
-        color: ${({ theme }) => theme.color.gray300};
-        ${({ theme }) => theme.font.body4}
-    }
-`;
+  width: 100%;
+  height: 100%;
+  background-color: ${({ theme }) => theme.color.gray50};
+  &::placeholder {
+    color: ${({ theme }) => theme.color.gray300};
+    ${({ theme }) => theme.font.body4}
+  }
+`

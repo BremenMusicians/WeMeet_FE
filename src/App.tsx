@@ -13,15 +13,14 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
-
+})
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-      <GlobalStyle />
-      <Router />
+        <GlobalStyle />
+        <Router />
       </QueryClientProvider>
     </ThemeProvider>
   )
