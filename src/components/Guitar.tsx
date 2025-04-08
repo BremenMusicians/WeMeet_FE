@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import styled from 'styled-components'
 import * as Tone from 'tone'
 
@@ -18,10 +18,9 @@ function GuitarComponents() {
       release: 1.5,
     },
   })
-  const [synth, setSynth] = useState<Tone.PolySynth<Tone.Synth<Tone.SynthOptions>> | null>(newSynth)
+  const synth: Tone.PolySynth<Tone.Synth<Tone.SynthOptions>> | null = newSynth
 
   const openStringNotes = ['E4', 'B3', 'G3', 'D3', 'A2', 'E2']
-
   const keyBindings = ['!@#$%^&*()_+', 'QWERTYUIOP[]|', '1234567890-=', 'qwertyuiop[]]\\', "asdfghjkl;'", 'zxcvbnm,./']
 
   useEffect(() => {
@@ -48,9 +47,7 @@ function GuitarComponents() {
 
   const playString = (stringIndex: number, fretIndex: number) => {
     if (synth) {
-      console.log(stringIndex, fretIndex, synth)
       const note = getNoteFromFret(stringIndex, fretIndex)
-      console.log(note)
       synth?.triggerAttackRelease(note, '8n')
     }
   }
@@ -60,7 +57,7 @@ function GuitarComponents() {
       <Fretboard>
         {guitarFrets.map((h, lineIndex) => (
           <FretBox key={`string-${lineIndex}`}>
-            <String height={h} />
+            <GuitarString height={h} />
             {Array.from({ length: 13 }).map((_, fretIndex) => (
               <Fret key={`fret-${lineIndex}-${fretIndex}`} onClick={() => playString(lineIndex, fretIndex)}>
                 {lineIndex === 2 && inlayPositions.includes(fretIndex) && <InlayDot double={doubleInlayPositions.includes(fretIndex)} />}
@@ -115,7 +112,7 @@ const Fretboard = styled.div`
   border: 1px solid ${({ theme }) => theme.color.gray200};
 `
 
-const String = styled.span<{ height: number; isActive?: boolean }>`
+const GuitarString = styled.span<{ height: number; isActive?: boolean }>`
   height: ${({ height }) => height}px;
   background-color: ${({ theme }) => theme.color.gray300};
   stroke: ${({ theme }) => theme.color.gray300};
