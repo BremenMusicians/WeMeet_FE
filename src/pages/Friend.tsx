@@ -54,7 +54,7 @@ export const Friend = () => {
                     <ClickOption src={Refusal} onClick={() => handleRefusal()} />
                   </RightContainer>
                 ) : (
-                  <ClickOption src={item.status === 'not' ? AddFriend : undefined} onClick={() => handleAddFriend} />
+                  <ClickOption src={item.status === 'not' ? AddFriend : undefined} onClick={() => handleAddFriend()} />
                 )}
               </ProfileCard>
             ))}

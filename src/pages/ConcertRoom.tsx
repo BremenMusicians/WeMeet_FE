@@ -29,8 +29,6 @@ export const ConcertRoom = () => {
     roomId,
   )
 
-  console.log(roomId)
-
   const handleToggleMike = useCallback(() => {
     setMikeOn((prev) => !prev)
     setActiveFeature(null)

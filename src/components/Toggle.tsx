@@ -24,7 +24,7 @@ export const Toggle = ({ onChange }: ToggleProps) => {
     <MenuContainer>
       <UnderLine left={xpos} />
       <MenuWrapper>
-        <StyledBtn name="recommned" ref={applicationBtn} isActive={currentMenu === 'recommend'} onClick={() => setCurrentMenu('recommend')}>
+        <StyledBtn name="recommend" ref={applicationBtn} isActive={currentMenu === 'recommend'} onClick={() => setCurrentMenu('recommend')}>
           추천 친구
         </StyledBtn>
         <StyledBtn name="request" ref={earlyReturnBtn} isActive={currentMenu === 'request'} onClick={() => setCurrentMenu('request')}>
