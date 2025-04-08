@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import * as Tone from 'tone'
 
@@ -6,62 +6,37 @@ function GuitarComponents() {
   const guitarFrets = [2, 2.4, 3, 3.6, 4.2, 5]
   const inlayPositions = [2, 4, 6, 8, 11]
   const doubleInlayPositions = [11]
+  const newSynth = new Tone.PolySynth(Tone.Synth).toDestination()
+  newSynth.set({
+    oscillator: {
+      type: 'fmsine',
+    },
+    envelope: {
+      attack: 0.01,
+      decay: 0.2,
+      sustain: 0.5,
+      release: 1.5,
+    },
+  })
+  const [synth, setSynth] = useState<Tone.PolySynth<Tone.Synth<Tone.SynthOptions>> | null>(newSynth)
 
-  const [synth, setSynth] = useState<Tone.PolySynth<Tone.Synth<Tone.SynthOptions>> | null>(null)
-  const [shiftPressed, setShiftPressed] = useState(false)
+  const openStringNotes = ['E4', 'B3', 'G3', 'D3', 'A2', 'E2']
 
-  const openStringNotes = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4']
-
-  const keyBindings = ['ZXCVBNM,./', "ASDFGHJKL;'", 'QWERTYUIOP[]]\\', '1234567890-=', 'QWERTYUIOP[]|', '!@#$%^&*()_+']
-
-  useEffect(() => {
-    const newSynth = new Tone.PolySynth(Tone.Synth).toDestination()
-    newSynth.set({
-      oscillator: {
-        type: 'fmsine',
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.5,
-        release: 1.5,
-      },
-    })
-    setSynth(newSynth)
-
-    return () => {
-      if (newSynth) {
-        newSynth.dispose()
-      }
-    }
-  }, [])
+  const keyBindings = ['!@#$%^&*()_+', 'QWERTYUIOP[]|', '1234567890-=', 'qwertyuiop[]]\\', "asdfghjkl;'", 'zxcvbnm,./']
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Shift') {
-        setShiftPressed(true)
-        return
-      }
-
-      keyBindings.forEach((keys, stringIndex) => {
-        const fretIndex = keys.indexOf(event.key.slice(-1))
+    const handleKeyDown = (e: KeyboardEvent) => {
+      keyBindings.map((keys, stringIndex) => {
+        const fretIndex = keys.indexOf(e.key)
         if (fretIndex !== -1) {
           playString(stringIndex, fretIndex)
         }
       })
     }
 
-    const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === 'Shift') {
-        setShiftPressed(false)
-      }
-    }
-
     window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('keyup', handleKeyUp)
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('keyup', handleKeyUp)
     }
   }, [])
 
@@ -73,8 +48,10 @@ function GuitarComponents() {
 
   const playString = (stringIndex: number, fretIndex: number) => {
     if (synth) {
+      console.log(stringIndex, fretIndex, synth)
       const note = getNoteFromFret(stringIndex, fretIndex)
-      synth.triggerAttackRelease(note, '8n')
+      console.log(note)
+      synth?.triggerAttackRelease(note, '8n')
     }
   }
 
