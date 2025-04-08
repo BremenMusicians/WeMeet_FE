@@ -3,6 +3,7 @@ import { PianoComponents } from '../components/Piano'
 import { InstrumentBadge } from '../components/InstrumentBadge'
 import { useLocation } from 'react-router-dom'
 import { Synthesizer } from '../components/Synthesizer'
+import GuitarComponents from '../components/Guitar'
 
 export const Instrument = () => {
   const location = useLocation()
@@ -14,6 +15,7 @@ export const Instrument = () => {
       <Content>
         <InstrumentBadge />
         {currentInstrument === '피아노' && <PianoComponents />}
+        {currentInstrument === '기타' && <GuitarComponents />}
         {currentInstrument === '신스' && <Synthesizer />}
       </Content>
     </Container>
