@@ -26,23 +26,22 @@ function First({ setStep, setForm }: SetStateType) {
 
   const handleMailSent = async () => {
     if (validation()) {
-      try {
-        await requestMailVerification(input).then(() => setIsSent(true))
-      } catch (error) {
-        setErrors((prev) => ({ ...prev, mail: error.response?.data.message || '이메일 전송 중 오류가 발생했습니다' }))
-      }
+      await requestMailVerification(input)
+        .then(() => setIsSent(true))
+        .catch((error) => setErrors((prev) => ({ ...prev, mail: error.response?.data.message || '이메일 전송 중 오류가 발생했습니다' })))
     }
   }
 
   const handleVerifyCode = async () => {
-    try {
-      await confirmMailCode(input)
-      setForm((prev) => ({ ...prev, mail: input.mail }))
-      setStep((prev) => prev + 1)
-    } catch (error) {
-      if (error.response?.status == 401) setErrors((prev) => ({ ...prev, code: '인증 코드가 일치하지 않습니다' }))
-      else setErrors((prev) => ({ ...prev, code: error.response?.data.message || '인증 중 오류가 발생했습니다' }))
-    }
+    await confirmMailCode(input)
+      .then(() => {
+        setForm((prev) => ({ ...prev, mail: input.mail }))
+        setStep((prev) => prev + 1)
+      })
+      .catch((error) => {
+        if (error.response?.status == 401) setErrors((prev) => ({ ...prev, code: '인증 코드가 일치하지 않습니다' }))
+        else setErrors((prev) => ({ ...prev, code: error.response?.data.message || '인증 중 오류가 발생했습니다' }))
+      })
   }
 
   return (

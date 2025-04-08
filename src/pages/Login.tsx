@@ -29,13 +29,9 @@ function Login() {
 
   const handleLogin = async () => {
     if (validation()) {
-      try {
-        await login(form)
-          .then(() => navigate('/main'))
-          .catch((error) => setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' })))
-      } catch (error) {
-        setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' }))
-      }
+      await login(form)
+        .then(() => navigate('/main'))
+        .catch(() => setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' })))
     }
   }
 

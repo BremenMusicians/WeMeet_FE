@@ -27,21 +27,20 @@ function Third({ form }: SetStateType) {
   const handleSubmit = async () => {
     if (validation()) {
       const finalForm: SignupRequestType = { ...form, accountId: input.accountId, position: input.position }
-      try {
-        await signup(finalForm).then(() => navigate('/main'))
-      } catch (error) {
-        setErrors((prev) => ({ ...prev, position: error.response?.data.message || '회원가입 중 오류가 발생했습니다' }))
-      }
+      await signup(finalForm)
+        .then(() => navigate('/main'))
+        .catch((error) => {
+          setErrors((prev) => ({ ...prev, position: error.response?.data.message || '회원가입 중 오류가 발생했습니다' }))
+        })
     }
   }
 
   const handleCheckId = async () => {
-    try {
-      await checkIdDuplication(input.accountId)
-      setChecked(true)
-    } catch (error) {
-      setErrors((prev) => ({ ...prev, accountId: error.response?.data.message || '해당 닉네임이 존재합니다' }))
-    }
+    await checkIdDuplication(input.accountId)
+      .then(() => setChecked(true))
+      .catch((error) => {
+        setErrors((prev) => ({ ...prev, accountId: error.response?.data.message || '해당 닉네임이 존재합니다' }))
+      })
   }
 
   const handleTogglePosition = (item: position) => {
@@ -56,7 +55,7 @@ function Third({ form }: SetStateType) {
         <InputBox>
           <EmailInput>
             <Input type="text" name="accountId" value={input.accountId} label="닉네임" placeholder="닉네임" onChange={(e) => setInput({ ...input, accountId: e.target.value })} />
-            <Button width={128} bigSize onClick={handleCheckId}>
+            <Button width={128} disabled={!input.accountId.trim() || checked} bigSize onClick={handleCheckId}>
               중복 확인
             </Button>
           </EmailInput>

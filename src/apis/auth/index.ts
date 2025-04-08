@@ -8,16 +8,14 @@ const authInstance = axios.create({
   baseURL: BASEURL,
 })
 
-export const login = async (data: LoginRequestType) => {
-  const response = await authInstance.post('/login', data)
-  const { accessToken, refreshToken } = response.data
-  saveToken(accessToken, refreshToken)
+export const login = async (formData: LoginRequestType) => {
+  const { data } = await authInstance.post('/login', formData)
+  saveToken(data.accessToken, data.refreshToken)
 }
 
-export const signup = async (data: SignupRequestType) => {
-  const response = await authInstance.post('/signup', data)
-  const { accessToken, refreshToken } = response.data
-  saveToken(accessToken, refreshToken)
+export const signup = async (formData: SignupRequestType) => {
+  const { data } = await authInstance.post('/signup', formData)
+  saveToken(data.accessToken, data.refreshToken)
 }
 
 export const checkIdDuplication = async (data: string) => {
