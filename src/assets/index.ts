@@ -25,6 +25,16 @@ export { default as Copy } from './Copy.svg'
 export { default as Mike } from './Mike.svg'
 export { default as MikeOff } from './MikeOff.svg'
 export { default as Warning } from './Warning.svg'
+export { default as DrumImage } from './DrumImage.png'
+export { default as Crash } from './drum/Crash.png'
+export { default as FloorTom } from './drum/FloorTom.png'
+export { default as LargeTom } from './drum/LargeTom.png'
+export { default as HiHat } from './drum/HiHat.png'
+export { default as Ride } from './drum/Ride.png'
+export { default as SmallTom } from './drum/SmallTom.png'
+export { default as Snare } from './drum/Snare.png'
+export { default as Kick } from './drum/Kick.png'
+export { default as Pedal } from './drum/Pedal.png'
 export { More } from './More'
 export { Instrument } from './Instrument'
 export { Volume } from './Volume'
@@ -36,8 +46,8 @@ export { Slider } from './Slider'
 export { Check } from './Check'
 
 export interface IconProps {
-    Fill?: string;
-    width?: number;
-    height?: number;
-    onClick?: () => void;
+  Fill?: string
+  width?: number
+  height?: number
+  onClick?: () => void
 }
