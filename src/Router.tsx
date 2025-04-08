@@ -16,6 +16,13 @@ export const Router = () => {
     <BrowserRouter>
       <Header />
       <Routes>
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/mypage/edit" element={<EditMyPage />} />
+        <Route path="/friend" element={<Friend />} />
+        <Route path="/main" element={<Room />} />
+        <Route path="/concertRoom" element={<ConcertRoom />} />
+        <Route path="/instrument" element={<Instrument />} />
+        <Route path="/chat" element={<Chat />} />
         <Route
           path="/login"
           element={
@@ -32,13 +39,6 @@ export const Router = () => {
             </PublicRoute>
           }
         />
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/mypage/edit" element={<EditMyPage />} />
-        <Route path="/friend" element={<Friend />} />
-        <Route path="/main" element={<Room />} />
-        <Route path="/concertRoom" element={<ConcertRoom />} />
-        <Route path="/instrument" element={<Instrument />} />
-        <Route path="/chat" element={<Chat />} />
       </Routes>
     </BrowserRouter>
   )
