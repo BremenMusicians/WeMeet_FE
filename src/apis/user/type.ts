@@ -1,32 +1,49 @@
-export type position =  "DRUM" | "GUITAR" | "PIANO" | "SYNTH" | "VOCAL" | "ETC"
+export type position = 'DRUM' | 'GUITAR' | 'PIANO' | 'SYNTH' | 'VOCAL' | 'ETC'
 
 export enum positionEnum {
-  "PIANO" = "피아노",
-  "GUITAR"= "기타",
-  "DRUM"= "드럼",
-  "SYNTH"= "신스",
-  "VOCAL"= "보컬",
-  "ETC"= "그 외"
+  'PIANO' = '피아노',
+  'GUITAR' = '기타',
+  'DRUM' = '드럼',
+  'SYNTH' = '신스',
+  'VOCAL' = '보컬',
+  'ETC' = '그 외',
 }
 
-export interface friendType{
-    accountId: string,
-    profile: string | null,
-    aboutMe: string | null,
-    position: position[]
+export interface LoginRequestType {
+  mail: string
+  password: string
+}
+
+export interface SignupRequestType {
+  mail: string
+  password: string
+  accountId: string
+  position: position[]
+}
+
+export interface MailPayload {
+  mail: string
+  code: string
+}
+
+export interface friendType {
+  accountId: string
+  profile: string | null
+  aboutMe: string | null
+  position: position[]
 }
 
 export interface myPageType {
-    accountId: string,
-    profile: string | null,
-    aboutMe: string | null,
-    position: position[]
-    friendsCnt: number,
-    friends: friendType[]
+  accountId: string
+  profile: string | null
+  aboutMe: string | null
+  position: position[]
+  friendsCnt: number
+  friends: friendType[]
 }
 
 export interface editMypage {
-    accountId: string,
-    aboutMe: string | null, 
-    position: position[]
+  accountId: string
+  aboutMe: string | null
+  position: position[]
 }
