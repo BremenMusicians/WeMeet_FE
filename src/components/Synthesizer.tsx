@@ -1,5 +1,5 @@
-import styled from "styled-components";
-import React, { useEffect } from "react";
+import styled from 'styled-components'
+import React, { useEffect } from 'react'
 import * as Tone from 'tone'
 
 const SyntNotes: string[] = [
@@ -11,100 +11,94 @@ const SyntNotes: string[] = [
 ];
 
 export const Synthesizer = () => {
-    const synth = React.useMemo(() => new Tone.Synth().toDestination(), []);
+  const synth = React.useMemo(() => new Tone.Synth().toDestination(), [])
 
-    const noteMap: { [key: string]: string } = {
-        "KeyA": "C4",
-        "KeyS": "D4",
-        "KeyD": "E4",
-        "KeyF": "F4",
-        "KeyG": "G4",
-        "KeyH": "A4",
-        "KeyJ": "B4",
-        "KeyK": "C5",
-        "KeyW": "C#4",
-        "KeyE": "D#4",
-        "KeyT": "F#4",
-        "KeyY": "G#4",
-        "KeyU": "A#4",
-    };
+  const noteMap: { [key: string]: string } = {
+    KeyA: 'C4',
+    KeyS: 'D4',
+    KeyD: 'E4',
+    KeyF: 'F4',
+    KeyG: 'G4',
+    KeyH: 'A4',
+    KeyJ: 'B4',
+    KeyK: 'C5',
+    KeyW: 'C#4',
+    KeyE: 'D#4',
+    KeyT: 'F#4',
+    KeyY: 'G#4',
+    KeyU: 'A#4',
+  }
 
-    const onKeyDown = (event: KeyboardEvent) => {
-        const note = noteMap[event.code];
+  const onKeyDown = (event: KeyboardEvent) => {
+    const note = noteMap[event.code]
 
-        if (note) {
-            synth.triggerAttackRelease(note, "8n");
-        }
-    };
+    if (note) {
+      synth.triggerAttackRelease(note, '8n')
+    }
+  }
 
-    useEffect(() => {
-        window.addEventListener("keydown", onKeyDown);
-        return () => {
-            window.removeEventListener("keydown", onKeyDown);
-        };
-    }, []);
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [])
 
-    const onClick = (note: string) => {
-        synth.triggerAttackRelease(note, "8n");
-    };
+  const onClick = (note: string) => {
+    synth.triggerAttackRelease(note, '8n')
+  }
 
-    return (
-        <Container>
-            <Content>
-            {
-                SyntNotes.map((note) => {
-                    return note.includes("#") ? (
-                        <BlackKeyBoard key={note} onClick={() => onClick(note)} />
-                    ) : (
-                        <WhiteKeyBoard key={note} onClick={() => onClick(note)} />
-                    );
-                })
-         }
-            </Content>
-        </Container>
-    );
-};
+  return (
+    <Container>
+      <Content>
+        {SyntNotes.map((note) => {
+          return note.includes('#') ? <BlackKeyBoard key={note} onClick={() => onClick(note)} /> : <WhiteKeyBoard key={note} onClick={() => onClick(note)} />
+        })}
+      </Content>
+    </Container>
+  )
+}
 
 const BlackKeyBoard = styled.button`
-    background-color: #000;
-    width: 22px;
-    height: 102px;
-    border: 1px solid ${({ theme }) => theme.color.gray400};
-    border-radius: 0px 0px 4px 4px;
-    box-shadow: 0px 5px 2px 0px rgba(0, 0, 0, 0.25);
-    position: absolute;
-    margin-left: -12px;
-    &:active {
-        margin-top: 4px;
-    }
-`;
+  background-color: #000;
+  width: 22px;
+  height: 102px;
+  border: 1px solid ${({ theme }) => theme.color.gray400};
+  border-radius: 0px 0px 4px 4px;
+  box-shadow: 0px 5px 2px 0px rgba(0, 0, 0, 0.25);
+  position: absolute;
+  margin-left: -12px;
+  &:active {
+    margin-top: 4px;
+  }
+`
 
 const WhiteKeyBoard = styled.button`
-    background-color: #fff;
-    width: 34px;
-    height: 180px;
-    border: 1px solid ${({ theme }) => theme.color.gray400};
-    border-radius: 0px 0px 4px 4px;
-    box-shadow: 0px 5px 2px 0px rgba(0, 0, 0, 0.25);
-    &:active {
-        background-color: ${({ theme }) => theme.color.gray200};
-    }
-    &:disabled {
-        background-color: #ddd;
-    }
-`;
+  background-color: #fff;
+  width: 34px;
+  height: 180px;
+  border: 1px solid ${({ theme }) => theme.color.gray400};
+  border-radius: 0px 0px 4px 4px;
+  box-shadow: 0px 5px 2px 0px rgba(0, 0, 0, 0.25);
+  &:active {
+    background-color: ${({ theme }) => theme.color.gray200};
+  }
+  &:disabled {
+    background-color: #ddd;
+  }
+`
 
 const Content = styled.div`
-    width: fit-content;
-    border: 1px solid ${({theme}) => theme.color.gray200};
-    border-radius: 16px;
-    margin: auto;
+  width: fit-content;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  border-radius: 16px;
+  margin: auto;
 `
 
 const Container = styled.div`
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 70dvh;
-    background-color: ${({theme}) => theme.color.gray50};
-`;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 70dvh;
+  background-color: ${({ theme }) => theme.color.gray50};
+`

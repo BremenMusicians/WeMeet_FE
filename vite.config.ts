@@ -6,5 +6,8 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     exclude: ['@tonejs/piano', 'webmidi']
-  }
+  },
+  server: {
+    port: 3000,
+  },
 })

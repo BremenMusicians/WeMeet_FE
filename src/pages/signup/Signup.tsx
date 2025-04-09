@@ -4,10 +4,17 @@ import First from './First'
 import { useState } from 'react'
 import Second from './Second'
 import Third from './Third'
+import { SignupRequestType } from '../../apis/user/type'
 
 function Signup() {
+  const [form, setForm] = useState<SignupRequestType>({
+    mail: '',
+    password: '',
+    accountId: '',
+    position: [],
+  })
   const [step, setStep] = useState<number>(0)
-  const signupPage = [<First key="first" />, <Second key="second" />, <Third key="third" />]
+  const signupPage = [<First setForm={setForm} setStep={setStep} key="first" />, <Second setForm={setForm} setStep={setStep} key="second" />, <Third form={form} key="third" />]
   return (
     <AuthLayout title="회원가입" description="온라인 합주를 시작해볼까요">
       <SignupFormBox>

@@ -8,6 +8,9 @@ import { ConcertRoom } from './pages/ConcertRoom'
 import { Instrument } from './pages/Instrument'
 import Chat from './pages/Chat'
 import Landing from './pages/landing/Landing'
+import Login from './pages/Login'
+import Signup from './pages/signup/Signup'
+import PublicRoute from './components/PublicRoute'
 
 export const Router = () => {
   return (
@@ -22,6 +25,22 @@ export const Router = () => {
         <Route path="/instrument" element={<Instrument />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/landing" element={<Landing />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <Signup />
+            </PublicRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )
