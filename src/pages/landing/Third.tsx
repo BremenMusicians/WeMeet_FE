@@ -50,7 +50,7 @@ export const Third = () => {
             </InstrumentItem>
           ))}
         </InstrumentsList>
-        <MoreButton onClick={() => navigate('/instrument')}>더보기</MoreButton>
+        <MoreButton onClick={() => navigate('/instrument')}>연주하러 가기</MoreButton>
       </IntroduceBox>
     </Wrapper>
   )
