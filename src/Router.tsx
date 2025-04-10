@@ -16,8 +16,22 @@ export const Router = () => {
     <BrowserRouter>
       <Header />
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <Signup />
+            </PublicRoute>
+          }
+        />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/edit" element={<EditMyPage />} />
         <Route path="/friend" element={<Friend />} />

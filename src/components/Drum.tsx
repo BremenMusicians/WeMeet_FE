@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
 import { DrumImage, HiHat, Crash, Ride, LargeTom, FloorTom, SmallTom, Snare, Kick, Pedal } from '../assets'
-import { DrumElement } from '../components/DrumElement'
+import { DrumElement } from './DrumElement'
 import { CrashSound, RideSound, PedalSound, KickSound, SnareSound, FloorTomSound, LargeTomSound, SmallTomSound, HiHatSound } from '../sounds'
 
-export const Drum = () => {
+export const DrumComponents = () => {
   const play = (sound: string) => {
     const audio = new Audio(sound)
     audio.play()
