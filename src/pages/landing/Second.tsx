@@ -133,7 +133,7 @@ const Flap = styled.div<{ opened: boolean }>`
   height: 0;
   border-left: 230px solid transparent;
   border-right: 230px solid transparent;
-  border-top: 230px solid ${({ opened, theme }) => (opened ? theme.color.gray100 : '#fff')};
+  border-top: ${({ opened }) => (opened ? 170 : 230)}px solid ${({ opened, theme }) => (opened ? theme.color.gray100 : '#fff')};
   transform-origin: top center;
   transform: ${({ opened }) => (opened ? 'rotateX(180deg)' : 'rotateX(0deg)')};
   transition: transform 0.7s ease-in-out, border-top-color 0.7s ease-in-out;

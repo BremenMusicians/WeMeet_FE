@@ -15,7 +15,7 @@ export const First = () => {
         <Sticker src={Smile} top={340} left={80} />
         <Sticker src={Eyes} top={520} right={60} />
 
-        <Logo size="60%" color="#fff" />
+        <Logo width="60%" height="60%" Fill="#fff" />
       </Container>
       <ScrollDown>
         아래로 스크롤해주세요

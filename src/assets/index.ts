@@ -52,7 +52,7 @@ export { default as Double_Down_Arrow } from './Double_Down_Arrow.svg'
 
 export interface IconProps {
   Fill?: string
-  width?: number
-  height?: number
+  width?: number | string
+  height?: number | string
   onClick?: () => void
 }
