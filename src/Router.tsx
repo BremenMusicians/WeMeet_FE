@@ -24,7 +24,7 @@ export const Router = () => {
         <Route path="/concertRoom" element={<ConcertRoom />} />
         <Route path="/instrument" element={<Instrument />} />
         <Route path="/chat" element={<Chat />} />
-        <Route path="/landing" element={<Landing />} />
+        <Route path="/" element={<Landing />} />
         <Route
           path="/login"
           element={
