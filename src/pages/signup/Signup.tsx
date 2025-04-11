@@ -5,8 +5,10 @@ import { useState } from 'react'
 import Second from './Second'
 import Third from './Third'
 import { SignupRequestType } from '../../apis/user/type'
+import { useNavigate } from 'react-router-dom'
 
 function Signup() {
+  const navigate = useNavigate()
   const [form, setForm] = useState<SignupRequestType>({
     mail: '',
     password: '',
@@ -20,7 +22,7 @@ function Signup() {
       <SignupFormBox>
         {signupPage[step]}
         <IsExistMember>
-          계정이 있나요? <LoginLink>로그인</LoginLink>
+          계정이 있나요? <LoginLink onClick={() => navigate('/login')}>로그인</LoginLink>
         </IsExistMember>
       </SignupFormBox>
     </AuthLayout>

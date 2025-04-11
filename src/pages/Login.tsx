@@ -4,9 +4,9 @@ import { Input } from '../components/Input'
 import { Button } from '../components/Button'
 import { AuthLayout } from '../components/AuthLayout'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../apis/auth'
 import { LoginRequestType } from '../apis/user/type'
 import { mailRegExp } from '../utils/regExp'
+import { login } from '../apis/user'
 
 function Login() {
   const navigate = useNavigate()

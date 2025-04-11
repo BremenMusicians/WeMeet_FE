@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
 import { position, positionEnum, SignupRequestType } from '../../apis/user/type'
-import { checkIdDuplication, signup } from '../../apis/auth'
+import { checkIdDuplication, signup } from '../../apis/user'
 import { useNavigate } from 'react-router-dom'
 
 type SetStateType = { form: SignupRequestType }
@@ -39,7 +39,7 @@ function Third({ form }: SetStateType) {
     await checkIdDuplication(input.accountId)
       .then(() => setChecked(true))
       .catch((error) => {
-        setErrors((prev) => ({ ...prev, accountId: error.response?.data.message || '해당 닉네임이 존재합니다' }))
+        if (error.response.status == 409) setErrors((prev) => ({ ...prev, accountId: '해당 닉네임이 존재합니다' }))
       })
   }
 

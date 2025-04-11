@@ -12,13 +12,13 @@ export const AuthLayout = ({ title, description, children }: LayoutProps) => {
     <Container>
       <AuthContainer>
         <Header>
-          <LogoIcon width={120} src={Letters_Logo} />
+          <Icon width={120} src={Letters_Logo} />
           <HouseButton>
-            <HouseIcon src={House} />
+            <Icon src={House} />
           </HouseButton>
         </Header>
         <AuthFormBox>
-          <LogoIcon width={80} src={Logo} />
+          <Logo width={80} />
           <TitleBox>
             <Title>{title}</Title>
             <Description>{description}</Description>
@@ -115,8 +115,7 @@ const NoticeText = styled.p`
   ${({ theme }) => theme.font.body6}
 `
 
-const LogoIcon = styled.img``
-const HouseIcon = styled.img``
+const Icon = styled.img``
 
 const Title = styled.p`
   ${({ theme }) => theme.font.header3}

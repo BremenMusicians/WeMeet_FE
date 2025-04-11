@@ -9,6 +9,11 @@ export enum positionEnum {
   'ETC' = '그 외',
 }
 
+export interface AuthResponseType {
+  accessToken: string
+  refreshToken: string
+}
+
 export interface LoginRequestType {
   mail: string
   password: string
@@ -19,11 +24,6 @@ export interface SignupRequestType {
   password: string
   accountId: string
   position: position[]
-}
-
-export interface MailPayload {
-  mail: string
-  code: string
 }
 
 export interface friendType {
