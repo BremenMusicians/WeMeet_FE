@@ -7,6 +7,7 @@ import { Room } from './pages/Room'
 import { ConcertRoom } from './pages/ConcertRoom'
 import { Instrument } from './pages/Instrument'
 import Chat from './pages/Chat'
+import Landing from './pages/landing/Landing'
 import Login from './pages/Login'
 import Signup from './pages/signup/Signup'
 import PublicRoute from './components/PublicRoute'
@@ -16,6 +17,14 @@ export const Router = () => {
     <BrowserRouter>
       <Header />
       <Routes>
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/mypage/edit" element={<EditMyPage />} />
+        <Route path="/friend" element={<Friend />} />
+        <Route path="/main" element={<Room />} />
+        <Route path="/concertRoom" element={<ConcertRoom />} />
+        <Route path="/instrument" element={<Instrument />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/" element={<Landing />} />
         <Route
           path="/login"
           element={
@@ -32,13 +41,6 @@ export const Router = () => {
             </PublicRoute>
           }
         />
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/mypage/edit" element={<EditMyPage />} />
-        <Route path="/friend" element={<Friend />} />
-        <Route path="/main" element={<Room />} />
-        <Route path="/concertRoom" element={<ConcertRoom />} />
-        <Route path="/instrument" element={<Instrument />} />
-        <Route path="/" element={<Chat />} />
       </Routes>
     </BrowserRouter>
   )

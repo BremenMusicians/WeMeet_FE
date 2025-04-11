@@ -1,6 +1,6 @@
 export { default as EyeOff } from './Eyeoff.svg'
 export { default as EyeOpen } from './Eyeopen.svg'
-export { default as Logo } from './Group 41.svg'
+export * from './Logo'
 export { default as Profile } from './Profile.png'
 export { default as Search } from './Search.svg'
 export { default as AddFriend } from './addFriend.svg'
@@ -44,10 +44,15 @@ export { Guitar } from './Guitar'
 export { Piano } from './Piano'
 export { Slider } from './Slider'
 export { Check } from './Check'
+export { default as Eyes } from './sticker/eyes.svg'
+export { default as Smile } from './sticker/smile.svg'
+export { default as Snow } from './sticker/snow.svg'
+export { default as Star } from './sticker/star.svg'
+export { default as Double_Down_Arrow } from './Double_Down_Arrow.svg'
 
 export interface IconProps {
   Fill?: string
-  width?: number
-  height?: number
+  width?: number | string
+  height?: number | string
   onClick?: () => void
 }

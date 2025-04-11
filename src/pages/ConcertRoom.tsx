@@ -1,11 +1,11 @@
 import styled from 'styled-components'
 import { Copy, Instrument, Lock, LogOut, Mike, MikeOff, Volume } from '../assets'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { InstrumentList } from '../components/Instrument'
 import { FeatureButton } from '../components/InstrumentButton'
 import { RangeInput } from '../components/RangeCustom'
 import { UserVideo } from '../components/UserVideo'
-import { useExitConcertRoom } from '../apis/room'
+import { useEntryRoom, useExitConcertRoom } from '../apis/room'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 enum FeatureType {
@@ -15,7 +15,9 @@ enum FeatureType {
 
 export const ConcertRoom = () => {
   const navigate = useNavigate()
-  const roomId = useLocation().search.split('=')[1]
+  const searchParams = new URLSearchParams(useLocation().search)
+  const roomId = searchParams.get('id')!
+  const owner = searchParams.get('owner')
 
   const [mikeOn, setMikeOn] = useState(true)
   const [activeFeature, setActiveFeature] = useState<FeatureType | null>(null)
@@ -25,6 +27,16 @@ export const ConcertRoom = () => {
     {
       onSuccess: () => navigate('/main'),
       onError: () => alert('잠시 후 시도해주세요'),
+    },
+    roomId,
+  )
+  const { mutate: entryRoom } = useEntryRoom(
+    {
+      onSuccess: () => {},
+      onError: () => {
+        alert('잠시 후 시도해주세요')
+        navigate('/main')
+      },
     },
     roomId,
   )
@@ -43,6 +55,12 @@ export const ConcertRoom = () => {
       await navigator.clipboard.writeText(codeRef.current.innerText)
     }
   }
+
+  useEffect(() => {
+    if (!owner) {
+      entryRoom()
+    }
+  }, [entryRoom, owner])
 
   return (
     <Container>
