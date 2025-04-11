@@ -36,3 +36,23 @@ export const useExitConcertRoom = (option: MutateOptions, roomId: string) => {
         }
     })
 }
+
+export const useCheckPassword = (option: MutateOptions, roomId: string, password: string) => {
+    return useMutation({
+        ...option,
+        mutationFn: async () => {
+            const {data} = await instance.post(`${router}/password/${roomId}`, {password: password})
+            return data;
+        }
+    })
+}
+
+export const useEntryRoom = (option: MutateOptions, roomId: string) => {
+    return useMutation({
+        ...option,
+        mutationFn: async () => {
+            const {data} = await instance.post(`${router}/${roomId}`)
+            return data;
+        }
+    })
+}
