@@ -2,7 +2,7 @@ export interface createRoomType {
 	name : string,
 	maxMember : number,
 	info : string,
-	password : string
+	password : string | null,
 }
 
 export interface CreateRoomResponse {
