@@ -1,13 +1,7 @@
-import axios from 'axios'
-import { MailPayload } from '../user/type'
+import { MailPayload } from './type'
+import { authInstance } from '..'
 
 const router = '/mail'
-
-const BASEURL = import.meta.env.VITE_SERVER_BASE_URL
-
-const authInstance = axios.create({
-  baseURL: BASEURL,
-})
 
 export const requestMailVerification = async (data: MailPayload) => {
   const response = await authInstance.post(router, { mail: data.mail })

@@ -1,25 +1,18 @@
 import { MutateOptions, useMutation, useQuery } from '@tanstack/react-query'
-import { instance } from '..'
-import { editMypage, myPageType } from './type'
+import { authInstance, instance } from '..'
+import { AuthResponseType, editMypage, myPageType } from './type'
 import { LoginRequestType, SignupRequestType } from '../user/type'
 import { saveToken } from '../../utils/Auth'
-import axios from 'axios'
 
 const router = '/user'
 
-const BASEURL = import.meta.env.VITE_SERVER_BASE_URL
-
-const authInstance = axios.create({
-  baseURL: BASEURL,
-})
-
 export const login = async (formData: LoginRequestType) => {
-  const { data } = await authInstance.post(`${router}/signIn`, formData)
+  const { data } = await authInstance.post<AuthResponseType>(`${router}/signIn`, formData)
   saveToken(data.accessToken, data.refreshToken)
 }
 
 export const signup = async (formData: SignupRequestType) => {
-  const { data } = await authInstance.post(`${router}/signUp`, formData)
+  const { data } = await authInstance.post<AuthResponseType>(`${router}/signUp`, formData)
   saveToken(data.accessToken, data.refreshToken)
 }
 

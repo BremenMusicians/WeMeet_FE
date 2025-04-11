@@ -2,9 +2,10 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
-import { MailPayload, SignupRequestType } from '../../apis/user/type'
+import { SignupRequestType } from '../../apis/user/type'
 import { confirmMailCode, requestMailVerification } from '../../apis/mail'
 import { mailRegExp } from '../../utils/regExp'
+import { MailPayload } from '../../apis/mail/type'
 
 type SetStateType = { setStep: Dispatch<SetStateAction<number>>; setForm: Dispatch<SetStateAction<SignupRequestType>> }
 
