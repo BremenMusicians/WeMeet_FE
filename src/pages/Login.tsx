@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../components/Input'
 import { Button } from '../components/Button'
@@ -7,11 +7,13 @@ import { useNavigate } from 'react-router-dom'
 import { LoginRequestType } from '../apis/user/type'
 import { mailRegExp } from '../utils/regExp'
 import { login } from '../apis/user'
+import { AuthContext } from '../components/AuthContext'
 
 function Login() {
   const navigate = useNavigate()
   const [form, setForm] = useState<LoginRequestType>({ mail: '', password: '' })
   const [errors, setErrors] = useState<LoginRequestType>({ mail: '', password: '' })
+  const { isLogin } = useContext(AuthContext)
 
   const validation = () => {
     const newErrors = { mail: '', password: '' }
@@ -30,7 +32,10 @@ function Login() {
   const handleLogin = async () => {
     if (validation()) {
       await login(form)
-        .then(() => navigate('/main'))
+        .then(() => {
+          navigate('/main')
+          isLogin()
+        })
         .catch(() => setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' })))
     }
   }

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../../components/Input'
 import { Button } from '../../components/Button'
 import { position, positionEnum, SignupRequestType } from '../../apis/user/type'
 import { checkIdDuplication, signup } from '../../apis/user'
 import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../components/AuthContext'
 
 type SetStateType = { form: SignupRequestType }
 type ErrorType = { accountId: string; position: position[] }
@@ -14,6 +15,7 @@ function Third({ form }: SetStateType) {
   const [input, setInput] = useState<ErrorType>({ accountId: '', position: [] })
   const [errors, setErrors] = useState<Record<string, string>>({ accountId: '', position: '' })
   const [checked, setChecked] = useState<boolean>(false)
+  const { login: isLogin } = useContext(AuthContext)
 
   const validation = () => {
     const newErrors = { accountId: '', position: '' }
@@ -28,7 +30,10 @@ function Third({ form }: SetStateType) {
     if (validation()) {
       const finalForm: SignupRequestType = { ...form, accountId: input.accountId, position: input.position }
       await signup(finalForm)
-        .then(() => navigate('/main'))
+        .then(() => {
+          navigate('/main')
+          isLogin()
+        })
         .catch((error) => {
           setErrors((prev) => ({ ...prev, position: error.response?.data.message || '회원가입 중 오류가 발생했습니다' }))
         })
@@ -55,10 +60,11 @@ function Third({ form }: SetStateType) {
         <InputBox>
           <EmailInput>
             <Input type="text" name="accountId" value={input.accountId} label="닉네임" placeholder="닉네임" onChange={(e) => setInput({ ...input, accountId: e.target.value })} />
-            <Button width={128} disabled={!input.accountId.trim() || checked} bigSize onClick={handleCheckId}>
+            <Button width={128} disabled={!input.accountId.trim() || !checked} bigSize onClick={handleCheckId}>
               중복 확인
             </Button>
           </EmailInput>
+          <SuccessMessage>{checked && '사용할 수 있는 닉네임입니다'}</SuccessMessage>
           <ErrorMessage>{errors.accountId}</ErrorMessage>
         </InputBox>
         <SelectTagBox>
@@ -136,6 +142,11 @@ const Tag = styled.button`
     color: ${({ theme }) => theme.color.orange500};
     border-color: ${({ theme }) => theme.color.orange200};
   }
+`
+
+const SuccessMessage = styled.p`
+  color: ${({ theme }) => theme.color.gray400};
+  ${({ theme }) => theme.font.body6}
 `
 
 export default Third

@@ -11,37 +11,40 @@ import Landing from './pages/landing/Landing'
 import Login from './pages/Login'
 import Signup from './pages/signup/Signup'
 import PublicRoute from './components/PublicRoute'
+import { AuthProvider } from './components/AuthContext'
 
 export const Router = () => {
   return (
     <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/mypage/edit" element={<EditMyPage />} />
-        <Route path="/friend" element={<Friend />} />
-        <Route path="/main" element={<Room />} />
-        <Route path="/concertRoom" element={<ConcertRoom />} />
-        <Route path="/instrument" element={<Instrument />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/" element={<Landing />} />
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <Signup />
-            </PublicRoute>
-          }
-        />
-      </Routes>
+      <AuthProvider>
+        <Header />
+        <Routes>
+          <Route path="/mypage" element={<MyPage />} />
+          <Route path="/mypage/edit" element={<EditMyPage />} />
+          <Route path="/friend" element={<Friend />} />
+          <Route path="/main" element={<Room />} />
+          <Route path="/concertRoom" element={<ConcertRoom />} />
+          <Route path="/instrument" element={<Instrument />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/" element={<Landing />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   )
 }
