@@ -60,7 +60,7 @@ export const ConcertRoom = () => {
     if (!owner) {
       entryRoom()
     }
-  }, [])
+  }, [entryRoom, owner])
 
   return (
     <Container>
