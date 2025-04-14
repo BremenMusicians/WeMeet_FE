@@ -22,3 +22,8 @@ export interface concertRoomResponse {
 	roomCount: number,
 	rooms : ConcertRoomType[]
 }
+
+export interface KickOutMemberType {
+	roomId: string,
+	accountId: string
+}

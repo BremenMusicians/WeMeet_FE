@@ -1,6 +1,8 @@
 import styled from 'styled-components'
 import { LogOut, More, Warning } from '../assets'
 import { useState } from 'react'
+import { useKickOutMember } from '../apis/room'
+import { useLocation } from 'react-router-dom'
 
 interface UserVideoProps {
   owner?: boolean
@@ -8,11 +10,13 @@ interface UserVideoProps {
 
 export const UserVideo = ({ owner = false }: UserVideoProps) => {
   const [more, setMore] = useState<boolean>(false)
+  const searchParams = new URLSearchParams(useLocation().search)
+  const roomId = searchParams.get('id')!
+
+  const { mutate: kickOut } = useKickOutMember()
 
   return (
     <Container onClick={() => setMore(false)}>
-      {' '}
-      {/* 화면을 클릭하면 메뉴 닫힘 */}
       <NickNameContainer>
         {!!owner && (
           <MoreButton
@@ -26,14 +30,13 @@ export const UserVideo = ({ owner = false }: UserVideoProps) => {
         )}
         {more && (
           <Option onClick={(e) => e.stopPropagation()}>
-            {' '}
-            {/* 메뉴 내부 클릭 시 닫히지 않음 */}
             <OptionContent>
               <img width={20} src={Warning} alt="신고" /> <p>신고하기</p>
             </OptionContent>
-            <OptionContent>
+            <OptionContent onClick={() => kickOut({ roomId, accountId: '1234' })}>
               <LogOut width={20} Fill="#A1A1AA" /> <p>내보내기</p>
             </OptionContent>
+            {/**추후 소켓연동 후 accountId수정*/}
           </Option>
         )}
         <NickName>[드럼] 박수현</NickName>
@@ -66,12 +69,15 @@ const Container = styled.div`
   max-width: 560px;
 `
 
-const OptionContent = styled.div`
+const OptionContent = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 4px;
   ${({ theme }) => theme.font.body6}
+  background: none;
+  color: white;
+  cursor: pointer;
 `
 
 const Option = styled.div`
