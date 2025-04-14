@@ -30,6 +30,7 @@ export const ConcertRoom = () => {
     },
     roomId,
   )
+
   const { mutate: entryRoom } = useEntryRoom(
     {
       onSuccess: () => {},
@@ -82,7 +83,7 @@ export const ConcertRoom = () => {
         </TopBar>
         <VideoWrap>
           {[...Array(4)].map((_, idx) => (
-            <UserVideo key={idx} />
+            <UserVideo owner={owner ? true : false} key={idx} />
           ))}
         </VideoWrap>
         <BottomBarWrap>

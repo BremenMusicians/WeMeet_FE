@@ -273,6 +273,7 @@ const Description = styled.p`
 const TotalWrap = styled.div`
   display: flex;
   align-items: center;
+  white-space: nowrap;
 `
 
 const TotalPeople = styled.p`
