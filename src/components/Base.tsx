@@ -45,7 +45,8 @@ export const BaseComponents = () => {
 }
 
 const FretBox = styled.div`
-  width: 860px;
+  width: 100%;
+  max-width: 860px;
   display: flex;
   position: relative;
 `
