@@ -46,10 +46,10 @@ const Layout = styled.img<{ isHit: boolean; type: 'tom' | 'cymbal' }>`
       transform: rotate(0) scaleY(1);
     }
     10% {
-      transform: rotate(-18deg) scaleY(0.85); /* 더 강하게 눌림 */
+      transform: rotate(-18deg) scaleY(0.85);
     }
     20% {
-      transform: rotate(14deg) scaleY(1.1); /* 더 높이 튕겨 오름 */
+      transform: rotate(14deg) scaleY(1.1);
     }
     30% {
       transform: rotate(-10deg) scaleY(0.95);

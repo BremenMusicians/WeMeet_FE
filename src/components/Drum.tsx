@@ -2,17 +2,17 @@ import { useEffect } from 'react'
 import styled from 'styled-components'
 import { DrumImage, HiHat, Crash, Ride, LargeTom, FloorTom, SmallTom, Snare, Kick, Pedal } from '../assets'
 import { DrumElement } from './DrumElement'
-import { CrashSound, RideSound, PedalSound, KickSound, SnareSound, FloorTomSound, LargeTomSound, SmallTomSound, HiHatSound } from '../sounds'
 
+const SOUND_URL = import.meta.env.VITE_DRUM_SOUND
 export const DrumComponents = () => {
   const play = (sound: string) => {
-    const audio = new Audio(sound)
+    const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
     audio.play()
   }
 
   const keyMap: Record<string, string> = {
-    KeyX: KickSound,
-    KeyZ: PedalSound,
+    KeyX: 'hihat-foot',
+    KeyZ: 'bass',
   }
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -33,16 +33,15 @@ export const DrumComponents = () => {
       <Layout>
         <ImageBox>
           <img src={DrumImage} />
-          <DrumElement type="cymbal" note="KeyQ" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play(HiHatSound)} />
-          <DrumElement type="cymbal" note="KeyW" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play(CrashSound)} />
-          <DrumElement type="cymbal" note="KeyE" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play(RideSound)} />
-          <DrumElement note="KeyA" style={{ top: '282px', left: '207px' }} src={Snare} onClick={() => play(SnareSound)} />
-          <DrumElement note="KeyS" style={{ top: '150px', left: '245px' }} src={SmallTom} onClick={() => play(SmallTomSound)} />
-          <DrumElement note="KeyD" style={{ top: '150px', right: '217px' }} src={LargeTom} onClick={() => play(LargeTomSound)} />
-          <DrumElement note="KeyF" style={{ top: '257px', right: '129px' }} src={FloorTom} onClick={() => play(FloorTomSound)} />
-
-          <PedalImg src={Pedal} onClick={() => play(PedalSound)} />
-          <KickImg src={Kick} onClick={() => play(KickSound)} />
+          <DrumElement type="cymbal" note="KeyQ" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play('hihat')} />
+          <DrumElement type="cymbal" note="KeyW" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play('crash')} />
+          <DrumElement type="cymbal" note="KeyE" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play('ride')} />
+          <DrumElement note="KeyA" style={{ top: '282px', left: '207px' }} src={Snare} onClick={() => play('snare-drum')} />
+          <DrumElement note="KeyS" style={{ top: '150px', left: '245px' }} src={SmallTom} onClick={() => play('tom1')} />
+          <DrumElement note="KeyD" style={{ top: '150px', right: '217px' }} src={LargeTom} onClick={() => play('tom2')} />
+          <DrumElement note="KeyF" style={{ top: '257px', right: '129px' }} src={FloorTom} onClick={() => play('floor-tom')} />
+          <PedalImg src={Pedal} onClick={() => play('hihat-foot')} />
+          <KickImg src={Kick} onClick={() => play('bass')} />
         </ImageBox>
       </Layout>
     </Container>
@@ -79,9 +78,8 @@ const PedalImg = styled.img`
   position: absolute;
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
-
   &:active {
-    transform: scale(0.95) translateY(10px);
+    transform: scale(0.95);
   }
 `
 
@@ -91,7 +89,6 @@ const KickImg = styled.img`
   position: absolute;
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
-
   &:active {
     transform: scale(0.95) translateY(10px);
   }
