@@ -133,7 +133,7 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.9"
 
-"@babel/runtime@^7.20.6", "@babel/runtime@^7.25.6", "@babel/runtime@^7.26.10":
+"@babel/runtime@^7.25.6", "@babel/runtime@^7.26.10":
   version "7.26.10"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.26.10.tgz#a07b4d8fa27af131a633d7b3524db803eb4764c2"
   integrity sha512-2WJMeRQPHKSPemqk/awGrAiuFfzBmOIPXKizAsVhWH9YJqLZ0H+HS4c8loHGgW6utJ3E/ejXQUsiGaQy2NZ9Fw==
@@ -438,6 +438,11 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@marsidev/react-turnstile@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@marsidev/react-turnstile/-/react-turnstile-1.1.0.tgz#2209c431baf2a18a104600999389f6fce2dc2553"
+  integrity sha512-X7bP9ZYutDd+E+klPYF+/BJHqEyyVkN4KKmZcNRr84zs3DcMoftlMAuoKqNSnqg0HE7NQ1844+TLFSJoztCdSA==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -674,11 +679,6 @@
   version "4.2.5"
   resolved "https://registry.yarnpkg.com/@types/stylis/-/stylis-4.2.5.tgz#1daa6456f40959d06157698a653a9ab0a70281df"
   integrity sha512-1Xve+NMN7FWjY14vLoY5tL3BVEQ/n42YLwaqJIPYhotZ9uBHt87VceMwWQpzmdEt2TNXIorIFG+YeCUUW7RInw==
-
-"@types/webmidi@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@types/webmidi/-/webmidi-2.1.0.tgz#085ec7279a9c9c13453589db9ecebbcfa4bf771b"
-  integrity sha512-k898MjEUSHB+6rSeCPQk/kLgie0wgWZ2t78GlWj86HbTQ+XmtbBafYg5LNjn8bVHfItEhPGZPf579Xfc6keV6w==
 
 "@typescript-eslint/eslint-plugin@8.27.0":
   version "8.27.0"
@@ -1030,13 +1030,6 @@ delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
   integrity sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==
-
-djipevents@^2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/djipevents/-/djipevents-2.0.7.tgz#4805dcb8dcf0b4a2c6e51eaecdfc218bb8f202fb"
-  integrity sha512-KNFYaU85imxOCKOUsIR70Iz9E19r96/X7LSH+u0tSoZdpWcBdzoqtTsU+wuLhc6GMpSFob+KInkZAbfKi01Bjg==
-  dependencies:
-    "@babel/runtime" "^7.20.6"
 
 dunder-proto@^1.0.1:
   version "1.0.1"
@@ -1546,11 +1539,6 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-jazz-midi@^1.7.9:
-  version "1.7.9"
-  resolved "https://registry.yarnpkg.com/jazz-midi/-/jazz-midi-1.7.9.tgz#ad564e85acf12414aec7ef7d879ad61a5d7f6896"
-  integrity sha512-c8c4BBgwxdsIr1iVm53nadCrtH7BUlnX3V95ciK/gbvXN/ndE5+POskBalXgqlc/r9p2XUbdLTrgrC6fou5p9w==
-
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -1592,14 +1580,6 @@ json5@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
-
-jzz@^1.8.5:
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/jzz/-/jzz-1.9.1.tgz#ed9097c110889de087b6df14933936c32a29c1eb"
-  integrity sha512-BC13tDwdEYEUeU0Rfsphr62yMVnlrq7W3HYVqk4mkiCg5Q5E2aKzvIQMdmBUXVaNRlEkhB4AZdMnzy9H8L7OMQ==
-  dependencies:
-    "@types/webmidi" "^2.1.0"
-    jazz-midi "^1.7.9"
 
 keyv@^4.5.4:
   version "4.5.4"
@@ -2170,15 +2150,6 @@ vite@^6.2.0:
     rollup "^4.30.1"
   optionalDependencies:
     fsevents "~2.3.3"
-
-webmidi@^3.1.12:
-  version "3.1.12"
-  resolved "https://registry.yarnpkg.com/webmidi/-/webmidi-3.1.12.tgz#448f2faf35a537b30cc2caf2aa22b5503d7fd719"
-  integrity sha512-X1lACggXm2BxuAPdx5wleh8S2kygduHbtR2ti5sGhivLkX6Muv/sLAYmPuIaNLOUddyxr71+3tsq8m5dKXoT4A==
-  dependencies:
-    djipevents "^2.0.7"
-  optionalDependencies:
-    jzz "^1.8.5"
 
 which-typed-array@^1.1.16, which-typed-array@^1.1.2:
   version "1.1.19"
