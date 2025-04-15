@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../components/Input'
 import { Button } from '../components/Button'
@@ -8,8 +8,10 @@ import { LoginRequestType } from '../apis/user/type'
 import { mailRegExp } from '../utils/regExp'
 import { login } from '../apis/user'
 import { AuthContext } from '../components/AuthContext'
+import { Turnstile } from '@marsidev/react-turnstile'
 
 function Login() {
+  const loginErrorCount = useRef<number>(0)
   const navigate = useNavigate()
   const [form, setForm] = useState<LoginRequestType>({ mail: '', password: '' })
   const [errors, setErrors] = useState<LoginRequestType>({ mail: '', password: '' })
@@ -36,7 +38,10 @@ function Login() {
           navigate('/main')
           isLogin()
         })
-        .catch(() => setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' })))
+        .catch(() => {
+          loginErrorCount.current += 1
+          setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' }))
+        })
     }
   }
 
@@ -54,7 +59,9 @@ function Login() {
               <ErrorMessage>{errors.password}</ErrorMessage>
             </InputBox>
           </Form>
-          <Button bigSize onClick={handleLogin}>
+          {loginErrorCount.current >= 5 ? <Turnstile options={{ theme: 'light', size: 'flexible' }} siteKey="0x4AAAAAABLqW0Yp7rIqrId2" /> : <></>}
+
+          <Button bigSize disabled={!(form.mail && form.password)} onClick={handleLogin}>
             로그인
           </Button>
           <IsNewMember>
