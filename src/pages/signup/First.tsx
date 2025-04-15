@@ -59,7 +59,7 @@ function First({ setStep, setForm }: SetStateType) {
           <ErrorMessage>{errors.mail}</ErrorMessage>
         </InputBox>
         <InputBox>
-          <Input type="text" name="verificationCode" value={input.code} label="인증 코드" placeholder="123456" onChange={(e) => setInput({ ...input, code: e.target.value })} />
+          <Input type="text" name="verificationCode" value={input.code} label="인증 코드" placeholder="1234" onChange={(e) => setInput({ ...input, code: e.target.value })} />
           <ErrorMessage>{errors.code}</ErrorMessage>
         </InputBox>
       </InputContainer>
