@@ -33,13 +33,13 @@ export const DrumComponents = () => {
       <Layout>
         <ImageBox>
           <img src={DrumImage} />
-          <DrumElement type="cymbal" note="KeyQ" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play('hihat')} />
-          <DrumElement type="cymbal" note="KeyW" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play('crash')} />
-          <DrumElement type="cymbal" note="KeyE" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play('ride')} />
-          <DrumElement note="KeyA" style={{ top: '282px', left: '207px' }} src={Snare} onClick={() => play('snare-drum')} />
-          <DrumElement note="KeyS" style={{ top: '150px', left: '245px' }} src={SmallTom} onClick={() => play('tom1')} />
-          <DrumElement note="KeyD" style={{ top: '150px', right: '217px' }} src={LargeTom} onClick={() => play('tom2')} />
-          <DrumElement note="KeyF" style={{ top: '257px', right: '129px' }} src={FloorTom} onClick={() => play('floor-tom')} />
+          <DrumElement type="cymbal" note="Q" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play('hihat')} />
+          <DrumElement type="cymbal" note="W" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play('crash')} />
+          <DrumElement type="cymbal" note="E" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play('ride')} />
+          <DrumElement note="A" style={{ top: '282px', left: '207px' }} src={Snare} onClick={() => play('snare-drum')} />
+          <DrumElement note="S" style={{ top: '150px', left: '245px' }} src={SmallTom} onClick={() => play('tom1')} />
+          <DrumElement note="D" style={{ top: '150px', right: '217px' }} src={LargeTom} onClick={() => play('tom2')} />
+          <DrumElement note="F" style={{ top: '257px', right: '129px' }} src={FloorTom} onClick={() => play('floor-tom')} />
           <PedalImg src={Pedal} onClick={() => play('hihat-foot')} />
           <KickImg src={Kick} onClick={() => play('bass')} />
         </ImageBox>

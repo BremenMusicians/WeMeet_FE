@@ -18,8 +18,8 @@ export const DrumElement = ({ src, style, onClick, note, type = 'tom' }: Element
     setTimeout(() => setIsHit(false), 300)
   }
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (note === event.code) {
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (note === e.key.toUpperCase()) {
       handleMouseDown()
     }
   }
