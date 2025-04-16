@@ -94,6 +94,7 @@ const ProfileContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  cursor: pointer;
 `
 
 const LeftContainer = styled.div`

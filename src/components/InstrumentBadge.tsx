@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Drum, Guitar, Piano, Slider } from '../assets'
+import { Base, Drum, Guitar, Piano, Slider } from '../assets'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -21,6 +21,7 @@ export const InstrumentBadge = () => {
     { icon: <Drum Fill={currentInstrument === '드럼' ? '#F75C3C' : '#A1A1AA'} />, name: '드럼' },
     { icon: <Slider Fill={currentInstrument === '신스' ? '#F75C3C' : '#A1A1AA'} />, name: '신스' },
     { icon: <Guitar Fill={currentInstrument === '기타' ? '#F75C3C' : '#A1A1AA'} />, name: '기타' },
+    { icon: <Base Fill={currentInstrument === '베이스' ? '#F75C3C' : '#A1A1AA'} />, name: '베이스' },
   ]
 
   return (
