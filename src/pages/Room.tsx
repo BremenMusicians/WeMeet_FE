@@ -191,7 +191,7 @@ const ModalContent = styled.div`
 
 const Container = styled.div`
   margin: 0 auto;
-  width: 1280px;
+  max-width: 1280px;
 `
 
 const ModalTitleWrap = styled.div`
