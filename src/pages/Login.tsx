@@ -11,8 +11,10 @@ import { AuthContext } from '../components/AuthContext'
 import { Turnstile } from '@marsidev/react-turnstile'
 
 function Login() {
+  const SITEKEY = import.meta.env.VITE_TURNSTILE_SITE_KEY
   const loginErrorCount = useRef<number>(0)
   const navigate = useNavigate()
+  const [isVerified, setIsVerified] = useState<boolean>(false)
   const [form, setForm] = useState<LoginRequestType>({ mail: '', password: '' })
   const [errors, setErrors] = useState<LoginRequestType>({ mail: '', password: '' })
   const { isLogin } = useContext(AuthContext)
@@ -40,6 +42,7 @@ function Login() {
         })
         .catch(() => {
           loginErrorCount.current += 1
+          setIsVerified(false)
           setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' }))
         })
     }
@@ -59,9 +62,8 @@ function Login() {
               <ErrorMessage>{errors.password}</ErrorMessage>
             </InputBox>
           </Form>
-          {loginErrorCount.current >= 5 ? <Turnstile options={{ theme: 'light', size: 'flexible' }} siteKey="0x4AAAAAABLqW0Yp7rIqrId2" /> : <></>}
-
-          <Button bigSize disabled={!(form.mail && form.password)} onClick={handleLogin}>
+          {loginErrorCount.current >= 5 ? <Turnstile onSuccess={() => setIsVerified(true)} options={{ theme: 'light', size: 'flexible' }} siteKey={SITEKEY} /> : <></>}
+          <Button bigSize disabled={!(form.mail && form.password) || (loginErrorCount.current >= 5 && !isVerified)} onClick={handleLogin}>
             로그인
           </Button>
           <IsNewMember>
