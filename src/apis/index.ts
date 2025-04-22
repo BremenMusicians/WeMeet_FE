@@ -12,7 +12,6 @@ export const instance: AxiosInstance = axios.create({
   timeout: 10000,
   headers: {
     Accept: 'application/json',
-    'ngrok-skip-browser-warning': true,
   },
 })
 
@@ -64,6 +63,8 @@ instance.interceptors.response.use(
             })
             .catch(() => {
               window.location.href = '/'
+              cookie.remove('access_token')
+              cookie.remove('refresh_token')
             })
         } catch (refreshError) {
           return Promise.reject(refreshError)
