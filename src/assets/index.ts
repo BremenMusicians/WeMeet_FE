@@ -44,14 +44,13 @@ export { Guitar } from './Guitar'
 export { Piano } from './Piano'
 export { Slider } from './Slider'
 export { Check } from './Check'
-export { Base } from './Base'
+export { Bass } from './Bass'
 export { default as Eyes } from './sticker/eyes.svg'
 export { default as Smile } from './sticker/smile.svg'
 export { default as Snow } from './sticker/snow.svg'
 export { default as Star } from './sticker/star.svg'
 export { default as Double_Down_Arrow } from './Double_Down_Arrow.svg'
-export * from './Bass'
-export { default as BaseHeader } from './BaseHeader.webp'
+export { default as BassHeader } from './BassHeader.webp'
 
 export interface IconProps {
   Fill?: string
