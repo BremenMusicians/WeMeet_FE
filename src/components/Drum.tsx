@@ -7,7 +7,9 @@ const SOUND_URL = import.meta.env.VITE_DRUM_SOUND
 export const DrumComponents = () => {
   const play = (sound: string) => {
     const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
-    audio.play()
+    audio.play().catch((error) => {
+      console.error(`사운드 재생 오류 ${sound}:`, error)
+    })
   }
 
   const keyMap: Record<string, string> = {

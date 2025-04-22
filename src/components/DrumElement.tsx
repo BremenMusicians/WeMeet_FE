@@ -29,7 +29,7 @@ export const DrumElement = ({ src, style, onClick, note, type = 'tom' }: Element
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [])
+  }, [onKeyDown])
 
   return <Layout type={type} isHit={isHit} style={style} src={src} onMouseDown={handleMouseDown} />
 }
