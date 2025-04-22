@@ -62,3 +62,16 @@ export const useChangeProfileImg = (option: MutateOptions, file: File) => {
     },
   })
 }
+
+
+export const useUserQuery = () => {
+  return useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const {data} = await instance.get<{accountId:string}>(`${router}/accountId`)
+      return data
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+};

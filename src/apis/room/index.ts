@@ -1,6 +1,6 @@
 import { MutateOptions, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
-import { concertRoomResponse, CreateRoomResponse, createRoomType } from "./type"
+import { concertRoomResponse, CreateRoomResponse, createRoomType, KickOutMemberType } from "./type"
 
 const router = '/rooms'
 
@@ -52,6 +52,15 @@ export const useEntryRoom = (option: MutateOptions, roomId: string) => {
         ...option,
         mutationFn: async () => {
             const {data} = await instance.post(`${router}/${roomId}`)
+            return data;
+        }
+    })
+}
+
+export const useKickOutMember = () => {
+    return useMutation({
+        mutationFn: async ({roomId, accountId}:KickOutMemberType) => {
+            const {data} = await instance.delete(`${router}/${roomId}/members/${accountId}`);
             return data;
         }
     })

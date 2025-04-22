@@ -6,6 +6,7 @@ import { Button } from '../../components/Button'
 import { useChangeProfileImg, useDuplicateCheck, useEditMypage, useGetMyInformation } from '../../apis/user'
 import { editMypage, position, positionEnum } from '../../apis/user/type'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const EditMyPage = () => {
   const navigator = useNavigate()
@@ -16,6 +17,8 @@ export const EditMyPage = () => {
   const [data, setData] = useState<editMypage>({ accountId: '', aboutMe: '', position: [] })
   const [isUsernameChecked, setIsUsernameChecked] = useState<boolean>(true)
   const [isUsernameDuplicate, setIsUsernameDuplicate] = useState<boolean>(false)
+
+  const queryClient = useQueryClient()
 
   const { mutate: changeProfileImg } = useChangeProfileImg(
     {
@@ -29,7 +32,10 @@ export const EditMyPage = () => {
 
   const { mutate: editMypageMutate } = useEditMypage(
     {
-      onSuccess: () => navigator('/mypage'),
+      onSuccess: () => {
+        navigator('/mypage')
+        queryClient.invalidateQueries({ queryKey: ['user'] })
+      },
       onError: () => alert('잠시 후 시도해주세요'),
     },
     data,
