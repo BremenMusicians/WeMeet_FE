@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { ProfileCard } from '../components/ProfileCard'
 import { More, PaperPlane } from '../assets'
 import { DeleteFriend } from '../components/DeleteFriend'
+import { position } from '../apis/user/type'
 
 function Chat() {
   const [isOpen, setIsOpen] = useState(false)
@@ -70,7 +71,7 @@ function Chat() {
           <FriendList>
             {data.map((item) => (
               <ProfileBox key={item.id}>
-                <ProfileCard name={item.name} introduce={item.introduce} position={item.position} children={null} />
+                <ProfileCard name={item.name} introduce={item.introduce} position={item.position as position[]} children={null} />
               </ProfileBox>
             ))}
           </FriendList>
