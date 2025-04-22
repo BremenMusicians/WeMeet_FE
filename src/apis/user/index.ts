@@ -64,7 +64,7 @@ export const useChangeProfileImg = (option: MutateOptions, file: File) => {
 }
 
 
-export const useUserQuery = () => {
+export const useUserQuery = (enabled: boolean) => {
   return useQuery({
     queryKey: ['user'],
     queryFn: async () => {
@@ -72,6 +72,7 @@ export const useUserQuery = () => {
       return data
     },
     retry: false,
+    enabled: enabled,
     refetchOnWindowFocus: false,
   });
 };
