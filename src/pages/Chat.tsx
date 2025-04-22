@@ -36,12 +36,6 @@ function Chat() {
     const [hour, minute] = time.split(':').map(Number)
     return `${hour >= 12 ? '오후' : '오전'} ${hour === 12 ? 12 : hour % 12}:${minute}`
   }
-
-  const data = [
-    { id: 1, name: '박수현', introduce: '어쩔ㄹㄹㄹ', position: ['신스'], status: 'not' },
-    { id: 2, name: '박수현', introduce: '어쩔ㄹㄹㄹ', position: ['신스'], status: 'standby' },
-    { id: 3, name: '박수현', introduce: '어쩔ㄹㄹㄹ', position: ['신스'], status: 'not' },
-  ]
   const chatMessages = [
     {
       id: 1,
@@ -63,11 +57,12 @@ function Chat() {
     },
   ]
 
+  const { data } = useGetChatList()
   return (
     <Layout>
       <Container>
         <FriendListBox>
-          <FriendNumber>45명의 친구</FriendNumber>
+          <FriendNumber>{data?.length || 0} 명의 친구</FriendNumber>
           <FriendList>
             {data.map((item) => (
               <ProfileBox key={item.id}>
