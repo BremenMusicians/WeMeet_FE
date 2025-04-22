@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { Bass, Drum, Guitar, Piano, Slider } from '../../assets'
+import { Base, Drum, Guitar, Piano, Slider } from '../../assets'
 import { useNavigate } from 'react-router-dom'
 
 export const Third = () => {
@@ -26,7 +26,7 @@ export const Third = () => {
       desc: '감성적인 아르페지오부터 리프까지',
     },
     {
-      icon: <Bass />,
+      icon: <Base Fill="#F64422" />,
       name: '베이스',
       desc: '음악에 깊이를 더하는',
     },
