@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import { Synthesizer } from '../components/Synthesizer'
 import GuitarComponents from '../components/Guitar'
 import { DrumComponents } from '../components/Drum'
-import { BaseComponents } from '../components/Base'
+import { BassComponents } from '../components/Bass'
 
 export const Instrument = () => {
   const location = useLocation()
@@ -20,7 +20,7 @@ export const Instrument = () => {
         {currentInstrument === '드럼' && <DrumComponents />}
         {currentInstrument === '신스' && <Synthesizer />}
         {currentInstrument === '기타' && <GuitarComponents />}
-        {currentInstrument === '베이스' && <BaseComponents />}
+        {currentInstrument === '베이스' && <BassComponents />}
       </Content>
     </Container>
   )
