@@ -4,15 +4,29 @@ import { Tab } from './Tab'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from './Button'
 import { cookie } from '../utils/Auth'
+import { useUserQuery } from '../apis/user'
+import { useUserStore } from '../stores/UserStores'
+import { useEffect } from 'react'
 
 export const Header = () => {
+  const setUser = useUserStore((state) => state.setUser)
+  const user = useUserStore((state) => state.user)
+
+  const { data } = useUserQuery()
+
+  useEffect(() => {
+    if (data) {
+      setUser(data)
+    }
+  }, [data, setUser])
+
   const routerList = [
     {
       router: '/main',
       name: '메인',
     },
     {
-      router: '/instrument',
+      router: '/instrument?name=피아노',
       name: '가상악기',
     },
     {
@@ -41,7 +55,7 @@ export const Header = () => {
         {isLogin ? (
           <ProfileContainer onClick={() => router('/mypage')}>
             <ProfileImg src={Profile} alt="프로필" />
-            <Nickname>닉네임</Nickname>
+            <Nickname>{user?.accountId}</Nickname>
           </ProfileContainer>
         ) : (
           <RightContainer>
