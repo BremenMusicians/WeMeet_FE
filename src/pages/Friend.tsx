@@ -47,7 +47,7 @@ export const Friend = () => {
           </p>
           <ListWrap>
             {data?.map((item) => (
-              <ProfileCard key={item.id} name={item.name} introduce={item.introduce} position={item.position} profileImg="">
+              <ProfileCard key={item.id} name={item.name} introduce={item.introduce} position={item.position as position[]} profileImg="">
                 {currentMenu === 'request' ? (
                   <RightContainer>
                     <ClickOption src={Accept} onClick={() => handleAccept()} />
@@ -80,7 +80,7 @@ const ClickOption = styled.img`
 
 const Container = styled.div`
   margin: 0 auto;
-  width: 1280px;
+  max-width: 1280px;
 `
 
 const Content = styled.div`
@@ -96,6 +96,7 @@ const TopBar = styled.div`
   width: 100%;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
 `
 
 const List = styled.div`
