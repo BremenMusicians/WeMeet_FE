@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import styled, { keyframes, css } from 'styled-components'
-import { BaseHeader } from '../assets'
+import { BassHeader } from '../assets'
 
 const STRINGS = [
   { name: 'g', frets: ['g0', 'g1', 'g2', 'g3', 'g4', 'g5'] },
@@ -8,10 +8,10 @@ const STRINGS = [
   { name: 'a', frets: ['a0', 'a1', 'a2', 'a3', 'a4', 'a5'] },
   { name: 'e', frets: ['e0', 'e1', 'e2', 'e3', 'e4', 'e5'] },
 ]
-const SOUND_URL = import.meta.env.VITE_BASE_SOUND_URL
+const SOUND_URL = import.meta.env.VITE_BASS_SOUND_URL
 
-export const BaseComponents = () => {
-  const baseFrets = [4, 5, 5, 8]
+export const BassComponents = () => {
+  const bassFrets = [4, 5, 5, 8]
   const [vibrateIndex, setVibrateIndex] = useState<number | null>(null)
 
   const play = (sound: string, stringIndex: number) => {
@@ -25,20 +25,20 @@ export const BaseComponents = () => {
     <Container>
       <Content>
         <ImgContainer>
-          <BaseHeaderImg src={BaseHeader} alt="베이스 머리" />
+          <BassHeaderImg src={BassHeader} alt="베이스 머리" />
           <TopCircle />
           <BottomCircle />
         </ImgContainer>
-        <BaseContent>
+        <BassContent>
           {STRINGS.map((string, lineIndex) => (
             <FretBox key={`string-${lineIndex}`}>
-              <GuitarString $vibrating={vibrateIndex === lineIndex} height={baseFrets[lineIndex]} />
+              <GuitarString $vibrating={vibrateIndex === lineIndex} height={bassFrets[lineIndex]} />
               {string.frets.map((item, fretIndex) => (
                 <Fret key={`fret-${lineIndex}-${fretIndex}`} onClick={() => play(item, lineIndex)} />
               ))}
             </FretBox>
           ))}
-        </BaseContent>
+        </BassContent>
       </Content>
     </Container>
   )
@@ -74,7 +74,7 @@ const GuitarString = styled.span<{ height: number; $vibrating: boolean }>`
     `}
 `
 
-const BaseHeaderImg = styled.img`
+const BassHeaderImg = styled.img`
   height: 250px;
 `
 
@@ -112,7 +112,7 @@ const Content = styled.div`
   margin: auto;
 `
 
-const BaseContent = styled.div`
+const BassContent = styled.div`
   border: 1px solid ${({ theme }) => theme.color.gray200};
   display: flex;
   flex-direction: column;

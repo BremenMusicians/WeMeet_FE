@@ -12,14 +12,6 @@ export const Header = () => {
   const setUser = useUserStore((state) => state.setUser)
   const user = useUserStore((state) => state.user)
 
-  const { data } = useUserQuery()
-
-  useEffect(() => {
-    if (data) {
-      setUser(data)
-    }
-  }, [data, setUser])
-
   const routerList = [
     {
       router: '/main',
@@ -38,7 +30,14 @@ export const Header = () => {
   const location = useLocation()
   const router = useNavigate()
 
-  const isLogin = cookie.get('access_token')
+  const isLogin: boolean = cookie.get('access_token')
+  const { data } = useUserQuery(!!isLogin)
+
+  useEffect(() => {
+    if (data) {
+      setUser(data)
+    }
+  }, [data, setUser])
 
   return (
     <HeaderContainer>
@@ -47,7 +46,7 @@ export const Header = () => {
           <LogoImg src={Letters_Logo} alt="로고" onClick={() => router('/')} />
           <FlexBox>
             {routerList.map((item) => (
-              <Tab isActive={location.pathname === item.router} key={item.name} name={item.name} onClick={() => router(`${item.router}`)} />
+              <Tab isActive={location.pathname === item.router.slice(0, 11)} key={item.name} name={item.name} onClick={() => router(`${item.router}`)} />
             ))}
           </FlexBox>
         </LeftContainer>

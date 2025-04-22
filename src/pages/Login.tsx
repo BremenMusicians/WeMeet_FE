@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Input } from '../components/Input'
 import { Button } from '../components/Button'
@@ -7,11 +7,17 @@ import { useNavigate } from 'react-router-dom'
 import { LoginRequestType } from '../apis/user/type'
 import { mailRegExp } from '../utils/regExp'
 import { login } from '../apis/user'
+import { AuthContext } from '../components/AuthContext'
+import { Turnstile } from '@marsidev/react-turnstile'
 
 function Login() {
+  const SITEKEY = import.meta.env.VITE_TURNSTILE_SITE_KEY
+  const loginErrorCount = useRef<number>(0)
   const navigate = useNavigate()
+  const [isVerified, setIsVerified] = useState<boolean>(false)
   const [form, setForm] = useState<LoginRequestType>({ mail: '', password: '' })
   const [errors, setErrors] = useState<LoginRequestType>({ mail: '', password: '' })
+  const { isLogin } = useContext(AuthContext)
 
   const validation = () => {
     const newErrors = { mail: '', password: '' }
@@ -30,8 +36,15 @@ function Login() {
   const handleLogin = async () => {
     if (validation()) {
       await login(form)
-        .then(() => navigate('/main'))
-        .catch(() => setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' })))
+        .then(() => {
+          navigate('/main')
+          isLogin()
+        })
+        .catch(() => {
+          loginErrorCount.current += 1
+          setIsVerified(false)
+          setErrors((prev) => ({ ...prev, password: '로그인에 실패하였습니다' }))
+        })
     }
   }
 
@@ -49,7 +62,8 @@ function Login() {
               <ErrorMessage>{errors.password}</ErrorMessage>
             </InputBox>
           </Form>
-          <Button bigSize onClick={handleLogin}>
+          {loginErrorCount.current >= 5 ? <Turnstile onSuccess={() => setIsVerified(true)} options={{ theme: 'light', size: 'flexible' }} siteKey={SITEKEY} /> : <></>}
+          <Button bigSize disabled={!(form.mail && form.password) || (loginErrorCount.current >= 5 && !isVerified)} onClick={handleLogin}>
             로그인
           </Button>
           <IsNewMember>

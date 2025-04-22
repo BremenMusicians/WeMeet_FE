@@ -1,13 +1,18 @@
-import React, { useContext } from 'react'
-import { Navigate } from 'react-router-dom'
+import React, { useContext, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AuthContext } from './AuthContext'
 
 type PublicRouteType = { children: React.ReactNode }
 const PublicRoute = ({ children }: PublicRouteType) => {
+  const navigate = useNavigate()
   const { isLoggedIn } = useContext(AuthContext)
-  if (isLoggedIn) {
-    return <Navigate to="/" />
-  }
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/')
+    }
+  }, [isLoggedIn, navigate])
+
   return children
 }
 

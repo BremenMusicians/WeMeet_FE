@@ -3,26 +3,26 @@ import { cookie } from '../utils/Auth'
 
 type AuthContextType = {
   isLoggedIn: boolean
-  login: () => void
+  isLogin: () => void
   logout: () => void
 }
 
-export const AuthContext = createContext<AuthContextType>({ isLoggedIn: false, login: () => {}, logout: () => {} })
+export const AuthContext = createContext<AuthContextType>({ isLoggedIn: false, isLogin: () => {}, logout: () => {} })
 
 type AuthChildrenType = { children: React.ReactNode }
 
 export const AuthProvider = ({ children }: AuthChildrenType) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!cookie.get('accessToken'))
+  const [isLoggedIn, setIsLoggedIn] = useState(!!cookie.get('access_token'))
 
-  const login = () => {
+  const isLogin = () => {
     setIsLoggedIn(true)
   }
 
   const logout = () => {
-    cookie.remove('accessToken')
-    cookie.remove('refreshToken')
+    cookie.remove('access_token')
+    cookie.remove('refresh_token')
     setIsLoggedIn(false)
   }
 
-  return <AuthContext.Provider value={{ isLoggedIn, login, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ isLoggedIn, isLogin, logout }}>{children}</AuthContext.Provider>
 }
