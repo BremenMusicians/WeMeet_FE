@@ -14,7 +14,7 @@ export const useGetChatList = () => {
   })
 }
 
-export const getChatHistory = (chatId: string) => {
+export const useGetChatHistory = (chatId: string) => {
   return useQuery({
     queryKey: ['chatHistory'],
     queryFn: async () => {

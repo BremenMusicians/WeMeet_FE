@@ -11,5 +11,16 @@ export interface ChatListType {
   accountId: string
   profile: null | string
   position: position[]
-  lastMessage: string | null
+  lastMessage?: string | null
+}
+
+export interface SendMailFormat {
+  receiver: string
+  content: string
+}
+
+export interface ReceiveMailFormat {
+  sender: string
+  sendAt: string
+  content: string
 }
