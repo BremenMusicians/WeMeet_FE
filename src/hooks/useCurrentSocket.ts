@@ -20,7 +20,7 @@ export const useConcertSocket = (roomId: string) => {
   const handleSocket = useCallback(() => {
     if (ws.current) ws.current.close()
 
-    ws.current = new WebSocket(`wss://${BASE_URL}/ws/rooms/${roomId}?token=${cookie.get('access_token')}`)
+    ws.current = new WebSocket(`wss://${BASE_URL}ws/rooms/${roomId}?token=${cookie.get('access_token')}`)
 
     ws.current.onopen = () => console.log('소켓 연결 성공')
     ws.current.onerror = (error) => console.error('[소켓 에러]', error)
