@@ -1,64 +1,83 @@
 import styled from 'styled-components'
 import { Toggle } from '../components/Toggle'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { SearchInput } from '../components/SearchInput'
 import { ProfileCard } from '../components/ProfileCard'
 import { Accept, AddFriend, Refusal } from '../assets'
+import { useChangeFriend, useFriendRequest, useGetRecommendFriendList } from '../apis/friends'
+import { useInView } from 'react-intersection-observer'
+import useDebounce from '../hooks/useDebounce'
 
 export const Friend = () => {
   const [currentMenu, setCurrentMenu] = useState<'recommend' | 'request'>('recommend')
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const debouncedSearchText = useDebounce(searchKeyword, 300)
+  const [requestedIds, setRequestedIds] = useState<string[]>([])
 
-  const data = [
-    { id: 1, name: '박수현', introduce: '어쩔ㄹㄹㄹ', position: ['신스'], status: 'not' },
-    { id: 2, name: '박수현', introduce: '어쩔ㄹㄹㄹ', position: ['신스'], status: 'standby' },
-    { id: 3, name: '박수현', introduce: '어쩔ㄹㄹㄹ', position: ['신스'], status: 'not' },
-  ]
+  const { ref, inView } = useInView()
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetRecommendFriendList(debouncedSearchText)
+  const { mutate: handleAddFriend } = useFriendRequest()
+  const { mutate: changeFriendStatus } = useChangeFriend()
 
-  // 친구 요청 수락
-  const handleAccept = () => {
-    // API 요청 추가
+  const handleAccept = (accountId: string) => {
+    changeFriendStatus({ accountId, accept: true })
   }
 
-  // 친구 요청 거절
-  const handleRefusal = () => {
-    // API 요청 추가
+  const handleRefusal = (accountId: string) => {
+    changeFriendStatus({ accountId, accept: false })
   }
 
-  // 친구 추가
-  const handleAddFriend = () => {
-    //API 요청 추가
-  }
-
-  // 메시지 보내기
-  const handleSendMessage = () => {
-    //채팅 페이지 이동 or API 요청 추가
-  }
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, hasNextPage, fetchNextPage])
 
   return (
     <Container>
       <Content>
         <TopBar>
           <Toggle onChange={setCurrentMenu} />
-          <SearchInput placeholder="검색어를 입력해주세요" onChange={() => {}} name="search" value="" width={640} />
+          <SearchInput placeholder="검색어를 입력해주세요" onChange={(e) => setSearchKeyword(e.target.value)} name="search" value={searchKeyword} width={640} />
         </TopBar>
+
         <List>
           <p>
-            {currentMenu === 'request' ? '받은 친구 요청' : '추천 친구'} ({data.length}명)
+            {currentMenu === 'request' ? '받은 친구 요청' : '추천 친구'} ({data?.pages?.[0]?.users?.length ?? 0}명)
           </p>
+
           <ListWrap>
-            {data?.map((item) => (
-              <ProfileCard key={item.id} name={item.name} introduce={item.introduce} position={item.position as position[]} profileImg="">
-                {currentMenu === 'request' ? (
-                  <RightContainer>
-                    <ClickOption src={Accept} onClick={() => handleAccept()} />
-                    <ClickOption src={Refusal} onClick={() => handleRefusal()} />
-                  </RightContainer>
-                ) : (
-                  <ClickOption src={item.status === 'not' ? AddFriend : undefined} onClick={() => handleAddFriend()} />
-                )}
-              </ProfileCard>
-            ))}
-            {currentMenu === 'request' && data.length === 0 && <P>친구 요청이 없습니다.</P>}
+            {data?.pages
+              .flatMap((page) => page.users)
+              .map((item) => (
+                <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} profileImg={item.profile!}>
+                  {currentMenu === 'request' ? (
+                    <RightContainer>
+                      <ClickOption src={Accept} onClick={() => handleAccept(item.accountId)} />
+                      <ClickOption src={Refusal} onClick={() => handleRefusal(item.accountId)} />
+                    </RightContainer>
+                  ) : (
+                    item.isFriend === 'NOT_FRIEND' && (
+                      <ClickOption
+                        hidden={requestedIds.includes(item.accountId)}
+                        src={AddFriend}
+                        onClick={() =>
+                          handleAddFriend(item.accountId, {
+                            onSuccess: () => {
+                              setRequestedIds((prev) => [...prev, item.accountId])
+                            },
+                          })
+                        }
+                      />
+                    )
+                  )}
+                </ProfileCard>
+              ))}
+
+            {currentMenu === 'request' && (data?.pages?.[0]?.users?.length ?? 0) < 1 && <P>친구 요청이 없습니다.</P>}
+            {currentMenu === 'recommend' && (data?.pages?.[0]?.users?.length ?? 0) < 1 && <P>해당 친구가 존재하지 않습니다.</P>}
+            {!isLoading && <ScrollObserver ref={ref} />}
+            {isFetchingNextPage && <P>불러오는 중...</P>}
           </ListWrap>
         </List>
       </Content>
@@ -73,9 +92,10 @@ const RightContainer = styled.div`
   justify-content: space-between;
 `
 
-const ClickOption = styled.img`
+const ClickOption = styled.img<{ hidden?: boolean }>`
   width: 44px;
   cursor: pointer;
+  display: ${({ hidden }) => (hidden ? 'none' : 'inline')};
 `
 
 const Container = styled.div`
@@ -110,6 +130,7 @@ const ListWrap = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: scroll;
 `
 
 const P = styled.h2`
@@ -120,4 +141,8 @@ const P = styled.h2`
   justify-content: center;
   align-items: center;
   color: ${({ theme }) => theme.color.gray400};
+`
+
+const ScrollObserver = styled.div`
+  height: 1px;
 `
