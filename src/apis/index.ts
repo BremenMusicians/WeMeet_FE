@@ -51,15 +51,15 @@ instance.interceptors.response.use(
         const refreshToken = cookie.get('refresh_token')
         try {
           await axios
-            .put(`${BASEURL}/user/refresh`, null, {
+            .post(`${BASEURL}user/refresh`, null, {
               headers: {
                 'X-Refresh-Token': `${refreshToken}`,
               },
             })
             .then((response) => {
               const data = response.data
-              cookie.set('access_token', data.access_token)
-              cookie.set('refresh_token', data.refresh_token)
+              cookie.set('access_token', data.accessToken)
+              cookie.set('refresh_token', data.refreshToken)
             })
             .catch(() => {
               window.location.href = '/'
