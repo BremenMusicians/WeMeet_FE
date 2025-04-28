@@ -6,7 +6,7 @@ import { DeleteFriend } from '../components/DeleteFriend'
 import { useGetChatHistory, useGetChatList } from '../apis/chat'
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
-import { ChatListType } from '../apis/chat/type'
+import { ChatListType, ChatMessageType } from '../apis/chat/type'
 import { positionEnum } from '../apis/user/type'
 
 const BASEURL = import.meta.env.VITE_SERVER_BASE_URL
@@ -29,15 +29,14 @@ function Chat() {
     position: [],
   })
 
+  const { data: chatList = [] } = useGetChatList()
+  const userMail = localStorage.getItem('mail')
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node
-      if (pickerRef.current && !pickerRef.current.contains(target) && buttonRef.current && !buttonRef.current.contains(target)) {
-        setShowPicker(false)
-      }
-      if (contextpickerRef.current && !contextpickerRef.current.contains(target)) {
-        setIsOpen(false)
-      }
+      if (pickerRef.current && !pickerRef.current.contains(target) && buttonRef.current && !buttonRef.current.contains(target)) setShowPicker(false)
+      if (contextpickerRef.current && !contextpickerRef.current.contains(target)) setIsOpen(false)
     }
 
     document.addEventListener('mousedown', handleClickOutside)
@@ -45,7 +44,22 @@ function Chat() {
   }, [])
 
   useEffect(() => {
-    // if (selectedFriend.chatId) useGetChatHistory(selectedFriend.chatId)
+    if (!selectedFriend.chatId) return
+
+    const fetchChatHistory = async () => {
+      const { data } = await useGetChatHistory(selectedFriend.chatId)
+      if (data) {
+        setMessages(
+          data.map((item: any) => ({
+            name: item.sender === userMail ? '나' : '상대방',
+            message: item.content,
+            time: item.sendAt,
+          })),
+        )
+      }
+    }
+
+    fetchChatHistory()
   }, [selectedFriend.chatId])
 
   useEffect(() => {
@@ -87,31 +101,16 @@ function Chat() {
   }
 
   const handleClickProfile = (item: ChatListType) => {
-    setSelectedFriend(item)
+    let chatId = item.chatId
+    if (selectedFriend.chatId === chatId) chatId = ''
+    setSelectedFriend({ ...item, chatId: chatId })
   }
-
-  const chatList: ChatListType[] = [
-    {
-      chatId: 'chat-1',
-      accountId: '락 안듣는사람이 먼저',
-      profile: null,
-      position: ['VOCAL', 'SYNTH', 'GUITAR'],
-      lastMessage: '밥먹으러 가자!',
-    },
-    {
-      chatId: 'chat-2',
-      accountId: '락 안듣는사람',
-      profile: null,
-      position: ['VOCAL'],
-      lastMessage: '밥먹으러 가자!',
-    },
-  ]
 
   return (
     <Layout>
       <Container>
-        <FriendListBox>
-          <FriendNumber>{chatList.length}명의 친구</FriendNumber>
+        <FriendListBox $isChatOpen={selectedFriend.chatId.length > 0}>
+          <FriendNumber>{chatList?.length || 0}명의 친구</FriendNumber>
           <FriendList>
             {chatList.map((item) => (
               <ProfileBox key={item.chatId} onClick={() => handleClickProfile(item)}>
@@ -121,7 +120,7 @@ function Chat() {
           </FriendList>
         </FriendListBox>
 
-        {selectedFriend.chatId && (
+        {selectedFriend.chatId.length > 0 && (
           <ChatBox>
             <TopBar>
               <UserInfo>
@@ -174,9 +173,6 @@ function Chat() {
   )
 }
 
-// styled-components 생략하지 않고 유지
-// ... (styled-components 정의는 원본과 동일하게 유지되며 생략함)
-
 export default Chat
 
 const PickerBox = styled.div`
@@ -220,13 +216,13 @@ const ContextMenu = styled.div`
   position: relative;
 `
 
-const FriendListBox = styled.div`
+const FriendListBox = styled.div<{ $isChatOpen?: boolean }>`
   display: flex;
   flex-direction: column;
   padding: 24px 0px;
   gap: 20px;
   min-width: 240px;
-  width: 370px;
+  width: ${({ $isChatOpen }) => ($isChatOpen ? '370px' : '100%')};
 `
 
 const Layout = styled.div`
