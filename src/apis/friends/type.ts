@@ -5,7 +5,7 @@ export interface UserType {
     profile: null | string,
     aboutMe: null | string,
     position: position[]
-    isFriend: "NOT_FRIEND"| "FRIEND"| "WTAITING"
+    isFriend: "NOT_FRIEND"| "FRIEND"| "WAITING"
 }
 
 export interface FriendResponseType {
