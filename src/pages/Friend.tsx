@@ -16,16 +16,20 @@ export const Friend = () => {
 
   const { ref, inView } = useInView()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetRecommendFriendList(debouncedSearchText)
-  const { data: requestList } = useGetRequestFriendList()
+  const { data: requestList, refetch: refetchlist } = useGetRequestFriendList()
   const { mutate: handleAddFriend } = useFriendRequest()
-  const { mutate: changeFriendStatus } = useChangeFriend()
+  const { mutate: changeFriendStatus } = useChangeFriend({
+    onSuccess: () => {
+      refetchlist()
+    },
+  })
 
-  const handleAccept = (accountId: string) => {
-    changeFriendStatus({ accountId, accept: true })
+  const handleAccept = (friendId: string) => {
+    changeFriendStatus({ friendId, accept: true })
   }
 
-  const handleRefusal = (accountId: string) => {
-    changeFriendStatus({ accountId, accept: false })
+  const handleRefusal = (friendId: string) => {
+    changeFriendStatus({ friendId, accept: false })
   }
 
   useEffect(() => {
@@ -69,8 +73,8 @@ export const Friend = () => {
               : requestList?.map((item) => (
                   <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} profileImg={item.profile!}>
                     <RightContainer>
-                      <ClickOption src={Accept} onClick={() => handleAccept(item.accountId)} />
-                      <ClickOption src={Refusal} onClick={() => handleRefusal(item.accountId)} />
+                      <ClickOption src={Accept} onClick={() => handleAccept(item.friendId)} />
+                      <ClickOption src={Refusal} onClick={() => handleRefusal(item.friendId)} />
                     </RightContainer>
                   </ProfileCard>
                 ))}

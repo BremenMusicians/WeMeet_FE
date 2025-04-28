@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
+import { MutationOptions, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
 import { ChangeFriendRequestType, RequestFriendListType } from "./type"
 
@@ -14,14 +14,15 @@ export const useFriendRequest = () => {
     })
 }
 
-  export const useChangeFriend = () => {
-    return useMutation<void, Error, ChangeFriendRequestType>({
-      mutationFn: async ({ accountId, accept }) => {
-        const { data } = await instance.patch(`${router}/request/${accountId}?accept=${accept}`)
-        return data
-      },
-    })
-  }
+export const useChangeFriend = (option: MutationOptions<void, Error, ChangeFriendRequestType>) => {
+  return useMutation<void, Error, ChangeFriendRequestType>({
+    ...option,
+    mutationFn: async ({ friendId, accept }) => {
+      const { data } = await instance.patch(`${router}/request/${friendId}?accept=${accept}`)
+      return data
+    },
+  })
+}
   
   export const useGetRecommendFriendList = (name: string) => {
     return useInfiniteQuery({
@@ -49,7 +50,7 @@ export const useGetRequestFriendList = () => {
   return useQuery({
     queryKey: ['getRequestFriendList'],
     queryFn: async () => {
-      const {data} = await instance.get<RequestFriendListType>(`${router}/list`);
+      const {data} = await instance.get<RequestFriendListType>(`${router}/request`);
       return data.friendRequests
     }
   })

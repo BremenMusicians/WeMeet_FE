@@ -14,7 +14,7 @@ export interface FriendResponseType {
 }
 
 export interface ChangeFriendRequestType {
-    accountId: string,
+    friendId: string,
     accept: boolean
 }
 
