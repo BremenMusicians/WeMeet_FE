@@ -32,8 +32,8 @@ export const useFriendRequest = () => {
         },
         getNextPageParam: (lastPage, allPages) => {
             const totalFetched = allPages.reduce((acc, page) => acc + page.users.length, 0)
-            const totalAvailable = 20
-
+            const totalAvailable = lastPage.usersCnt
+            
             if (totalFetched < totalAvailable) {
               return lastPage.page + 1
             }
