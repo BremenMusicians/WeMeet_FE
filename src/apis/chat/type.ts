@@ -9,9 +9,13 @@ export interface ChatMessageType {
 export interface ChatListType {
   chatId: string
   accountId: string
-  profile: null | string
+  profile: string | null
   position: position[]
-  lastMessage?: string | null
+  lastMessage?: string
+}
+
+export interface ChatListResponse {
+  chats: ChatListType[]
 }
 
 export interface SendMailFormat {
