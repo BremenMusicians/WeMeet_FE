@@ -1,6 +1,6 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
-import { ChangeFriendRequestType } from "./type"
+import { ChangeFriendRequestType, RequestFriendListType } from "./type"
 
 const router = '/friends'
 
@@ -44,3 +44,13 @@ export const useFriendRequest = () => {
       })
       
   }
+
+export const useGetRequestFriendList = () => {
+  return useQuery({
+    queryKey: ['getRequestFriendList'],
+    queryFn: async () => {
+      const {data} = await instance.get<RequestFriendListType>(`${router}/list`);
+      return data.friendRequests
+    }
+  })
+}
