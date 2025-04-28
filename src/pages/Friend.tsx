@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { SearchInput } from '../components/SearchInput'
 import { ProfileCard } from '../components/ProfileCard'
 import { Accept, AddFriend, Refusal } from '../assets'
-import { useChangeFriend, useFriendRequest, useGetRecommendFriendList } from '../apis/friends'
+import { useChangeFriend, useFriendRequest, useGetRecommendFriendList, useGetRequestFriendList } from '../apis/friends'
 import { useInView } from 'react-intersection-observer'
 import useDebounce from '../hooks/useDebounce'
 
@@ -16,6 +16,7 @@ export const Friend = () => {
 
   const { ref, inView } = useInView()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetRecommendFriendList(debouncedSearchText)
+  const { data: requestList } = useGetRequestFriendList()
   const { mutate: handleAddFriend } = useFriendRequest()
   const { mutate: changeFriendStatus } = useChangeFriend()
 
@@ -38,45 +39,45 @@ export const Friend = () => {
       <Content>
         <TopBar>
           <Toggle onChange={setCurrentMenu} />
-          <SearchInput placeholder="검색어를 입력해주세요" onChange={(e) => setSearchKeyword(e.target.value)} name="search" value={searchKeyword} width={640} />
+          {currentMenu === 'recommend' && <SearchInput placeholder="검색어를 입력해주세요" onChange={(e) => setSearchKeyword(e.target.value)} name="search" value={searchKeyword} width={640} />}
         </TopBar>
 
         <List>
-          <p>
-            {currentMenu === 'request' ? '받은 친구 요청' : '추천 친구'} ({data?.pages?.[0]?.users?.length ?? 0}명)
-          </p>
+          <p>{currentMenu === 'request' ? `받은 친구 요청 (${requestList?.length ?? 0}명)` : `추천 친구 (${data?.pages?.[0]?.usersCnt ?? 0}명)`}</p>
 
           <ListWrap>
-            {data?.pages
-              .flatMap((page) => page.users)
-              .map((item) => (
-                <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} profileImg={item.profile!}>
-                  {currentMenu === 'request' ? (
+            {currentMenu === 'recommend'
+              ? data?.pages
+                  .flatMap((page) => page.users)
+                  .map((item) => (
+                    <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} profileImg={item.profile!}>
+                      {item.isFriend === 'NOT_FRIEND' && (
+                        <ClickOption
+                          hidden={requestedIds.includes(item.accountId)}
+                          src={AddFriend}
+                          onClick={() =>
+                            handleAddFriend(item.accountId, {
+                              onSuccess: () => {
+                                setRequestedIds((prev) => [...prev, item.accountId])
+                              },
+                            })
+                          }
+                        />
+                      )}
+                    </ProfileCard>
+                  ))
+              : requestList?.map((item) => (
+                  <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} profileImg={item.profile!}>
                     <RightContainer>
                       <ClickOption src={Accept} onClick={() => handleAccept(item.accountId)} />
                       <ClickOption src={Refusal} onClick={() => handleRefusal(item.accountId)} />
                     </RightContainer>
-                  ) : (
-                    item.isFriend === 'NOT_FRIEND' && (
-                      <ClickOption
-                        hidden={requestedIds.includes(item.accountId)}
-                        src={AddFriend}
-                        onClick={() =>
-                          handleAddFriend(item.accountId, {
-                            onSuccess: () => {
-                              setRequestedIds((prev) => [...prev, item.accountId])
-                            },
-                          })
-                        }
-                      />
-                    )
-                  )}
-                </ProfileCard>
-              ))}
+                  </ProfileCard>
+                ))}
 
-            {currentMenu === 'request' && (data?.pages?.[0]?.users?.length ?? 0) < 1 && <P>친구 요청이 없습니다.</P>}
+            {currentMenu === 'request' && (requestList?.length ?? 0) < 1 && <P>친구 요청이 없습니다.</P>}
             {currentMenu === 'recommend' && (data?.pages?.[0]?.users?.length ?? 0) < 1 && <P>해당 친구가 존재하지 않습니다.</P>}
-            {!isLoading && <ScrollObserver ref={ref} />}
+            {currentMenu === 'recommend' && !isLoading && <ScrollObserver ref={ref} />}
             {isFetchingNextPage && <P>불러오는 중...</P>}
           </ListWrap>
         </List>
