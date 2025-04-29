@@ -1,22 +1,19 @@
 import styled from 'styled-components'
 import { LogOut, More, Warning } from '../assets'
 import { useState } from 'react'
-import { useKickOutMember } from '../apis/room'
-import { useLocation } from 'react-router-dom'
 
 interface UserVideoProps {
   owner?: boolean
+  accountId: string
+  onClick: () => void
+  img: string
 }
 
-export const UserVideo = ({ owner = false }: UserVideoProps) => {
+export const UserVideo = ({ owner = false, accountId, onClick, img }: UserVideoProps) => {
   const [more, setMore] = useState<boolean>(false)
-  const searchParams = new URLSearchParams(useLocation().search)
-  const roomId = searchParams.get('id')!
-
-  const { mutate: kickOut } = useKickOutMember()
 
   return (
-    <Container onClick={() => setMore(false)}>
+    <Container userImg={img} onClick={() => setMore(false)}>
       <NickNameContainer>
         {!!owner && (
           <MoreButton
@@ -33,13 +30,17 @@ export const UserVideo = ({ owner = false }: UserVideoProps) => {
             <OptionContent>
               <img width={20} src={Warning} alt="신고" /> <p>신고하기</p>
             </OptionContent>
-            <OptionContent onClick={() => kickOut({ roomId, accountId: '1234' })}>
+            <OptionContent
+              onClick={(e) => {
+                e.stopPropagation()
+                onClick()
+              }}
+            >
               <LogOut width={20} Fill="#A1A1AA" /> <p>내보내기</p>
             </OptionContent>
-            {/**추후 소켓연동 후 accountId수정*/}
           </Option>
         )}
-        <NickName>[드럼] 박수현</NickName>
+        <NickName>[드럼] {accountId}</NickName>
       </NickNameContainer>
     </Container>
   )
@@ -60,12 +61,13 @@ const MoreButton = styled.div`
   right: 16px;
 `
 
-const Container = styled.div`
+const Container = styled.div<{ userImg: string }>`
   position: relative;
   width: 100%;
   height: 100%;
   border-radius: 16px;
   background-color: gray;
+  background-image: ${({ userImg }) => `url(${userImg})`};
   max-width: 560px;
 `
 
