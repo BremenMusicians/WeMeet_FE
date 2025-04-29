@@ -31,5 +31,5 @@ export const useMicrophone = () => {
 
   const toggleMike = () => setMikeOn((prev) => !prev)
 
-  return { mikeOn, toggleMike }
+  return { mikeOn, toggleMike, audioStream }
 }
