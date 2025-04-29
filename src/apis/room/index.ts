@@ -1,6 +1,6 @@
-import { MutateOptions, useMutation, useQuery } from "@tanstack/react-query"
+import { MutateOptions, useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import { instance } from ".."
-import { concertRoomResponse, CreateRoomResponse, createRoomType, KickOutMemberType } from "./type"
+import { CreateRoomResponse, createRoomType, KickOutMemberType } from "./type"
 
 const router = '/rooms'
 
@@ -17,13 +17,24 @@ export const useCreateRoom = (
     });
 };
 
-export const useGetConcertRoom = (page = 0) => {
-    return useQuery({
-        queryKey: ["concertRoom"],
-        queryFn: async () => {
-            const {data} = await instance.get<concertRoomResponse>(`${router}?page=${page}`);
-            return data
-        }
+export const useGetConcertRoom = (name: string) => {
+    return useInfiniteQuery({
+        queryKey: ['getConcertRoom', name],
+        queryFn: async ({pageParam = 0}) => {
+            const {data} = await instance.get(`${router}?page=${pageParam}&name=${encodeURIComponent(name)}`);
+            return {...data, page: pageParam}
+        },
+        getNextPageParam: (lastPage, allPages) => {
+            const totalFetched = allPages.reduce((acc, page) => acc + page.rooms.length, 0)
+            const totalAvailable = lastPage.roomCount
+
+            if (totalFetched < totalAvailable) {
+              return lastPage.page + 1
+            }
+            return undefined
+          },
+        staleTime: 1000 * 60,
+        initialPageParam: 0
     })
 }
 
