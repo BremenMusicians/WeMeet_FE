@@ -1,4 +1,4 @@
-import { MutationOptions, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
+import { MutationOptions, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
 import { ChangeFriendRequestType, DeleteFriendRequestType, RequestFriendListType } from "./type"
 import { useFriendListQuery } from "../../hooks/useFriendListQueryFactory"
