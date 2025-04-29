@@ -1,6 +1,7 @@
 import { MutationOptions, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
 import { ChangeFriendRequestType, DeleteFriendRequestType, RequestFriendListType } from "./type"
+import { useFriendListQuery } from "../../hooks/useFriendListQueryFactory"
 
 const router = '/friends'
 
@@ -23,28 +24,6 @@ export const useChangeFriend = (option: MutationOptions<void, Error, ChangeFrien
     },
   })
 }
-  
-  export const useGetRecommendFriendList = (name: string) => {
-    return useInfiniteQuery({
-        queryKey: ['recommend-friend-list', name],
-        queryFn: async ({ pageParam = 0 }) => {
-          const { data } = await instance.get(`${router}?page=${pageParam}&name=${encodeURIComponent(name)}`)
-          return { ...data, page: pageParam }
-        },
-        getNextPageParam: (lastPage, allPages) => {
-            const totalFetched = allPages.reduce((acc, page) => acc + page.users.length, 0)
-            const totalAvailable = lastPage.usersCnt
-            
-            if (totalFetched < totalAvailable) {
-              return lastPage.page + 1
-            }
-            return undefined
-          },
-        staleTime: 1000 * 60,
-        initialPageParam: 0
-      })
-      
-  }
 
 export const useGetRequestFriendList = () => {
   return useQuery({
@@ -66,23 +45,10 @@ export const useDeleteFriend = (option:MutationOptions<void, Error, DeleteFriend
   })
 }
 
-export const useGetMyFriendList = (name:string) => {
-  return useInfiniteQuery({
-    queryKey: ['myFriendList', name],
-    queryFn: async ({ pageParam = 0 }) => {
-      const { data } = await instance.get(`${router}/my?page=${pageParam}&name=${encodeURIComponent(name)}`)
-      return { ...data, page: pageParam }
-    },
-    getNextPageParam: (lastPage, allPages) => {
-        const totalFetched = allPages.reduce((acc, page) => acc + page.users.length, 0)
-        const totalAvailable = lastPage.usersCnt
-        
-        if (totalFetched < totalAvailable) {
-          return lastPage.page + 1
-        }
-        return undefined
-      },
-    staleTime: 1000 * 60,
-    initialPageParam: 0
-  })
+export const useGetMyFriendList = (name: string) => {
+  return useFriendListQuery({ queryKey: ['myFriendList', name], endpoint: `${router}/my`, name })
+}
+
+export const useGetRecommendFriendList = (name: string) => {
+  return useFriendListQuery({ queryKey: ['recommendFriendList', name], endpoint: router, name })
 }
