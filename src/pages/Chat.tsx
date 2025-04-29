@@ -5,6 +5,11 @@ import { More, PaperPlane } from '../assets'
 import { DeleteFriend } from '../components/DeleteFriend'
 import { position } from '../apis/user/type'
 
+/**
+ * Renders the main chat interface with a friend list, chat messages, and message input.
+ *
+ * Displays a list of friends, a chat area with message history, and an input field for sending new messages. Includes a context menu for additional actions such as deleting a friend.
+ */
 function Chat() {
   const [isOpen, setIsOpen] = useState(false)
   const contextMenuRef = useRef<HTMLDivElement>(null)
