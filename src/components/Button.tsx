@@ -27,7 +27,7 @@ const ButtonContainer = styled.button<{ $disabled: boolean; $bigSize: boolean; $
   border-radius: 6px;
   height: ${({ $bigSize }) => ($bigSize ? '48px' : '40px')};
   padding: ${({ $bigSize }) => ($bigSize ? '16px' : '0px 16px')};
-  cursor: pointer;
+  cursor: ${({ $disabled }) => ($disabled ? 'none' : 'pointer')};
   width: ${({ $width }) => ($width ? `${$width}px` : '100%')};
   &:hover {
     background-color: ${({ theme, $disabled }) => !$disabled && theme.color.orange400};
