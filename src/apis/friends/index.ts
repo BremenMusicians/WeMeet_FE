@@ -1,6 +1,6 @@
 import { MutationOptions, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
-import { ChangeFriendRequestType, RequestFriendListType } from "./type"
+import { ChangeFriendRequestType, DeleteFriendRequestType, RequestFriendListType } from "./type"
 
 const router = '/friends'
 
@@ -53,5 +53,36 @@ export const useGetRequestFriendList = () => {
       const {data} = await instance.get<RequestFriendListType>(`${router}/request`);
       return data.friendRequests
     }
+  })
+}
+
+export const useDeleteFriend = (option:MutationOptions<void, Error, DeleteFriendRequestType>) => {
+  return useMutation<void, Error, DeleteFriendRequestType>({
+    ...option,
+    mutationFn: async ({accountId}) => {
+      const {data} = await instance.delete(`${router}/${accountId}`)
+      return data
+    }
+  })
+}
+
+export const useGetMyFriendList = (name:string) => {
+  return useInfiniteQuery({
+    queryKey: ['myFriendList', name],
+    queryFn: async ({ pageParam = 0 }) => {
+      const { data } = await instance.get(`${router}/my?page=${pageParam}&name=${encodeURIComponent(name)}`)
+      return { ...data, page: pageParam }
+    },
+    getNextPageParam: (lastPage, allPages) => {
+        const totalFetched = allPages.reduce((acc, page) => acc + page.users.length, 0)
+        const totalAvailable = lastPage.usersCnt
+        
+        if (totalFetched < totalAvailable) {
+          return lastPage.page + 1
+        }
+        return undefined
+      },
+    staleTime: 1000 * 60,
+    initialPageParam: 0
   })
 }
