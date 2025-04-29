@@ -120,7 +120,7 @@ export const EditMyPage = () => {
             </p>
             <NickName>
               <Input name="accountId" type="text" value={data.accountId} onChange={handleChange} />
-              <Button width={92} bigSize onClick={() => duplicateCheck()}>
+              <Button disabled={MyData?.accountId === data.accountId} width={92} bigSize onClick={() => duplicateCheck()}>
                 중복 확인
               </Button>
             </NickName>

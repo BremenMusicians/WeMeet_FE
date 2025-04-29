@@ -9,19 +9,18 @@ interface ProfileCard {
   position: position[]
   profileImg?: string
   children: React.ReactNode
+  chat?: boolean
 }
 
-export const ProfileCard = ({ name, introduce, position, profileImg, children }: ProfileCard) => {
+export const ProfileCard = ({ name, introduce, position, profileImg, children, chat = false }: ProfileCard) => {
   return (
     <ProfileContainer>
       <Flex>
         <ProfileImg src={profileImg || Profile} alt="프로필" />
         <Column>
           <Flex>
-            <Name>{name}</Name>
-            {position?.map((item) => (
-              <PositionBadge key={item}>{positionEnum[item]}</PositionBadge>
-            ))}
+            <Name chat={chat}>{name}</Name>
+            {!chat && position?.map((item) => <PositionBadge key={item}>{positionEnum[item]}</PositionBadge>)}
           </Flex>
           <Introduce>{introduce}</Introduce>
         </Column>
@@ -52,6 +51,7 @@ const PositionBadge = styled.div`
   padding: 4px 6px;
   width: fit-content;
   height: fit-content;
+  overflow: hidden;
 `
 
 const Column = styled.div`
@@ -63,10 +63,18 @@ const Column = styled.div`
 const Introduce = styled.p`
   ${({ theme }) => theme.font.body4}
   color: ${({ theme }) => theme.color.gray400};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 235px;
 `
 
-const Name = styled.h3`
+const Name = styled.h3<{ chat?: boolean }>`
   ${({ theme }) => theme.font.body2}
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: ${({ chat }) => (chat ? '235px' : '100%')};
 `
 
 const ProfileImg = styled.img`

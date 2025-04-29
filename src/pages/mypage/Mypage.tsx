@@ -8,19 +8,35 @@ import { useEffect, useRef, useState } from 'react'
 import { positionEnum } from '../../apis/user/type'
 import { ClipLoader } from 'react-spinners'
 import { useGetMyInformation } from '../../apis/user'
+import { useDeleteFriend, useGetMyFriendList } from '../../apis/friends'
+import { useInView } from 'react-intersection-observer'
+import useDebounce from '../../hooks/useDebounce'
 
 export const MyPage = () => {
   const { data, isLoading } = useGetMyInformation()
-  const [searchTerm, setSearchTerm] = useState<string>('')
-  const deleteRef = useRef<HTMLDivElement>(null)
+  const deleteRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [visibleDelete, setVisibleDelete] = useState<{ [key: string]: boolean }>({})
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const debouncedSearchText = useDebounce(searchKeyword, 300)
+  const { ref, inView } = useInView()
+  const { data: friendData, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: friendLoading, refetch } = useGetMyFriendList(debouncedSearchText)
+  const { mutate: deleteFriend } = useDeleteFriend({
+    onSuccess: () => {
+      refetch()
+    },
+    onError: () => {
+      alert('잠시 후 다시 시도해 주세요')
+    },
+  })
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (deleteRef.current && !deleteRef.current.contains(event.target as Node)) {
+      const clickedOutsideAll = Object.values(deleteRefs.current).every((ref) => !ref || !ref.contains(event.target as Node))
+      if (clickedOutsideAll) {
         setVisibleDelete((prev) => Object.fromEntries(Object.keys(prev).map((key) => [key, false])))
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -29,18 +45,18 @@ export const MyPage = () => {
 
   const router = useNavigate()
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
-  }
-
-  const filteredFriends = data?.friends?.filter((friend) => friend.accountId.toLowerCase().includes(searchTerm.toLowerCase()) || friend.aboutMe?.toLowerCase().includes(searchTerm.toLowerCase())) || []
-
   const handleDeleteToggle = (accountId: string) => {
     setVisibleDelete((prev) => ({
       ...Object.fromEntries(Object.keys(prev).map((key) => [key, false])),
       [accountId]: !prev[accountId],
     }))
   }
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, hasNextPage, fetchNextPage])
 
   if (isLoading) return <ClipLoader color="#F55219" />
 
@@ -74,20 +90,35 @@ export const MyPage = () => {
         </Title>
         <FriendContent>
           <FriendTopBar>
-            <p>{data?.friendsCnt}명의 친구</p>
-            <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchTerm} onChange={handleSearchChange} />
+            <p>{friendData?.pages?.[0]?.usersCnt ?? 0}명의 친구</p>
+            <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </FriendTopBar>
-          {filteredFriends.map((item) => (
-            <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
-              <RightContainer>
-                <ClickOption src={Chat} onClick={() => {}} />
-                <div ref={deleteRef}>
-                  <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
-                </div>
-                {visibleDelete[item.accountId] && <DeleteFriend onClick={() => {}} />} {/* 삭제 버튼 표시 */}
-              </RightContainer>
-            </ProfileCard>
-          ))}
+          {friendData?.pages
+            .flatMap((page) => page.users)
+            .map((item) => (
+              <ProfileCard profileImg={item.profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
+                <RightContainer>
+                  <ClickOption src={Chat} onClick={() => {}} />
+                  <div
+                    ref={(el) => {
+                      deleteRefs.current[item.accountId] = el
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
+                    {visibleDelete[item.accountId] && (
+                      <DeleteFriend
+                        onClick={() => {
+                          deleteFriend(item.accountId)
+                        }}
+                      />
+                    )}
+                  </div>
+                </RightContainer>
+              </ProfileCard>
+            ))}
+          {!friendLoading && <ScrollObserver ref={ref} />}
+          {isFetchingNextPage && <P>불러오는 중...</P>}
         </FriendContent>
       </Content>
     </Container>
@@ -202,4 +233,18 @@ const FriendTopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: end;
+`
+
+const P = styled.h2`
+  ${({ theme }) => theme.font.body2}
+  display: flex;
+  width: 100%;
+  height: 60dvh;
+  justify-content: center;
+  align-items: center;
+  color: ${({ theme }) => theme.color.gray400};
+`
+
+const ScrollObserver = styled.div`
+  height: 1px;
 `

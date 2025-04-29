@@ -71,7 +71,7 @@ function Chat() {
           <FriendList>
             {data.map((item) => (
               <ProfileBox key={item.id}>
-                <ProfileCard name={item.name} introduce={item.introduce} position={item.position as position[]} children={null} />
+                <ProfileCard chat name={item.name} introduce={item.introduce} position={item.position} children={null} />
               </ProfileBox>
             ))}
           </FriendList>
