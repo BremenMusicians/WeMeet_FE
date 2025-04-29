@@ -14,14 +14,16 @@ import useDebounce from '../../hooks/useDebounce'
 
 export const MyPage = () => {
   const { data, isLoading } = useGetMyInformation()
-  const deleteRef = useRef<HTMLDivElement>(null)
+  const deleteRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [visibleDelete, setVisibleDelete] = useState<{ [key: string]: boolean }>({})
   const [searchKeyword, setSearchKeyword] = useState('')
   const debouncedSearchText = useDebounce(searchKeyword, 300)
   const { ref, inView } = useInView()
-  const { data: friendData, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: friendLoading } = useGetMyFriendList(debouncedSearchText)
+  const { data: friendData, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: friendLoading, refetch } = useGetMyFriendList(debouncedSearchText)
   const { mutate: deleteFriend } = useDeleteFriend({
-    onSuccess: () => {},
+    onSuccess: () => {
+      refetch()
+    },
     onError: () => {
       alert('잠시 후 다시 시도해 주세요')
     },
@@ -29,10 +31,12 @@ export const MyPage = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (deleteRef.current && !deleteRef.current.contains(event.target as Node)) {
+      const clickedOutsideAll = Object.values(deleteRefs.current).every((ref) => !ref || !ref.contains(event.target as Node))
+      if (clickedOutsideAll) {
         setVisibleDelete((prev) => Object.fromEntries(Object.keys(prev).map((key) => [key, false])))
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -86,19 +90,30 @@ export const MyPage = () => {
         </Title>
         <FriendContent>
           <FriendTopBar>
-            <p>{data?.friendsCnt}명의 친구</p>
+            <p>{friendData?.pages?.[0]?.usersCnt ?? 0}명의 친구</p>
             <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </FriendTopBar>
           {friendData?.pages
             .flatMap((page) => page.users)
             .map((item) => (
-              <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
+              <ProfileCard profileImg={item.profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
                 <RightContainer>
                   <ClickOption src={Chat} onClick={() => {}} />
-                  <div ref={deleteRef}>
+                  <div
+                    ref={(el) => {
+                      deleteRefs.current[item.accountId] = el
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
+                    {visibleDelete[item.accountId] && (
+                      <DeleteFriend
+                        onClick={() => {
+                          deleteFriend(item.accountId)
+                        }}
+                      />
+                    )}
                   </div>
-                  {visibleDelete[item.accountId] && <DeleteFriend onClick={() => deleteFriend(item.accountId)} />}
                 </RightContainer>
               </ProfileCard>
             ))}

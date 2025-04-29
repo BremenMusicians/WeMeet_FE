@@ -38,7 +38,7 @@ export const useGetRequestFriendList = () => {
 export const useDeleteFriend = (option:MutationOptions<void, Error, DeleteFriendRequestType>) => {
   return useMutation<void, Error, DeleteFriendRequestType>({
     ...option,
-    mutationFn: async ({accountId}) => {
+    mutationFn: async (accountId) => {
       const {data} = await instance.delete(`${router}/${accountId}`)
       return data
     }
