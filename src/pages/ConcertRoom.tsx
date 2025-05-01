@@ -1,14 +1,12 @@
 import styled from 'styled-components'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { UserVideo } from '../components/UserVideo'
+import { useEffect, useState, useRef } from 'react'
 import { Lock, LogOut, Mike, MikeOff } from '../assets'
 import { useEntryRoom, useExitConcertRoom } from '../apis/room'
 import { FeaturePanel } from '../components/FeaturePanel'
 import { InviteCodeBox } from '../components/InviteCodeBox'
 import { useMicrophone } from '../hooks/useMicrophone'
-import { useConcertSocket } from '../hooks/useCurrentSocket'
-import { useAudioConnection } from '../hooks/useAudioConnection'
+import { useAudioConnection } from '../hooks/useAudioConnection' // useAudioConnection import
 
 export const ConcertRoom = () => {
   const navigate = useNavigate()
@@ -16,16 +14,21 @@ export const ConcertRoom = () => {
   const roomId = searchParams.get('id')!
   const owner = searchParams.get('owner')
 
-  const { mikeOn, toggleMike, audioStream } = useMicrophone()
-  useAudioConnection(roomId, audioStream)
+  const { mikeOn, toggleMike } = useMicrophone()
+
   const [activeFeature, setActiveFeature] = useState<'instrument' | 'volume' | null>(null)
-  const { data, KickMember } = useConcertSocket(roomId)
+  const [isSocketReady, setIsSocketReady] = useState(false)
+
+  // audio 엘리먼트를 위한 ref 생성
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null)
 
   const { mutate: exitRoom } = useExitConcertRoom({ onSuccess: () => navigate('/main'), onError: () => alert('잠시 후 시도해주세요') }, roomId)
 
   const { mutate: entryRoom } = useEntryRoom(
     {
-      onSuccess: () => {},
+      onSuccess: () => {
+        setIsSocketReady(true)
+      },
       onError: (error) => {
         if (error.message === 'Request failed with status code 409') {
           exitRoom()
@@ -38,16 +41,31 @@ export const ConcertRoom = () => {
     roomId,
   )
 
+  // useAudioConnection 훅 호출 시 remoteAudioRef 전달
+  useAudioConnection(isSocketReady, remoteAudioRef)
+
   useEffect(() => {
     if (!owner) {
       entryRoom()
+    } else {
+      setIsSocketReady(true)
     }
   }, [entryRoom, owner])
+
+  // 이 useEffect는 audioRef가 연결되었는지 확인하는 용도로 남겨두거나 필요에 따라 제거할 수 있습니다.
+  // 실제 스트림 연결 로직은 useAudioConnection 훅 내부로 이동했습니다.
+  useEffect(() => {
+    if (remoteAudioRef.current) {
+      console.log('ConcertRoom에서 Audio element ref 확인:', remoteAudioRef.current)
+      // 여기에 ref.current를 사용한 추가 로직을 넣을 수 있습니다.
+    }
+  }, [remoteAudioRef.current]) // remoteAudioRef.current가 변경될 때 실행
 
   return (
     <Container>
       <Content>
-        <audio id="remote-audio" autoPlay playsInline />
+        {/* ref prop에 remoteAudioRef 연결 */}
+        <audio ref={remoteAudioRef} id="remote-audio" autoPlay playsInline></audio>
         <TopBar>
           <TitleWrap>
             <Title>
@@ -57,10 +75,7 @@ export const ConcertRoom = () => {
           </TitleWrap>
           <InviteCodeBox />
         </TopBar>
-        <VideoWrap>
-          {Array.isArray(data?.payload) &&
-            data.payload.map((item) => <UserVideo img={item.profile} key={item.mail} accountId={item.accountId} owner={!!owner} onClick={() => KickMember(item.mail)} />)}
-        </VideoWrap>
+        <VideoWrap>{/* 비디오 영역 */}</VideoWrap>
         <BottomBarWrap>
           <FeatureButton onClick={toggleMike}>
             <img src={mikeOn ? Mike : MikeOff} alt="마이크" />
@@ -75,6 +90,7 @@ export const ConcertRoom = () => {
   )
 }
 
+// 스타일드 컴포넌트 코드는 동일합니다.
 const Container = styled.div`
   margin: 0 auto;
   max-width: 1280px;
