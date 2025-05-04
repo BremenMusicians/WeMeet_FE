@@ -51,7 +51,9 @@ function GuitarComponents() {
 
   const play = (sound: string) => {
     const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
-    audio.play()
+    audio.play().catch((err) => {
+      console.log('기타 사운드 재생 오류:', err)
+    })
   }
 
   return (

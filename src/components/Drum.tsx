@@ -16,10 +16,9 @@ export const DrumComponents = () => {
   }
 
   useEffect(() => {
-    const audios: HTMLAudioElement[] = SOUND_LIST.map((sound) => {
+    SOUND_LIST.map((sound) => {
       const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
       audio.load()
-      return audio
     })
   }, [])
 
