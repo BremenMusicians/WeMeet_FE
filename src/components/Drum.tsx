@@ -44,7 +44,7 @@ export const DrumComponents = () => {
     window.addEventListener('keyup', onKeyUp)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
-      window.addEventListener('keyup', onKeyUp)
+      window.removeEventListener('keyup', onKeyUp)
     }
   }, [])
 
