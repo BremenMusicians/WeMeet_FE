@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 const f = Array.from({ length: 14 }, (_, i) => `f${i + 1}`)
@@ -19,24 +19,33 @@ const STRINGS = [
 const SOUND_URL = import.meta.env.VITE_GUITAR_SOUND_URL
 
 function GuitarComponents() {
+  const pressedKeys = useRef<Set<string>>(new Set())
   const inlayPositions = [2, 4, 6, 8, 11]
   const doubleInlayPositions = [11]
 
   const keyBindings = ['!@#$%^&*()_+', 'QWERTYUIOP[]|', '1234567890-=', 'qwertyuiop[]]\\', "asdfghjkl;'", 'zxcvbnm,./']
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (pressedKeys.current.has(e.key)) return
       keyBindings.forEach((keys, stringIndex) => {
         const fretIndex = keys.indexOf(e.key)
         if (fretIndex !== -1) {
+          pressedKeys.current.add(e.key)
           play(STRINGS[stringIndex].frets[fretIndex])
         }
       })
     }
 
-    window.addEventListener('keydown', handleKeyDown)
+    const onKeyUp = (e: KeyboardEvent) => {
+      pressedKeys.current.delete(e.key)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
     }
   }, [])
 
