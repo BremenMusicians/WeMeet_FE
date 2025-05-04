@@ -1,34 +1,35 @@
 import { useEffect } from 'react'
 import styled from 'styled-components'
-import * as Tone from 'tone'
+
+const f = Array.from({ length: 14 }, (_, i) => `f${i + 1}`)
+const h = Array.from({ length: 5 }, (_, i) => `h${i + 1}`)
+const g = Array.from({ length: 4 }, (_, i) => `g${i + 1}`)
+const d = Array.from({ length: 5 }, (_, i) => `d${i + 1}`)
+const a = Array.from({ length: 5 }, (_, i) => `a${i + 1}`)
+const e = Array.from({ length: 5 }, (_, i) => `e${i + 1}`)
+
+const STRINGS = [
+  { h: 2, frets: f },
+  { h: 2.4, frets: [...h, ...f].slice(0, 14) },
+  { h: 3, frets: [...g, ...h, ...f].slice(0, 14) },
+  { h: 3.6, frets: [...d, ...g, ...h].slice(0, 14) },
+  { h: 4.2, frets: [...a, ...d, ...g] },
+  { h: 5, frets: [...e, ...a, ...d].slice(0, 14) },
+]
+const SOUND_URL = import.meta.env.VITE_GUITAR_SOUND_URL
 
 function GuitarComponents() {
-  const guitarFrets = [2, 2.4, 3, 3.6, 4.2, 5]
   const inlayPositions = [2, 4, 6, 8, 11]
   const doubleInlayPositions = [11]
-  const newSynth = new Tone.PolySynth(Tone.Synth).toDestination()
-  newSynth.set({
-    oscillator: {
-      type: 'fmsine',
-    },
-    envelope: {
-      attack: 0.01,
-      decay: 0.2,
-      sustain: 0.5,
-      release: 1.5,
-    },
-  })
-  const synth: Tone.PolySynth<Tone.Synth<Tone.SynthOptions>> | null = newSynth
 
-  const openStringNotes = ['E4', 'B3', 'G3', 'D3', 'A2', 'E2']
   const keyBindings = ['!@#$%^&*()_+', 'QWERTYUIOP[]|', '1234567890-=', 'qwertyuiop[]]\\', "asdfghjkl;'", 'zxcvbnm,./']
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      keyBindings.map((keys, stringIndex) => {
+      keyBindings.forEach((keys, stringIndex) => {
         const fretIndex = keys.indexOf(e.key)
         if (fretIndex !== -1) {
-          playString(stringIndex, fretIndex)
+          play(STRINGS[stringIndex].frets[fretIndex])
         }
       })
     }
@@ -39,32 +40,22 @@ function GuitarComponents() {
     }
   }, [])
 
-  const getNoteFromFret = (stringIndex: number, fretIndex: number) => {
-    const baseNote = openStringNotes[stringIndex]
-    if (fretIndex === 0) return baseNote
-    return Tone.Frequency(baseNote).transpose(fretIndex).toNote()
-  }
-
-  const playString = (stringIndex: number, fretIndex: number) => {
-    if (synth) {
-      const note = getNoteFromFret(stringIndex, fretIndex)
-      synth?.triggerAttackRelease(note, '8n')
-    }
+  const play = (sound: string) => {
+    const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
+    audio.play()
   }
 
   return (
     <Container>
       <Fretboard>
-        {guitarFrets.map((h, lineIndex) => (
-          <FretBox key={`string-${lineIndex}`}>
-            <GuitarString height={h} />
-            {Array.from({ length: 13 }).map((_, fretIndex) => (
-              <Fret key={`fret-${lineIndex}-${fretIndex}`} onClick={() => playString(lineIndex, fretIndex)}>
-                {lineIndex === 2 && inlayPositions.includes(fretIndex) && <InlayDot double={doubleInlayPositions.includes(fretIndex)} />}
-              </Fret>
-            ))}
-          </FretBox>
-        ))}
+        {STRINGS.map(({ h, frets }, stringIndex) =>
+          frets.map((f, fretIndex) => (
+            <FretCell key={`fret-${stringIndex}-${fretIndex}`} onClick={() => play(f)}>
+              {fretIndex === 0 && <GuitarString height={h} />}
+              {stringIndex === 2 && inlayPositions.includes(fretIndex) && <InlayDot $double={doubleInlayPositions.includes(fretIndex)} />}
+            </FretCell>
+          )),
+        )}
       </Fretboard>
     </Container>
   )
@@ -77,14 +68,18 @@ const Container = styled.div`
   align-items: center;
   height: 70dvh;
 `
-
-const FretBox = styled.div`
-  width: 860px;
-  display: flex;
+const Fretboard = styled.div`
+  display: grid;
+  grid-template-columns: repeat(14, 64px);
+  grid-template-rows: repeat(6, 35px);
+  background-color: ${({ theme }) => theme.color.gray100};
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   position: relative;
 `
 
-const Fret = styled.div`
+const FretCell = styled.div`
   width: 64px;
   height: 35px;
   border-right: 1px solid ${({ theme }) => theme.color.gray700};
@@ -93,23 +88,6 @@ const Fret = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.color.gray200};
-  }
-
-  &:active {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-`
-
-const Fretboard = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: ${({ theme }) => theme.color.gray100};
-  border-radius: 5px;
-  overflow: hidden;
-  border: 1px solid ${({ theme }) => theme.color.gray200};
 `
 
 const GuitarString = styled.span<{ height: number; isActive?: boolean }>`
@@ -122,32 +100,30 @@ const GuitarString = styled.span<{ height: number; isActive?: boolean }>`
   z-index: 10;
   position: absolute;
   align-self: center;
-  width: 100%;
+  width: 200vh;
   box-shadow: 10px 5px 2px rgba(0, 0, 0, 0.1);
 `
 
-const InlayDot = styled.div<{ double?: boolean }>`
+const InlayDot = styled.div<{ $double?: boolean }>`
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background-color: ${({ theme }) => theme.color.gray500};
   position: absolute;
   z-index: 5;
-  top: ${({ double }) => (double ? -41 : 29)}px;
+  top: ${({ $double }) => ($double ? -41 : 29)}px;
 
-  ${(props) =>
-    props.double &&
-    `
-    &:before {
+  ${({ $double, theme }) =>
+    $double &&
+    `&:before {
       content: '';
       position: absolute;
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background-color: ${props.theme.color.gray600};
+      background-color: ${theme.color.gray600};
       top: 140px;
-    }
-  `}
+    }`}
 `
 
 export default GuitarComponents
