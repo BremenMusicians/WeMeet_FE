@@ -1,12 +1,14 @@
 import styled from 'styled-components'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
+import * as Tone from 'tone'
+
 import { Lock, LogOut, Mike, MikeOff } from '../assets'
-import { useEntryRoom, useExitConcertRoom } from '../apis/room'
+import { useEntryRoom, useExitConcertRoom, useGetRoomInfo } from '../apis/room'
 import { FeaturePanel } from '../components/FeaturePanel'
 import { InviteCodeBox } from '../components/InviteCodeBox'
 import { useMicrophone } from '../hooks/useMicrophone'
-import { useAudioConnection } from '../hooks/useAudioConnection' // useAudioConnection import
+import { useAudioConnection } from '../hooks/useAudioConnection'
 
 export const ConcertRoom = () => {
   const navigate = useNavigate()
@@ -18,16 +20,20 @@ export const ConcertRoom = () => {
 
   const [activeFeature, setActiveFeature] = useState<'instrument' | 'volume' | null>(null)
   const [isSocketReady, setIsSocketReady] = useState(false)
+  const [hasEntered, setHasEntered] = useState(false)
+  const [isAudioStarted, setIsAudioStarted] = useState(false)
 
-  // audio 엘리먼트를 위한 ref 생성
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null)
 
   const { mutate: exitRoom } = useExitConcertRoom({ onSuccess: () => navigate('/main'), onError: () => alert('잠시 후 시도해주세요') }, roomId)
+
+  const { data: RoomData } = useGetRoomInfo(roomId, hasEntered)
 
   const { mutate: entryRoom } = useEntryRoom(
     {
       onSuccess: () => {
         setIsSocketReady(true)
+        setHasEntered(true)
       },
       onError: (error) => {
         if (error.message === 'Request failed with status code 409') {
@@ -41,8 +47,11 @@ export const ConcertRoom = () => {
     roomId,
   )
 
-  // useAudioConnection 훅 호출 시 remoteAudioRef 전달
-  useAudioConnection(isSocketReady, remoteAudioRef)
+  const handleStartAudio = async () => {
+    await Tone.start()
+    console.log('🔊 AudioContext started by user interaction')
+    setIsAudioStarted(true)
+  }
 
   useEffect(() => {
     if (!owner) {
@@ -52,35 +61,38 @@ export const ConcertRoom = () => {
     }
   }, [entryRoom, owner])
 
-  // 이 useEffect는 audioRef가 연결되었는지 확인하는 용도로 남겨두거나 필요에 따라 제거할 수 있습니다.
-  // 실제 스트림 연결 로직은 useAudioConnection 훅 내부로 이동했습니다.
-  useEffect(() => {
-    if (remoteAudioRef.current) {
-      console.log('ConcertRoom에서 Audio element ref 확인:', remoteAudioRef.current)
-      // 여기에 ref.current를 사용한 추가 로직을 넣을 수 있습니다.
-    }
-  }, [remoteAudioRef.current]) // remoteAudioRef.current가 변경될 때 실행
+  useAudioConnection(isSocketReady && isAudioStarted, remoteAudioRef)
 
   return (
     <Container>
+      {!isAudioStarted && (
+        <AudioStartOverlay>
+          <button onClick={handleStartAudio}>오디오 시작하기</button>
+        </AudioStartOverlay>
+      )}
+
       <Content>
-        {/* ref prop에 remoteAudioRef 연결 */}
         <audio ref={remoteAudioRef} id="remote-audio" autoPlay playsInline></audio>
+
         <TopBar>
           <TitleWrap>
             <Title>
-              걸어서 집으로 <img src={Lock} alt="비공개" />
+              {RoomData?.name} {RoomData?.password && <img src={Lock} alt="비공개" />}
             </Title>
-            <Description>키보드 구합니다 매우매우 급함 키보드 올 때까지 숨 참음</Description>
+            <Description>{RoomData?.info}</Description>
           </TitleWrap>
-          <InviteCodeBox />
+          {RoomData?.password && <InviteCodeBox code={RoomData.password} />}
         </TopBar>
+
         <VideoWrap>{/* 비디오 영역 */}</VideoWrap>
+
         <BottomBarWrap>
           <FeatureButton onClick={toggleMike}>
             <img src={mikeOn ? Mike : MikeOff} alt="마이크" />
           </FeatureButton>
+
           <FeaturePanel activeFeature={activeFeature} handleToggleFeature={setActiveFeature} />
+
           <ButtonWrapper onClick={() => exitRoom()}>
             <LogOut Fill="white" />
           </ButtonWrapper>
@@ -90,7 +102,6 @@ export const ConcertRoom = () => {
   )
 }
 
-// 스타일드 컴포넌트 코드는 동일합니다.
 const Container = styled.div`
   margin: 0 auto;
   max-width: 1280px;
@@ -159,4 +170,27 @@ const FeatureButton = styled.button`
   border-radius: 50%;
   background-color: ${({ theme }) => theme.color.gray100};
   cursor: pointer;
+`
+
+const AudioStartOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  button {
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+    background-color: #f75c3c;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
 `

@@ -12,6 +12,7 @@ export const useAudioConnection = (isReady: boolean, remoteAudioRef: React.RefOb
   const audioStream = useRef<MediaStream | null>(null);
   const remoteStream = useRef<MediaStream>(new MediaStream());
 
+  //
   const getLocalAudioStream = async () => {
     console.log('Attempting to get local audio stream...'); // 로그 추가
     try {
@@ -23,6 +24,7 @@ export const useAudioConnection = (isReady: boolean, remoteAudioRef: React.RefOb
       // 마이크 접근 실패 시 사용자에게 알림 또는 대체 처리 필요
     }
   };
+
 
   const setupPeerConnection = () => {
     console.log('Setting up PeerConnection...'); // 로그 추가
@@ -49,9 +51,20 @@ export const useAudioConnection = (isReady: boolean, remoteAudioRef: React.RefOb
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = remoteStream.current;
         console.log('✅ remoteAudioRef.current에 스트림 연결 완료:', remoteAudioRef.current); // 성공 로그
-        remoteAudioRef.current.play().catch(e => console.error("Audio play failed:", e)); // 자동 재생 실패 시 로그
+
+        // 오디오 트랙 활성화 상태 확인
+        const audioTrack = remoteStream.current.getTracks().find(track => track.kind === 'audio');
+        if (audioTrack) {
+          console.log('Audio track enabled:', audioTrack.enabled);
+        } else {
+          console.warn('❌ No audio track found in remote stream.');
+        }
+
+        remoteAudioRef.current.play()
+          .then(() => console.log('✅ Audio is playing.'))
+          .catch((e) => console.error('Audio play failed:', e)); // 자동 재생 실패 시 로그
       } else {
-         console.warn('❌ remoteAudioRef.current가 아직 null입니다.'); // 경고 로그
+        console.warn('❌ remoteAudioRef.current가 아직 null입니다.'); // 경고 로그
       }
     };
 
@@ -104,35 +117,31 @@ export const useAudioConnection = (isReady: boolean, remoteAudioRef: React.RefOb
         if (!audioStream.current) {
            await getLocalAudioStream();
         }
-        // getLocalAudioStream이 비동기이므로, 스트림이 확보된 후에 PeerConnection 설정을 시작해야 합니다.
-        // 현재 로직은 getLocalAudioStream 완료를 기다리지 않고 바로 setupPeerConnection을 호출할 수 있습니다.
-        // 필요하다면 Promise 체이닝 등으로 비동기 처리를 명확히 할 수 있습니다.
         setupPeerConnection();
         await createAndSendOffer();
         break;
 
-        case 'offer': {
-          console.log('📨 Offer 수신 - answer 생성');
-          if (!audioStream.current) {
-            await getLocalAudioStream();
-          }
-          // 마찬가지로 스트림 확보 후 PeerConnection 설정 시작
-          setupPeerConnection();
-          if (myPeerConnection.current) {
-            try {
-              await myPeerConnection.current.setRemoteDescription(new RTCSessionDescription(payload));
-              const answer = await myPeerConnection.current.createAnswer();
-              await myPeerConnection.current.setLocalDescription(answer);
-              socket.current?.send(JSON.stringify({ type: 'answer', payload: answer }));
-              console.log('📤 Answer 전송 완료:', answer); // 로그 추가
-            } catch (error) {
-               console.error('🚫 Failed to set remote description or create/send answer:', error); // 실패 로그
-            }
-          } else {
-              console.warn('❌ PeerConnection not ready to handle offer.'); // 로그 추가
-          }
-          break;
+      case 'offer': {
+        console.log('📨 Offer 수신 - answer 생성');
+        if (!audioStream.current) {
+          await getLocalAudioStream();
         }
+        setupPeerConnection();
+        if (myPeerConnection.current) {
+          try {
+            await myPeerConnection.current.setRemoteDescription(new RTCSessionDescription(payload));
+            const answer = await myPeerConnection.current.createAnswer();
+            await myPeerConnection.current.setLocalDescription(answer);
+            socket.current?.send(JSON.stringify({ type: 'answer', payload: answer }));
+            console.log('📤 Answer 전송 완료:', answer); // 로그 추가
+          } catch (error) {
+             console.error('🚫 Failed to set remote description or create/send answer:', error); // 실패 로그
+          }
+        } else {
+            console.warn('❌ PeerConnection not ready to handle offer.'); // 로그 추가
+        }
+        break;
+      }
 
       case 'answer':
         console.log('📨 Answer 수신 - remoteDescription 설정');
@@ -156,7 +165,6 @@ export const useAudioConnection = (isReady: boolean, remoteAudioRef: React.RefOb
                 console.log('✅ ICE Candidate 추가 완료.'); // 로그 추가
              } catch (error) {
                 console.error('🚫 Failed to add ICE candidate:', error); // 실패 로그
-                // ICE candidate 추가 실패는 네트워크 환경 문제일 수 있습니다.
              }
         } else {
             console.warn('❌ PeerConnection or payload not ready to add candidate.'); // 로그 추가
