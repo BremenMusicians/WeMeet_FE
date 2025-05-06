@@ -1,6 +1,6 @@
-import { MutateOptions, useInfiniteQuery, useMutation } from "@tanstack/react-query"
+import { MutateOptions, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from ".."
-import { CreateRoomResponse, createRoomType, KickOutMemberType } from "./type"
+import { concertRoomInfoResponse, CreateRoomResponse, createRoomType, KickOutMemberType } from "./type"
 
 const router = '/rooms'
 
@@ -76,3 +76,14 @@ export const useKickOutMember = () => {
         }
     })
 }
+
+export const useGetRoomInfo = (roomId: string, enabled: boolean) => {
+    return useQuery({
+      queryKey: ['roomInfo', roomId],
+      queryFn: async () => {
+        const { data } = await instance.get<concertRoomInfoResponse>(`${router}/${roomId}`);
+        return data;
+      },
+      enabled,
+    });
+  };

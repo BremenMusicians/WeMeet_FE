@@ -1,3 +1,5 @@
+import { position } from "../user/type"
+
 export interface createRoomType {
 	name : string,
 	maxMember : number,
@@ -26,4 +28,18 @@ export interface concertRoomResponse {
 export interface KickOutMemberType {
 	roomId: string,
 	accountId: string
+}
+
+export interface concertRoomMemberType {
+	mail : string,
+	position : position
+}
+
+export interface concertRoomInfoResponse {
+	name : string,
+	info : string,
+	password : null | string,
+	max_member : number,
+	owner : string,
+	members : concertRoomMemberType[]
 }

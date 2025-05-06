@@ -2,7 +2,11 @@ import styled from 'styled-components'
 import { Copy } from '../assets'
 import { useRef } from 'react'
 
-export const InviteCodeBox = () => {
+interface InviteCodeBoxProps {
+  code: string
+}
+
+export const InviteCodeBox = ({ code }: InviteCodeBoxProps) => {
   const codeRef = useRef<HTMLParagraphElement>(null)
 
   const handleCopyClipBoard = async () => {
@@ -16,7 +20,7 @@ export const InviteCodeBox = () => {
     <CodeWrap>
       <CodeText>초대 코드</CodeText>
       <Code>
-        <p ref={codeRef}>0123</p>
+        <p ref={codeRef}>{code}</p>
         <CopyImg src={Copy} alt="코드 복사" onClick={handleCopyClipBoard} />
       </Code>
     </CodeWrap>
@@ -50,4 +54,3 @@ const CopyImg = styled.img`
   height: 20px;
   cursor: pointer;
 `
-
