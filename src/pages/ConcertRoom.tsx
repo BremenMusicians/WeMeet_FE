@@ -8,7 +8,8 @@ import { useEntryRoom, useExitConcertRoom, useGetRoomInfo } from '../apis/room'
 import { FeaturePanel } from '../components/FeaturePanel'
 import { InviteCodeBox } from '../components/InviteCodeBox'
 import { useMicrophone } from '../hooks/useMicrophone'
-import { useAudioConnection } from '../hooks/useAudioConnection'
+import { useAudioConnectionNN } from '../hooks/useAudioConnection'
+import { useUserStore } from '../stores/UserStores'
 
 export const ConcertRoom = () => {
   const navigate = useNavigate()
@@ -17,15 +18,24 @@ export const ConcertRoom = () => {
   const owner = searchParams.get('owner')
 
   const { mikeOn, toggleMike } = useMicrophone()
+  const { user } = useUserStore()
 
-  const [activeFeature, setActiveFeature] = useState<'instrument' | 'volume' | null>(null)
+  type FeatureType = 'instrument' | 'volume'
+  const [activeFeature, setActiveFeature] = useState<FeatureType | null>(null)
   const [isSocketReady, setIsSocketReady] = useState(false)
   const [hasEntered, setHasEntered] = useState(false)
   const [isAudioStarted, setIsAudioStarted] = useState(false)
 
-  const remoteAudioRef = useRef<HTMLAudioElement | null>(null)
+  const localAudioRef = useRef<HTMLAudioElement | null>(null)
+  const remoteAudioRefs = useRef<Record<string, React.RefObject<HTMLAudioElement>>>({})
 
-  const { mutate: exitRoom } = useExitConcertRoom({ onSuccess: () => navigate('/main'), onError: () => alert('잠시 후 시도해주세요') }, roomId)
+  const { mutate: exitRoom } = useExitConcertRoom(
+    {
+      onSuccess: () => navigate('/main'),
+      onError: () => alert('잠시 후 시도해주세요'),
+    },
+    roomId,
+  )
 
   const { data: RoomData } = useGetRoomInfo(roomId, hasEntered)
 
@@ -61,7 +71,7 @@ export const ConcertRoom = () => {
     }
   }, [entryRoom, owner])
 
-  useAudioConnection(isSocketReady && isAudioStarted, remoteAudioRef)
+  useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, localAudioRef as React.RefObject<HTMLAudioElement>, user?.accountId || '')
 
   return (
     <Container>
@@ -72,7 +82,10 @@ export const ConcertRoom = () => {
       )}
 
       <Content>
-        <audio ref={remoteAudioRef} id="remote-audio" autoPlay playsInline></audio>
+        <audio ref={localAudioRef} id="local-audio" autoPlay playsInline></audio>
+        {Object.entries(remoteAudioRefs.current).map(([peerId, ref]) => (
+          <audio key={peerId} ref={ref} autoPlay playsInline />
+        ))}
 
         <TopBar>
           <TitleWrap>
@@ -106,6 +119,7 @@ const Container = styled.div`
   margin: 0 auto;
   max-width: 1280px;
 `
+
 const Content = styled.div`
   padding: 100px 24px 24px 24px;
   display: flex;
@@ -114,25 +128,30 @@ const Content = styled.div`
   width: 100%;
   height: 100dvh;
 `
+
 const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 24px 0px;
 `
+
 const TitleWrap = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
 `
+
 const Title = styled.h1`
   ${({ theme }) => theme.font.title1};
   color: #000;
 `
+
 const Description = styled.p`
   ${({ theme }) => theme.font.body6};
   color: ${({ theme }) => theme.color.gray500};
 `
+
 const VideoWrap = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -141,15 +160,18 @@ const VideoWrap = styled.div`
   height: 100%;
   margin: auto;
   padding: 0px 44px;
+
   @media (max-width: 1440px) {
     width: 70%;
   }
 `
+
 const BottomBarWrap = styled.div`
   display: flex;
   gap: 16px;
   margin: 0 auto;
 `
+
 const ButtonWrapper = styled.button`
   display: flex;
   justify-content: center;
@@ -161,6 +183,7 @@ const ButtonWrapper = styled.button`
   color: ${({ theme }) => theme.color.gray100};
   cursor: pointer;
 `
+
 const FeatureButton = styled.button`
   display: flex;
   justify-content: center;
