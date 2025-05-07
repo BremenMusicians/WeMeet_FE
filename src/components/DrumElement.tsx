@@ -41,15 +41,15 @@ export const DrumElement = ({ src, style, onClick, note, type = 'tom' }: Element
     }
   }, [])
 
-  return <Layout type={type} isHit={isHit} style={style} src={src} onMouseDown={handleMouseDown} />
+  return <Layout type={type} $isHit={isHit} style={style} src={src} onMouseDown={handleMouseDown} />
 }
 
-const Layout = styled.img<{ isHit: boolean; type: 'tom' | 'cymbal' }>`
+const Layout = styled.img<{ $isHit: boolean; type: 'tom' | 'cymbal' }>`
   position: absolute;
   z-index: 100;
   cursor: pointer;
 
-  animation: ${({ isHit, type }) => isHit && (type === 'tom' ? 'tomHit 0.3s ease-out' : 'cymbalHit 0.6s ease-out')};
+  animation: ${({ $isHit, type }) => $isHit && (type === 'tom' ? 'tomHit 0.3s ease-out' : 'cymbalHit 0.6s ease-out')};
 
   @keyframes cymbalHit {
     0% {

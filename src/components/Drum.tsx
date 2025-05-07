@@ -27,18 +27,18 @@ export const DrumComponents = () => {
     KeyZ: 'bass',
   }
 
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (!pressedKeys.current.has(e.code) && keyMap[e.code]) {
-      pressedKeys.current.add(e.code)
-      play(keyMap[e.code])
-    }
-  }
-
-  const onKeyUp = (e: KeyboardEvent) => {
-    pressedKeys.current.delete(e.code)
-  }
-
   useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!pressedKeys.current.has(e.code) && keyMap[e.code]) {
+        pressedKeys.current.add(e.code)
+        play(keyMap[e.code])
+      }
+    }
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      pressedKeys.current.delete(e.code)
+    }
+
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     return () => {
