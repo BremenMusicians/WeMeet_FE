@@ -1,10 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { DrumImage, HiHat, Crash, Ride, LargeTom, FloorTom, SmallTom, Snare, Kick, Pedal } from '../assets'
 import { DrumElement } from './DrumElement'
 
 const SOUND_URL = import.meta.env.VITE_DRUM_SOUND
+const SOUND_LIST = ['hihat', 'crash', 'ride', 'snare-drum', 'tom1', 'tom2', 'floor-tom', 'hihat-foot', 'bass']
+
 export const DrumComponents = () => {
+  const pressedKeys = useRef<Set<string>>(new Set())
   const play = (sound: string) => {
     const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
     audio.play().catch((error) => {
@@ -12,21 +15,35 @@ export const DrumComponents = () => {
     })
   }
 
+  useEffect(() => {
+    SOUND_LIST.map((sound) => {
+      const audio = new Audio(`${SOUND_URL}/${sound}.mp3`)
+      audio.load()
+    })
+  }, [])
+
   const keyMap: Record<string, string> = {
     KeyX: 'hihat-foot',
     KeyZ: 'bass',
   }
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (keyMap[event.code]) {
-      play(keyMap[event.code])
-    }
-  }
-
   useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!pressedKeys.current.has(e.code) && keyMap[e.code]) {
+        pressedKeys.current.add(e.code)
+        play(keyMap[e.code])
+      }
+    }
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      pressedKeys.current.delete(e.code)
+    }
+
     window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
     }
   }, [])
 
@@ -35,13 +52,13 @@ export const DrumComponents = () => {
       <Layout>
         <ImageBox>
           <img src={DrumImage} />
-          <DrumElement type="cymbal" note="Q" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play('hihat')} />
-          <DrumElement type="cymbal" note="W" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play('crash')} />
-          <DrumElement type="cymbal" note="E" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play('ride')} />
-          <DrumElement note="A" style={{ top: '282px', left: '207px' }} src={Snare} onClick={() => play('snare-drum')} />
-          <DrumElement note="S" style={{ top: '150px', left: '245px' }} src={SmallTom} onClick={() => play('tom1')} />
-          <DrumElement note="D" style={{ top: '150px', right: '217px' }} src={LargeTom} onClick={() => play('tom2')} />
-          <DrumElement note="F" style={{ top: '257px', right: '129px' }} src={FloorTom} onClick={() => play('floor-tom')} />
+          <DrumElement type="cymbal" note="q" style={{ top: '162px', left: '27px' }} src={HiHat} onClick={() => play('hihat')} />
+          <DrumElement type="cymbal" note="w" style={{ top: '12px', left: '149px' }} src={Crash} onClick={() => play('crash')} />
+          <DrumElement type="cymbal" note="e" style={{ top: '100px', right: '45px' }} src={Ride} onClick={() => play('ride')} />
+          <DrumElement note="a" style={{ top: '282px', left: '207px' }} src={Snare} onClick={() => play('snare-drum')} />
+          <DrumElement note="s" style={{ top: '150px', left: '245px' }} src={SmallTom} onClick={() => play('tom1')} />
+          <DrumElement note="d" style={{ top: '150px', right: '217px' }} src={LargeTom} onClick={() => play('tom2')} />
+          <DrumElement note="f" style={{ top: '257px', right: '129px' }} src={FloorTom} onClick={() => play('floor-tom')} />
           <PedalImg src={Pedal} onClick={() => play('hihat-foot')} />
           <KickImg src={Kick} onClick={() => play('bass')} />
         </ImageBox>
