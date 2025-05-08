@@ -17,7 +17,7 @@ export const ConcertRoom = () => {
   const roomId = searchParams.get('id')!
   const owner = searchParams.get('owner')
 
-  const { mikeOn, toggleMike } = useMicrophone()
+  const { mikeOn, toggleMike, audioStream, getLocalAudioStream } = useMicrophone()
   const { user } = useUserStore()
 
   type FeatureType = 'instrument' | 'volume'
@@ -71,8 +71,14 @@ export const ConcertRoom = () => {
     }
   }, [entryRoom, owner])
 
-  useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, localAudioRef as React.RefObject<HTMLAudioElement>, user?.accountId || '')
-
+  useAudioConnectionNN(
+    isSocketReady && isAudioStarted,
+    remoteAudioRefs.current,
+    user?.accountId || '',
+    audioStream,
+    getLocalAudioStream
+  )
+  
   return (
     <Container>
       {!isAudioStarted && (
