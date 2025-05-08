@@ -4,11 +4,11 @@ import { useConcertSocket } from './useCurrentSocket';
 import React from 'react';
 
 interface PeerConnections {
-  [accountId: string]: RTCPeerConnection;
+  [mail: string]: RTCPeerConnection;
 }
 
 interface AudioRefs {
-  [accountId: string]: React.RefObject<HTMLAudioElement>;
+  [mail: string]: React.RefObject<HTMLAudioElement>;
 }
 
 export const useAudioConnectionNN = (
@@ -20,7 +20,7 @@ export const useAudioConnectionNN = (
   const searchParams = new URLSearchParams(useLocation().search);
   const roomId = searchParams.get('id');
 
-  const { ws: socket } = useConcertSocket(roomId!);
+  const { ws: socket } = useConcertSocket(roomId!, handleMessage);
   const audioStream = useRef<MediaStream | null>(null);
   const peerConnections = useRef<PeerConnections>({});
 
@@ -39,87 +39,101 @@ export const useAudioConnectionNN = (
     }
   };
 
-  const setupPeerConnection = (accountId: string) => {
-    console.log(`🔧 ${accountId}에 대한 PeerConnection 설정 중`);
+  const setupPeerConnection = (mail: string) => {
+    console.log(`🔧 ${mail}에 대한 PeerConnection 설정 중`);
 
-    const pc = new RTCPeerConnection();
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         socket.current?.send(JSON.stringify({
           type: 'candidate',
           from: myAccountId,
-          to: accountId,
-          payload: event.candidate,
+          to: mail,
+          data: event.candidate, 
         }));
-        console.log(`📤 ${accountId}에게 ICE 후보 전송`);
+        console.log(`📤 ${mail}에게 ICE 후보 전송`);
       }
     };
 
     pc.ontrack = (event) => {
-      console.log(`🔊 ${accountId}의 트랙 수신`, event.streams);
+      console.log(`🔊 ${mail}의 트랙 수신`, event.streams);
 
       const remoteStream = event.streams[0];
-      const ref = audioRefs[accountId];
+      const ref = audioRefs[mail];
 
       if (ref?.current) {
         ref.current.srcObject = remoteStream;
         ref.current.play().then(() => {
-          console.log(`✅ ${accountId}의 오디오 재생 중`);
+          console.log(`✅ ${mail}의 오디오 재생 중`);
         }).catch(console.error);
       } else {
-        console.warn(`❌ ${accountId}의 오디오 요소 없음`);
+        console.warn(`❌ ${mail}의 오디오 요소 없음`);
       }
     };
 
     if (audioStream.current) {
       audioStream.current.getTracks().forEach((track) => {
         pc.addTrack(track, audioStream.current!);
-        console.log(`📤 ${accountId}에게 트랙 전송`, track);
+        console.log(`📤 ${mail}에게 트랙 전송`, track);
       });
     }
 
-    peerConnections.current[accountId] = pc;
+    peerConnections.current[mail] = pc;
   };
 
-  const handleMessage = async (message: MessageEvent) => {
-    const { type, payload } = JSON.parse(message.data);
-    const JSONpayload = JSON.parse(payload);
+  async function handleMessage(message: MessageEvent) {
+    const { type, payload, data } = JSON.parse(message.data);
 
-    console.log(`📩 메시지 수신: ${type} from: ${JSONpayload.accountId}`);  // 디버그 로그 추가
-  
+    const JSONpayload = JSON.parse(payload);
+    const {mail} = JSONpayload
+
+    console.log(message.data)
+
+    console.log(`📩 메시지 수신: ${type} from: ${mail}`);
+
     switch (type) {
       case 'join': {
         if (!audioStream.current) await getLocalAudioStream();
-        setupPeerConnection(JSONpayload.accountId);
-        const offer = await peerConnections.current[JSONpayload.accountId].createOffer();
-        await peerConnections.current[JSONpayload.accountId].setLocalDescription(offer);
-        socket.current?.send(JSON.stringify({ type: 'offer', to: JSONpayload.accountId, payload: offer }));
-        console.log(`📤 ${JSONpayload.accountId}에게 Offer 전송`);
+        console.log(`👤 ${mail}이 방에 참여함`);
+        setupPeerConnection(mail);
+        const offer = await peerConnections.current[mail].createOffer();
+        await peerConnections.current[mail].setLocalDescription(offer);
+        socket.current?.send(JSON.stringify({ type: 'offer', to: mail, data: offer }));
+        console.log(`📤 ${mail}에게 Offer 전송`);
         break;
       }
+      
       case 'offer': {
         if (!audioStream.current) await getLocalAudioStream();
-        setupPeerConnection(JSONpayload.accountId);
-        await peerConnections.current[JSONpayload.accountId].setRemoteDescription(new RTCSessionDescription(payload));
-        const answer = await peerConnections.current[JSONpayload.accountId].createAnswer();
-        await peerConnections.current[JSONpayload.accountId].setLocalDescription(answer);
-        socket.current?.send(JSON.stringify({ type: 'answer', to: JSONpayload.accountId, payload: answer }));
-        console.log(`📤 ${JSONpayload.accountId}에게 Answer 전송`);
+        setupPeerConnection(mail);
+        await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(data));
+        const answer = await peerConnections.current[mail].createAnswer();
+        await peerConnections.current[mail].setLocalDescription(answer);
+        socket.current?.send(JSON.stringify({ type: 'answer', to: mail, data: answer }));
+        console.log(`📤 ${mail}에게 Answer 전송`);
         break;
       }
-      case 'answer':
-        await peerConnections.current[JSONpayload.accountId].setRemoteDescription(new RTCSessionDescription(payload));
-        console.log(`✅ ${JSONpayload.accountId}의 Answer 설정 완료`);
+      case 'answer': {
+        await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(mail));
+        console.log(`✅ ${mail}의 Answer 설정 완료`);
         break;
-      case 'candidate':
-        await peerConnections.current[JSONpayload.accountId].addIceCandidate(new RTCIceCandidate(payload));
-        console.log(`✅ ${JSONpayload.accountId}의 ICE 후보 추가`);
+      }
+      case 'candidate': {
+        if (data) {
+          await peerConnections.current[mail].addIceCandidate(new RTCIceCandidate(data));
+          console.log(`✅ ${mail}의 ICE 후보 추가`);
+        } else {
+          console.warn(`⚠️ ${mail}에게 받은 ICE 후보가 null`);
+        }
         break;
+      }
       default:
         console.warn('❓ 알 수 없는 메시지 타입:', type);
     }
-  };
+  }
 
   useEffect(() => {
     if (!isReady || !socket.current) return;
