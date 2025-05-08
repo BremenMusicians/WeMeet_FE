@@ -5,24 +5,18 @@ interface PeerConnections {
   [mail: string]: RTCPeerConnection;
 }
 
-/**소켓 연결 및 오디오 스트림 관리 훅
-이 훅은 WebRTC를 사용하여 오디오 스트림을 관리하고, 소켓을 통해 메시지를 주고받습니다.
-- isReady: 소켓 연결 준비 상태
-- audioRefs: 각 참가자의 오디오 스트림을 재생할 HTMLAudioElement의 Ref 객체
-- myAccountId: 현재 사용자의 계정 ID 
-- audioStream: 외부에서 주입받은 MediaStream 객체
-- getLocalAudioStream: 로컬 오디오 스트림을 가져오는 함수
-- socket: WebSocket 객체
-- setupPeerConnection: PeerConnection을 설정하는 함수
-- handleMessage: 수신된 메시지를 처리하는 함수
-- useEffect: 소켓 연결 및 종료를 관리하는 useEffect 훅
-- useEffect: 준비 완료 시 메시지를 전송하는 useEffect 훅
-- useEffect: 컴포넌트 언마운트 시 PeerConnection 및 오디오 트랙을 종료하는 useEffect 훅
-- useEffect: 소켓 연결 시 PeerConnection을 설정하는 useEffect 훅
-- useEffect: 소켓 연결 종료 시 PeerConnection 및 오디오 트랙을 종료하는 useEffect 훅
-- useEffect: 소켓 연결 시 메시지를 전송하는 useEffect 훅
-*/
-
+/**
+ * 오디오 연결을 위한 커스텀 훅
+ * @param {boolean} isReady - 소켓 준비 상태
+ * @param {Object} audioRefs - 오디오 엘리먼트 참조 객체
+ * @param {string} myAccountId - 내 계정 ID
+ * @param {React.RefObject<MediaStream | null>} audioStream - 오디오 스트림 참조
+ * @param {function} getLocalAudioStream - 로컬 오디오 스트림을 가져오는 함수
+ * @returns {{ socket: React.RefObject<WebSocket | null> }} - 소켓 객체
+ * @throws {Error} 소켓 연결 실패 시 에러를 발생시킵니다.
+ * @description 이 훅은 WebRTC를 사용하여 오디오 연결을 설정하고 관리합니다.
+ * 소켓을 통해 다른 사용자와 오디오 스트림을 주고받습니다.
+ */
 export const useAudioConnectionNN = (
   isReady: boolean,
   audioRefs: { [mail: string]: React.RefObject<HTMLAudioElement> },
