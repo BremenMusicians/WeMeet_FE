@@ -1,18 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { instance } from '..'
-import { ChatListResponse, ChatMessageType } from './type'
-
-const router = '/chat'
-
-export const useGetChatList = () => {
-  return useQuery({
-    queryKey: ['chatList'],
-    queryFn: async () => {
-      const { data } = await instance.get<ChatListResponse>(`${router}/list`)
-      return data.chats
-    },
-  })
-}
+import { ChatMessageType } from './type'
 
 export const useGetChatHistory = (chatId: string) => {
   return useQuery({

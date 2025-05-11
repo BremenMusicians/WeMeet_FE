@@ -1,21 +1,16 @@
 import { position } from '../user/type'
 
-export interface ChatMessageType {
-  sender: string
-  content: string
-  sendAt: string
-}
-
 export interface ChatListType {
   chatId: string
   accountId: string
-  profile: string | null
+  profile?: string
   position: position[]
   lastMessage?: string
 }
 
 export interface ChatListResponse {
   chats: ChatListType[]
+  type: 'UPDATE_CHAT_LIST' | 'MESSAGE'
 }
 
 export interface SendMailFormat {
