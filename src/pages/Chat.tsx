@@ -1,18 +1,17 @@
 import styled from 'styled-components'
 import { useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
-import { Plus, More } from '../assets'
+import { Plus, More, Profile } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
-import { useSearchParams } from 'react-router-dom'
 import { ChatListType, ReceiveMailFormat } from '../apis/chat/type'
+import { useProfileStore } from '../stores/UserStores'
 
 const BASE_URL = 'wemeet-prod.xquare.app'
 const token = cookie.get('access_token')
 
 function Chat() {
-  const [searchParams] = useSearchParams()
-  const friendId = searchParams.get('id')
+  const { profileInfo } = useProfileStore()
   const [chatList, setChatList] = useState<ChatListType[]>([]) // 친구 목록
   const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([]) // 선택된 친구의 메시지 목록
   const [newChat, setNewChat] = useState<string>('')
@@ -24,7 +23,7 @@ function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatHistoryList])
 
-  const { data: chatHistory } = useGetChatHistory('8643a4ce-df74-47fa-884c-f36e7c236154')
+  const { data: chatHistory } = useGetChatHistory('')
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -116,10 +115,10 @@ function Chat() {
       <ChatContainer>
         <ChatHeader>
           <ProfileInfo>
-            <ProfileImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFE_Ji1JNjge_DWCchd-bInvunXDDK_qe0ow&s" />
+            <ProfileImage src={profileInfo?.profile || Profile} />
             <div>
-              <Nickname>{friendId}</Nickname>
-              <PositionList>FE Developer</PositionList>
+              <Nickname>{profileInfo?.accountId}</Nickname>
+              <PositionList>{profileInfo?.aboutMe}</PositionList>
             </div>
           </ProfileInfo>
           <KebabMenu onClick={() => setShowMenu(!showMenu)}>
@@ -130,8 +129,8 @@ function Chat() {
 
         <ChatHistory ref={bottomRef}>
           {chatHistory?.map((chat, index) => (
-            <MessageWrapper key={index} isMine={chat.sender === 'ojinikim@dsm.hs.kr'}>
-              <MessageBubble isMine={chat.sender === 'ojinikim@dsm.hs.kr'}>{chat.content}</MessageBubble>
+            <MessageWrapper key={index} isMine={chat.sender === 'meltapple@gmail.com'}>
+              <MessageBubble isMine={chat.sender === 'meltapple@gmail.com'}>{chat.content}</MessageBubble>
               <MessageTime>{new Date(chat.sendAt).toLocaleTimeString()}</MessageTime>
             </MessageWrapper>
           ))}
@@ -148,8 +147,6 @@ function Chat() {
 }
 
 export default Chat
-
-// 스타일 컴포넌트들 (이전과 동일)
 
 const ChatContainer = styled.div`
   width: 100%;
