@@ -42,7 +42,6 @@ function Chat() {
 
     ws.onopen = () => {
       console.log('웹소켓 연결')
-      ws.send(JSON.stringify({ type: 'CONNECT', token }))
     }
 
     ws.onmessage = (event) => {
