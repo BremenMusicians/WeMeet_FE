@@ -11,6 +11,8 @@ import { useGetMyInformation } from '../../apis/user'
 import { useDeleteFriend, useGetMyFriendList } from '../../apis/friends'
 import { useInView } from 'react-intersection-observer'
 import useDebounce from '../../hooks/useDebounce'
+import { useProfileStore } from '../../stores/UserStores'
+import { UserType } from '../../apis/friends/type'
 
 export const MyPage = () => {
   const { data, isLoading } = useGetMyInformation()
@@ -44,6 +46,14 @@ export const MyPage = () => {
   }, [])
 
   const router = useNavigate()
+
+  const { setProfileInfo } = useProfileStore()
+
+  const handleChatRoute = (item: UserType) => {
+    const { isFriend, ...profileWithoutIsFriend } = item
+    setProfileInfo(profileWithoutIsFriend)
+    router(`/chat`)
+  }
 
   const handleDeleteToggle = (accountId: string) => {
     setVisibleDelete((prev) => ({
@@ -93,30 +103,28 @@ export const MyPage = () => {
             <p>{friendData?.pages?.[0]?.usersCnt ?? 0}명의 친구</p>
             <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </FriendTopBar>
-          {friendData?.pages
-            .flatMap((page) => page.users)
-            .map((item) => (
-              <ProfileCard profileImg={item.profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
-                <RightContainer>
-                  <ClickOption src={Chat} onClick={() => {}} />
-                  <div
-                    ref={(el) => {
-                      deleteRefs.current[item.accountId] = el
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
-                    {visibleDelete[item.accountId] && (
-                      <DeleteFriend
-                        onClick={() => {
-                          deleteFriend(item.accountId)
-                        }}
-                      />
-                    )}
-                  </div>
-                </RightContainer>
-              </ProfileCard>
-            ))}
+          {friendData?.pages[0]?.friends.map((item: UserType) => (
+            <ProfileCard profileImg={item.profile || Profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
+              <RightContainer>
+                <ClickOption src={Chat} onClick={() => handleChatRoute(item)} />
+                <div
+                  ref={(el) => {
+                    deleteRefs.current[item.accountId] = el
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
+                  {visibleDelete[item.accountId] && (
+                    <DeleteFriend
+                      onClick={() => {
+                        deleteFriend({ accountId: item.accountId })
+                      }}
+                    />
+                  )}
+                </div>
+              </RightContainer>
+            </ProfileCard>
+          ))}
           {!friendLoading && <ScrollObserver ref={ref} />}
           {isFetchingNextPage && <P>불러오는 중...</P>}
         </FriendContent>
