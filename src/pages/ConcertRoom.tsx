@@ -71,14 +71,8 @@ export const ConcertRoom = () => {
     }
   }, [entryRoom, owner])
 
-  useAudioConnectionNN(
-    isSocketReady && isAudioStarted,
-    remoteAudioRefs.current,
-    user?.accountId || '',
-    audioStream,
-    getLocalAudioStream
-  )
-  
+  useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, user?.accountId || '', audioStream, getLocalAudioStream)
+
   return (
     <Container>
       {!isAudioStarted && (
@@ -86,13 +80,11 @@ export const ConcertRoom = () => {
           <button onClick={handleStartAudio}>오디오 시작하기</button>
         </AudioStartOverlay>
       )}
-
       <Content>
-        <audio ref={localAudioRef} id="local-audio" autoPlay playsInline></audio>
+        <audio ref={localAudioRef} id="local-audio" autoPlay playsInline />
         {Object.entries(remoteAudioRefs.current).map(([peerId, ref]) => (
           <audio key={peerId} ref={ref} autoPlay playsInline />
         ))}
-
         <TopBar>
           <TitleWrap>
             <Title>

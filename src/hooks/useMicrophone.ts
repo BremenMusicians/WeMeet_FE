@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 마이크가 켜져 있는지 여부를 상태로 관리하며, 마이크를 켜고 끌 수 있는 기능을 제공합니다.
 이 훅은 마이크 접근을 시도하고, 성공적으로 접근하면 마이크의 상태를 업데이트합니다.
 마이크 접근에 실패하면 에러 메시지를 콘솔에 출력합니다.
-마이크 접근이 성공하면, 마이크의 상태를 업데이트하고, 마이크를 끄거나 켜는 기능을 제공합니다.
+마이크 접근이 성공하면, 마이크의 상태를 업데이트하고, 마이크를 끄거나 켤 수 있는 기능을 제공합니다.
 이 훅은 마이크 접근을 위한 MediaStream을 관리하며, 마이크의 상태가 변경될 때마다 MediaStream의 트랙을 업데이트합니다.
 @returns {Object} 마이크 상태와 마이크를 켜고 끌 수 있는 함수, MediaStream을 반환합니다.
 @returns {boolean} mikeOn - 마이크가 켜져 있는지 여부
@@ -14,8 +14,8 @@ import { useEffect, useRef, useState } from 'react'
 @returns {function} getLocalAudioStream - 로컬 오디오 스트림을 가져오는 함수
 @throws {Error} 마이크 접근 실패 시 에러를 발생시킵니다.*/
 export const useMicrophone = () => {
-  const [mikeOn, setMikeOn] = useState(true)
-  const audioStream = useRef<MediaStream | null>(null)
+  const [mikeOn, setMikeOn] = useState(true);
+  const audioStream = useRef<MediaStream | null>(null);
 
   /** 로컬 오디오 스트림을 가져오는 함수
    * @returns {Promise<MediaStream>} 로컬 오디오 스트림
@@ -23,38 +23,66 @@ export const useMicrophone = () => {
    */
   const getLocalAudioStream = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      audioStream.current = stream
-      stream.getAudioTracks().forEach((track) => (track.enabled = mikeOn))
-      return stream
+      console.log('🎙️ 마이크 접근 시도 중...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStream.current = stream;
+      console.log('🎤 마이크 스트림 가져옴:', stream);
+
+      // 마이크 트랙 상태 업데이트
+      stream.getAudioTracks().forEach((track) => (track.enabled = mikeOn));
+
+      return stream;
     } catch (err) {
-      console.error('마이크 접근 실패:', err)
-      throw err
+      console.error('❌ 마이크 접근 실패:', err);
+      throw err;
     }
-  }
+  };
 
   useEffect(() => {
-    getLocalAudioStream()
+    getLocalAudioStream();
 
     return () => {
       if (audioStream.current) {
-        audioStream.current.getTracks().forEach((track) => track.stop())
+        audioStream.current.getTracks().forEach((track) => track.stop());
+        console.log('🎧 마이크 트랙 종료됨.');
       }
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     if (audioStream.current) {
       audioStream.current.getAudioTracks().forEach((track) => {
-        track.enabled = mikeOn
-      })
+        track.enabled = mikeOn;
+      });
+      console.log('🔊 마이크 상태 변경됨:', mikeOn ? '켜짐' : '꺼짐');
     }
-  }, [mikeOn])
+  }, [mikeOn]);
 
-  /** 마이크 상태를 토글하는 함수
-   * @returns {void}
-   */
-  const toggleMike = () => setMikeOn((prev) => !prev)
+  /** 마이크 상태를 토글하는 함수 */
+  const toggleMike = () => setMikeOn((prev) => !prev);
 
-  return { mikeOn, toggleMike, audioStream, getLocalAudioStream }
-}
+  /** 자신의 오디오를 들을 수 있도록 설정하는 함수 */
+const playLocalAudio = () => {
+  if (audioStream.current) {
+    const myAudio = new Audio();
+    myAudio.srcObject = audioStream.current;
+    myAudio.muted = false; // 자신의 소리 듣기
+
+    myAudio.play().catch((error) => {
+      console.error('오디오 재생 오류:', error);
+    });
+
+    console.log('🎶 로컬 오디오 재생 시작');
+  } else {
+    console.warn('audioStream.current가 설정되지 않았습니다.');
+  }
+};
+
+
+  // 자신의 오디오를 자동으로 재생하는 로직
+  useEffect(() => {
+    playLocalAudio();
+  }, [mikeOn]);
+
+  return { mikeOn, toggleMike, audioStream, getLocalAudioStream };
+};

@@ -99,7 +99,7 @@ export const Room = () => {
               <img src={PlusIcon} width={28} height={28} alt="검색" />
             </PlusButton>
           </SearchContainer>
-          <Title>{data?.pages?.[0]?.roomCount}개의 방</Title>
+          <Title>{data?.pages?.[0]?.roomCount || 0}개의 방</Title>
         </Topbar>
         <RoomList>
           {data?.pages
