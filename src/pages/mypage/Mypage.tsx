@@ -50,8 +50,7 @@ export const MyPage = () => {
   const { setProfileInfo } = useProfileStore()
 
   const handleChatRoute = (item: UserType) => {
-    const { isFriend, ...profileWithoutIsFriend } = item
-    setProfileInfo(profileWithoutIsFriend)
+    setProfileInfo(item)
     router(`/chat`)
   }
 
@@ -100,7 +99,7 @@ export const MyPage = () => {
         </Title>
         <FriendContent>
           <FriendTopBar>
-            <p>{friendData?.pages?.[0]?.usersCnt ?? 0}명의 친구</p>
+            <p>{friendData?.pages[0]?.friendsCnt || 0}명의 친구</p>
             <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </FriendTopBar>
           {friendData?.pages[0]?.friends.map((item: UserType) => (

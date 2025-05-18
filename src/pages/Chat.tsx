@@ -1,37 +1,46 @@
 import styled from 'styled-components'
 import { useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
-import { Plus, More, Profile } from '../assets'
+import { Plus, More, Profile, PaperPlane } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
-import { ChatListType, ReceiveMailFormat } from '../apis/chat/type'
+import { ChatListType, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
 import { useProfileStore } from '../stores/UserStores'
 
 const BASE_URL = 'wemeet-prod.xquare.app'
 const token = cookie.get('access_token')
 
 function Chat() {
-  const { profileInfo } = useProfileStore()
+  const { profileInfo } = useProfileStore() // 선택한 친구의 프로필 정보
+  const { setProfileInfo } = useProfileStore() // 선택한 친구의 프로필 정보 변경
   const [chatList, setChatList] = useState<ChatListType[]>([]) // 친구 목록
-  const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([]) // 선택된 친구의 메시지 목록
-  const [newChat, setNewChat] = useState<string>('')
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null) // 선택된 상대의 chatId
-  const [showMenu, setShowMenu] = useState<boolean>(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([]) // 선택한 친구와의 채팅 내역
+  const [newChat, setNewChat] = useState<string>('') // 채팅 값
+  const [selectedChatId, setSelectedChatId] = useState<string>('') // 선택된 상대의 chatId
+  const [showMenu, setShowMenu] = useState<boolean>(false) // 케밥 메뉴
+
+  const bottomRef = useRef<HTMLDivElement>(null) // 채팅 화면 스크롤 하단 조정
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chatHistoryList])
+    bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
+    // bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) // 맨 아래로 이동
+  }, [chatHistoryList]) // 채팅 목록이 변경된다면
 
-  const { data: chatHistory } = useGetChatHistory('')
-  const wsRef = useRef<WebSocket | null>(null)
+  const wsRef = useRef<WebSocket | null>(null) // 웹소켓 설정
+
+  const { data: chatHistoryData, refetch } = useGetChatHistory(selectedChatId, !!selectedChatId)
 
   useEffect(() => {
     if (selectedChatId) {
-      // 선택된 상대의 채팅 기록을 로딩
-      setChatList(chatHistory || [])
+      refetch() // chatId가 바뀔 때마다 강제로 refetch
     }
-  }, [selectedChatId, chatHistory])
+  }, [refetch, selectedChatId])
+
+  useEffect(() => {
+    // 만약 chatId가 있다면 채팅 기록을 채팅 내역에 넣기
+    if (chatHistoryData) setChatHistoryList(chatHistoryData!)
+    else setChatHistoryList([])
+  }, [chatHistoryData, selectedChatId])
 
   // WebSocket 연결 설정
   useEffect(() => {
@@ -46,8 +55,10 @@ function Chat() {
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data)
       if (message.type === 'MESSAGE') {
+        // 메시지를 받았다면 채팅 내역에 추가
         setChatHistoryList((prev) => [...prev, message])
       } else if (message.type === 'UPDATE_CHAT_LIST') {
+        // 채팅 리스트를 받았다면 채팅 리스트에 저장
         setChatList(message.chats)
       }
     }
@@ -57,7 +68,7 @@ function Chat() {
     }
 
     ws.onclose = (e) => {
-      console.log('웹소켓 연결 종료', e.code, e.reason)
+      console.log('웹소켓 연결 종료', e)
     }
 
     return () => {
@@ -65,35 +76,31 @@ function Chat() {
     }
   }, [])
 
-  useEffect(() => {
-    if (selectedChatId) {
-      setChatHistoryList(chatHistory || [])
-    }
-  }, [selectedChatId, chatHistory])
-
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewChat(event.target.value)
   }
 
-  const handleSubmit = () => {
-    console.log('클릭은 됨', chatHistory, chatHistoryList)
-    if (!newChat.trim() || !selectedChatId || !wsRef.current) return
+  const mail = localStorage.getItem('mail')!
 
-    const newMessage = {
-      receiver: selectedChatId,
+  const handleSubmit = () => {
+    // 채팅 내용이 없고 선택된 chatId가 없거나, 이메일이 없고 웹소켓 설정이 안되어있다면
+    if (!newChat.trim() || !selectedChatId || !profileInfo?.mail || !wsRef.current) return
+
+    // 보내는 형식
+    const newMessage: SendMailFormat = {
+      receiver: profileInfo.mail,
       content: newChat,
     }
-
     wsRef.current.send(JSON.stringify(newMessage))
 
-    setChatHistoryList((prev) => [
-      ...prev,
-      {
-        sender: 'ojinikim@dsm.hs.kr',
-        content: newChat,
-        sendAt: new Date().toISOString(),
-      },
-    ])
+    // 채팅 내역에 저장하는 형식
+    const saveMessage: ReceiveMailFormat = {
+      sender: mail,
+      sendAt: new Date().toISOString(),
+      content: newMessage.content,
+    }
+
+    setChatHistoryList((prev) => [...prev, saveMessage])
     setNewChat('')
   }
 
@@ -106,8 +113,14 @@ function Chat() {
         </FriendListTitle>
         <FriendList>
           {chatList.map((chat, index) => (
-            <ProfileCardBox key={index} onClick={() => setSelectedChatId(chat.chatId)}>
-              <ProfileCard name={chat.accountId} introduce={chat.lastMessage || null} position={chat.position} profileImg={chat.profile} children={undefined} />
+            <ProfileCardBox
+              key={index}
+              onClick={() => {
+                setProfileInfo(chat)
+                setSelectedChatId(chat.chatId)
+              }}
+            >
+              <ProfileCard name={chat.accountId} introduce={chat.lastMessage || null} position={chat.position} profileImg={chat?.profile || Profile} children={undefined} />
             </ProfileCardBox>
           ))}
         </FriendList>
@@ -116,10 +129,7 @@ function Chat() {
         <ChatHeader>
           <ProfileInfo>
             <ProfileImage src={profileInfo?.profile || Profile} />
-            <div>
-              <Nickname>{profileInfo?.accountId}</Nickname>
-              <PositionList>{profileInfo?.aboutMe}</PositionList>
-            </div>
+            <Nickname>{profileInfo?.accountId}</Nickname>
           </ProfileInfo>
           <KebabMenu onClick={() => setShowMenu(!showMenu)}>
             <More />
@@ -128,18 +138,22 @@ function Chat() {
         </ChatHeader>
 
         <ChatHistory ref={bottomRef}>
-          {chatHistory?.map((chat, index) => (
-            <MessageWrapper key={index} isMine={chat.sender === 'meltapple@gmail.com'}>
-              <MessageBubble isMine={chat.sender === 'meltapple@gmail.com'}>{chat.content}</MessageBubble>
+          {chatHistoryList.map((chat, index) => (
+            <MessageWrapper key={index} isMine={chat.sender === mail}>
+              <MessageBubble isMine={chat.sender === mail}>{chat.content}</MessageBubble>
               <MessageTime>{new Date(chat.sendAt).toLocaleTimeString()}</MessageTime>
             </MessageWrapper>
           ))}
         </ChatHistory>
 
         <ChatInputBox>
-          <EmojiButton>😊</EmojiButton>
-          <Input type="text" placeholder="메시지를 입력하세요..." value={newChat} onChange={handleChange} />
-          <SendButton onClick={handleSubmit}>전송</SendButton>
+          <InputBox>
+            <EmojiButton>😊</EmojiButton>
+            <Input type="text" placeholder="메시지를 입력하세요" value={newChat} onChange={handleChange} />
+            <SendButton disabled={!newChat.trim() || !selectedChatId || !profileInfo?.mail || !wsRef.current} onClick={handleSubmit}>
+              <img src={PaperPlane} />
+            </SendButton>
+          </InputBox>
         </ChatInputBox>
       </ChatContainer>
     </Container>
@@ -232,11 +246,6 @@ const Nickname = styled.p`
   ${({ theme }) => theme.font.body2};
 `
 
-const PositionList = styled.p`
-  color: ${({ theme }) => theme.color.gray400};
-  ${({ theme }) => theme.font.body3}
-`
-
 const KebabMenu = styled.button`
   cursor: pointer;
 `
@@ -251,6 +260,16 @@ const Dropdown = styled.div`
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   cursor: pointer;
+`
+
+const InputBox = styled.div`
+  width: 100%;
+  display: flex;
+  background-color: white;
+  padding: 4px 4px 4px 16px;
+  border-radius: 16px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  gap: 8px;
 `
 
 const ChatHistory = styled.div`
@@ -286,33 +305,37 @@ const MessageTime = styled.div`
 `
 
 const ChatInputBox = styled.div`
-  border-top: 1px solid ${({ theme }) => theme.color.gray100};
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 0px 16px 12px;
   gap: 12px;
+  background-color: ${({ theme }) => theme.color.gray50};
 `
 
 const Input = styled.input`
   flex: 1;
-  padding: 8px 12px;
-  border-radius: 20px;
-  border: 1px solid ${({ theme }) => theme.color.gray200};
+
   ${({ theme }) => theme.font.body3};
 `
 
 const SendButton = styled.button`
   background-color: ${({ theme }) => theme.color.orange500};
   color: white;
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 12px;
+  border-radius: 12px;
   ${({ theme }) => theme.font.body3};
   cursor: pointer;
+  display: flex;
+  &:disabled {
+    background-color: ${({ theme }) => theme.color.gray100};
+    svg {
+      fill: ${({ theme }) => theme.color.gray300};
+    }
+  }
 `
 
 const EmojiButton = styled.button`
-  font-size: 18px;
-  background: none;
-  border: none;
+  background-color: transparent;
   cursor: pointer;
+  ${({ theme }) => theme.font.title1}
 `

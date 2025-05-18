@@ -37,8 +37,9 @@ function Login() {
     if (validation()) {
       await login(form)
         .then(() => {
-          navigate('/main')
+          localStorage.setItem('mail', form.mail)
           isLogin()
+          navigate('/main')
         })
         .catch(() => {
           loginErrorCount.current += 1

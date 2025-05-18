@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { UserType } from '../apis/friends/type'
+import { ChatUserProfile } from '../apis/chat/type'
 
 type User = {
   accountId: string
@@ -18,13 +18,15 @@ export const useUserStore = create<UserStore>((set) => ({
 }))
 
 type ProfileStore = {
-  profileInfo: Omit<UserType, 'isFriend'> | null
-  setProfileInfo: (profile: Omit<UserType, 'isFriend'>) => void
+  profileInfo: ChatUserProfile
+  setProfileInfo: (profile: ChatUserProfile) => void
   resetProfile: () => void
 }
 
+const profileInitValue = { accountId: '', mail: '', profile: '', position: [], chatId: '' }
+
 export const useProfileStore = create<ProfileStore>((set) => ({
-  profileInfo: null,
+  profileInfo: profileInitValue,
   setProfileInfo: (profileInfo) => set({ profileInfo }),
-  resetProfile: () => set({ profileInfo: null }),
+  resetProfile: () => set({ profileInfo: profileInitValue }),
 }))
