@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 @returns {function} getLocalAudioStream - 로컬 오디오 스트림을 가져오는 함수
 @throws {Error} 마이크 접근 실패 시 에러를 발생시킵니다.*/
 export const useMicrophone = () => {
-  const [mikeOn, setMikeOn] = useState(true);
+  const [mikeOn, setMikeOn] = useState(false);
   const audioStream = useRef<MediaStream | null>(null);
 
   /** 로컬 오디오 스트림을 가져오는 함수
