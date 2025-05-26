@@ -19,7 +19,7 @@ interface PeerConnections {
  */
 export const useAudioConnectionNN = (
   isReady: boolean,
-  audioRefs: { [mail: string]: React.RefObject<HTMLAudioElement> },
+  audioRefs: { [mail: string]: React.RefObject<HTMLAudioElement | null> },
   myAccountId: string,
   audioStream: React.RefObject<MediaStream | null>,
   getLocalAudioStream: () => Promise<MediaStream | null>,
@@ -58,9 +58,26 @@ const setupPeerConnection = async (mail: string) => {
     console.log('📥 상대방 오디오 수신됨:', remoteStream); // ✅ 추가된 로그
 
     const ref = audioRefs[mail];
-    if (ref?.current) {
-      ref.current.srcObject = remoteStream;
-      ref.current.play().catch(console.error);
+    console.log(`🔍 audioRefs[${mail}] =`, ref);
+
+    if (!ref?.current) {
+      console.warn(`⏳ ${mail}의 audio ref 아직 없음. 500ms 후 재시도`);
+      setTimeout(() => {
+        const delayedRef = audioRefs[mail];
+        if (delayedRef?.current) {
+          delayedRef.current.srcObject = remoteStream;
+          delayedRef.current.onplay = () => {
+            console.log(`🔈 ${mail} 오디오 재생 시작됨`);
+          };
+          delayedRef.current.onerror = (e) => {
+            console.error(`❌ ${mail} 오디오 재생 에러`, e);
+          };
+          delayedRef.current.play().catch(console.error);
+        } else {
+          console.error(`❌ ${mail}의 audio ref 여전히 없음`);
+        }
+      }, 500);
+      return;
     }
   };
 
