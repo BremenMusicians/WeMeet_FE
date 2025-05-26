@@ -136,13 +136,35 @@ if (type === 'candidate' || type === "offer" || type === "answer") {
         console.log(`📤 Answer 생성 (${mail})`, answer);
         await peerConnections.current[mail].setLocalDescription(answer);
         socket.current?.send(JSON.stringify({ type: 'answer', to: mail, data: answer }));
+const queuedCandidates = candidateQueue.current[mail];
+if (queuedCandidates && peerConnections.current[mail].remoteDescription) {
+  for (const c of queuedCandidates) {
+    try {
+      await peerConnections.current[mail].addIceCandidate(c);
+    } catch (err) {
+      console.error(`💥 큐에서 ICE 후보 추가 실패 (${mail})`, err);
+    }
+  }
+  delete candidateQueue.current[mail];
+}
+
+
         break;
       }
 
       case 'answer': {
         console.log(`📩 Answer 수신 (${mail})`, data);
         await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(data));
+       const queuedCandidates = candidateQueue.current[mail];
+if (queuedCandidates) {
+  for (const c of queuedCandidates) {
+    await peerConnections.current[mail].addIceCandidate(c);
+  }
+  delete candidateQueue.current[mail];
+}
+
         break;
+
       }
 
 case 'candidate': {
@@ -150,44 +172,34 @@ case 'candidate': {
   const candidate = new RTCIceCandidate(data);
   const pc = peerConnections.current[mail];
 
-  if (pc) {
-    // peerConnection이 있을 때 바로 후보를 추가
-    await pc.addIceCandidate(candidate);
-  } else {
-    // peerConnection이 없을 때 후보 큐에 추가
+  if (!pc) {
+    console.warn(`❌ PeerConnection 없음. 큐에 저장: ${mail}`);
     if (!candidateQueue.current[mail]) {
       candidateQueue.current[mail] = [];
     }
     candidateQueue.current[mail].push(candidate);
-    console.warn(`⏳ ${mail}에 대한 peerConnection 없음 → 후보 큐잉`);
+    return;
+  }
 
-    // peerConnection이 생성된 후 후보 처리
-    const checkConnectionAndAddCandidate = async () => {
-      const pc = peerConnections.current[mail];
-      if (pc) {
-        // 먼저 원격 설명을 설정한 후, 후보를 추가합니다.
-        try {
-          // `setRemoteDescription`을 호출하여 원격 설명을 설정합니다.
-          await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: data.sdp }));
+  if (!pc.remoteDescription || !pc.remoteDescription.type) {
+    console.warn(`⏳ 아직 remoteDescription 없음. 큐에 저장: ${mail}`);
+    if (!candidateQueue.current[mail]) {
+      candidateQueue.current[mail] = [];
+    }
+    candidateQueue.current[mail].push(candidate);
+    return;
+  }
 
-          // 후보를 처리합니다.
-          candidateQueue.current[mail].forEach((candidate) => {
-            pc.addIceCandidate(candidate);
-          });
-          
-          // 후보 큐를 비웁니다.
-          delete candidateQueue.current[mail];
-        } catch (error) {
-          console.error(`원격 설명 설정 중 오류: ${error}`);
-        }
-      }
-    };
-
-    // 일정 시간 후 후보를 처리하도록 setTimeout 사용
-    setTimeout(checkConnectionAndAddCandidate, 1000);  // 예시: 1초 뒤에 연결을 시도
+  try {
+    await pc.addIceCandidate(candidate);
+    console.log(`✅ ICE 후보 추가됨: ${mail}`);
+  } catch (err) {
+    console.error(`💥 ICE 후보 추가 실패 (${mail})`, err);
   }
   break;
 }
+
+
 
 
 
