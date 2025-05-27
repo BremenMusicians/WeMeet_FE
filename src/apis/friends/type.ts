@@ -32,7 +32,3 @@ export interface RequestFriendListType {
   friendRequests: FriendType[]
   requestCnt: number
 }
-
-export interface DeleteFriendRequestType {
-  accountId: string
-}

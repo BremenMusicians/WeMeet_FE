@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
 import { Plus, More, Profile, PaperPlane, Search, Emoji } from '../assets'
 import { cookie } from '../utils/Auth'
@@ -9,11 +9,10 @@ import { useProfileStore } from '../stores/UserStores'
 import { theme } from '../styles/Theme'
 import { useDeleteFriend, useGetMyFriendList } from '../apis/friends'
 import useDebounce from '../hooks/useDebounce'
-import { DeleteFriendRequestType, UserType } from '../apis/friends/type'
+import { UserType } from '../apis/friends/type'
 import Picker from '@emoji-mart/react'
 import { useClickOutside } from '../hooks/useClickOutside'
-
-const BASE_URL = 'wemeet-prod.xquare.app'
+const BASE_URL = import.meta.env.VITE_WS_BASE_URL
 const token = cookie.get('access_token')
 
 function Chat() {
@@ -117,7 +116,7 @@ function Chat() {
   const mail = localStorage.getItem('mail') || ''
 
   const handleEnterPress = (e: KeyboardEvent) => {
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       handleSubmit()
     }
   }
@@ -148,12 +147,6 @@ function Chat() {
     setProfileInfo(item)
     setSelectedChatId(item.chatId)
     setShowList(false)
-  }
-
-  const handleDeleteFriend = (accountId: string) => {
-    console.log('삭제될놈:', accountId)
-    setShowMenu(!showMenu)
-    deleteFriend(accountId)
   }
 
   return (
@@ -208,10 +201,14 @@ function Chat() {
             <Nickname>{profileInfo?.accountId}</Nickname>
           </ProfileInfo>
           <Section>
-            <Button onClick={() => handleDeleteFriend(profileInfo.accountId)}>
+            <Button onClick={() => setShowMenu(!showMenu)}>
               <More Fill={theme.color.gray400} />
             </Button>
-            {showMenu && <Dropdown ref={moreMenuRef}>친구 삭제</Dropdown>}
+            {showMenu && (
+              <Dropdown ref={moreMenuRef} onClick={() => deleteFriend(profileInfo.accountId)}>
+                친구 삭제
+              </Dropdown>
+            )}
           </Section>
         </ChatHeader>
 

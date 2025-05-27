@@ -1,6 +1,6 @@
 import { MutationOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { instance } from '..'
-import { ChangeFriendRequestType, DeleteFriendRequestType, RequestFriendListType } from './type'
+import { ChangeFriendRequestType, RequestFriendListType } from './type'
 import { useFriendListQuery } from '../../hooks/useFriendListQueryFactory'
 
 const router = '/friends'
@@ -34,8 +34,8 @@ export const useGetRequestFriendList = () => {
   })
 }
 
-export const useDeleteFriend = (option: MutationOptions<void, Error, DeleteFriendRequestType>) => {
-  return useMutation<void, Error, any>({
+export const useDeleteFriend = (option: MutationOptions<void, Error, string>) => {
+  return useMutation<void, Error, string>({
     ...option,
     mutationFn: async (accountId: string) => {
       const { data } = await instance.delete(`${router}/${accountId}`)
