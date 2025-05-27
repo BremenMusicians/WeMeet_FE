@@ -1,11 +1,15 @@
 import styled from 'styled-components'
 import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
-import { Plus, More, Profile, PaperPlane } from '../assets'
+import { Plus, More, Profile, PaperPlane, Search } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
 import { ChatListType, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
 import { useProfileStore } from '../stores/UserStores'
+import { theme } from '../styles/Theme'
+import { useGetMyFriendList } from '../apis/friends'
+import useDebounce from '../hooks/useDebounce'
+import { UserType } from '../apis/friends/type'
 
 const BASE_URL = 'wemeet-prod.xquare.app'
 const token = cookie.get('access_token')
@@ -17,8 +21,23 @@ function Chat() {
   const [newChat, setNewChat] = useState<string>('') // 채팅 값
   const [selectedChatId, setSelectedChatId] = useState<string>('') // 선택된 상대의 chatId
   const [showMenu, setShowMenu] = useState<boolean>(false) // 케밥 메뉴
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [showList, setShowList] = useState<boolean>(true)
+  const debouncedSearchText = useDebounce(searchKeyword, 300)
+  const { data: friendData } = useGetMyFriendList(debouncedSearchText)
 
+  const friendListRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null) // 채팅 화면 스크롤 하단 조정
+
+  const handleClickOutside = (e: MouseEvent) => {
+    const currentFriendListRef = friendListRef.current
+    if (currentFriendListRef && !currentFriendListRef.contains(e.target as Node)) setShowList(false)
+  }
+
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [friendListRef.current])
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
@@ -118,7 +137,27 @@ function Chat() {
       <FriendListContainer>
         <FriendListTitle>
           <FriendNumber>{chatList.length}명의 친구</FriendNumber>
-          <AddFriendButton src={Plus} />
+          <AddFriendSection ref={friendListRef}>
+            <AddFriendButton onClick={() => setShowList((p) => !p)}>
+              <Plus Fill={theme.color.gray300} />
+            </AddFriendButton>
+            {showList && (
+              <ModalContainer>
+                <ListSearchBox>
+                  <img width={18} height={18} src={Search} />
+                  <Input placeholder="이름 검색" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
+                </ListSearchBox>
+                <ModalList>
+                  <FriendListCount>{friendData?.pages[0]?.friendsCnt}명의 친구</FriendListCount>
+                  {friendData?.pages
+                    .flatMap((p) => p.friends)
+                    .map((item: UserType) => (
+                      <ProfileCard profileImg={item.profile || Profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} />
+                    ))}
+                </ModalList>
+              </ModalContainer>
+            )}
+          </AddFriendSection>
         </FriendListTitle>
         <FriendList>
           {chatList.map((chat, index) => (
@@ -177,6 +216,52 @@ function Chat() {
 
 export default Chat
 
+const FriendListCount = styled.p`
+  color: ${({ theme }) => theme.color.gray400};
+  ${({ theme }) => theme.font.body6}
+  padding-left: 4px;
+`
+
+const ListSearchBox = styled.div`
+  width: 100%;
+  background-color: ${({ theme }) => theme.color.gray100};
+  border-radius: 100px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.color.gray400};
+    background-color: white;
+  }
+  transition: 0.3s all;
+`
+
+const AddFriendSection = styled.div`
+  position: relative;
+`
+
+const ModalContainer = styled.div`
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  height: 400px;
+  position: absolute;
+  padding: 8px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  border-radius: 12px;
+  gap: 16px;
+`
+
+const ModalList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  overflow-y: scroll;
+`
+
 const ChatContainer = styled.div`
   width: 100%;
   height: 100%;
@@ -216,8 +301,10 @@ const FriendNumber = styled.p`
   ${({ theme }) => theme.font.body3}
 `
 
-const AddFriendButton = styled.img`
+const AddFriendButton = styled.button`
+  background-color: transparent;
   cursor: pointer;
+  position: relative;
 `
 
 const FriendList = styled.div`
@@ -337,7 +424,10 @@ const ChatInputBox = styled.div`
 
 const Input = styled.input`
   flex: 1;
-
+  background-color: transparent;
+  &::placeholder {
+    color: ${({ theme }) => theme.color.gray400};
+  }
   ${({ theme }) => theme.font.body3};
 `
 
