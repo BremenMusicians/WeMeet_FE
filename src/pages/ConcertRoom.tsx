@@ -1,3 +1,4 @@
+import React from 'react'
 import styled from 'styled-components'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
@@ -10,6 +11,14 @@ import { InviteCodeBox } from '../components/InviteCodeBox'
 import { useMicrophone } from '../hooks/useMicrophone'
 import { useAudioConnectionNN } from '../hooks/useAudioConnection'
 import { useUserStore } from '../stores/UserStores'
+import { InstrumentType } from '../utils/type'
+import GuitarComponents from '../components/Guitar'
+import { DrumComponents } from '../components/Drum'
+import { BassComponents } from '../components/Bass'
+import { PianoComponents } from '../components/Piano'
+import { Synthesizer } from '../components/Synthesizer'
+import { useParticipantsStore } from '../stores/useParticipantsStore'
+import { UserVideo } from '../components/UserVideo'
 
 export const ConcertRoom = () => {
   const navigate = useNavigate()
@@ -19,15 +28,17 @@ export const ConcertRoom = () => {
 
   const { mikeOn, toggleMike, audioStream, getLocalAudioStream } = useMicrophone()
   const { user } = useUserStore()
+  const { participants } = useParticipantsStore()
 
   type FeatureType = 'instrument' | 'volume'
   const [activeFeature, setActiveFeature] = useState<FeatureType | null>(null)
   const [isSocketReady, setIsSocketReady] = useState(false)
   const [hasEntered, setHasEntered] = useState(false)
   const [isAudioStarted, setIsAudioStarted] = useState(false)
+  const [instrument, setInstrument] = useState<InstrumentType>('기타')
 
   const localAudioRef = useRef<HTMLAudioElement | null>(null)
-  const remoteAudioRefs = useRef<Record<string, React.RefObject<HTMLAudioElement>>>({})
+  const remoteAudioRefs = useRef<Record<string, React.RefObject<HTMLAudioElement | null>>>({})
 
   const { mutate: exitRoom } = useExitConcertRoom(
     {
@@ -71,6 +82,24 @@ export const ConcertRoom = () => {
     }
   }, [entryRoom, owner])
 
+  useEffect(() => {
+    Object.keys(remoteAudioRefs.current).forEach((peerId) => {
+      if (!remoteAudioRefs.current[peerId]) {
+        remoteAudioRefs.current[peerId] = React.createRef<HTMLAudioElement>()
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (RoomData?.members) {
+      RoomData.members.forEach((participant) => {
+        if (!remoteAudioRefs.current[participant.mail]) {
+          remoteAudioRefs.current[participant.mail] = React.createRef<HTMLAudioElement | null>()
+        }
+      })
+    }
+  }, [RoomData])
+
   useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, user?.accountId || '', audioStream, getLocalAudioStream)
 
   return (
@@ -82,9 +111,10 @@ export const ConcertRoom = () => {
       )}
       <Content>
         <audio ref={localAudioRef} id="local-audio" autoPlay playsInline />
-        {Object.entries(remoteAudioRefs.current).map(([peerId, ref]) => (
-          <audio key={peerId} ref={ref} autoPlay playsInline />
+        {participants.map((p) => (
+          <audio key={p.mail} ref={p.audioRef} autoPlay playsInline />
         ))}
+
         <TopBar>
           <TitleWrap>
             <Title>
@@ -95,14 +125,43 @@ export const ConcertRoom = () => {
           {RoomData?.password && <InviteCodeBox code={RoomData.password} />}
         </TopBar>
 
-        <VideoWrap>{/* 비디오 영역 */}</VideoWrap>
+        <VideoWrap>
+          {activeFeature === 'instrument' &&
+            (() => {
+              switch (instrument) {
+                case '기타':
+                  return <GuitarComponents />
+                case '드럼':
+                  return <DrumComponents />
+                case '베이스':
+                  return <BassComponents />
+                case '피아노':
+                  return <PianoComponents />
+                case '신스':
+                  return <Synthesizer />
+                default:
+                  return null
+              }
+            })()}
+          {participants.map((item) => (
+            <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img="" />
+          ))}
+        </VideoWrap>
 
         <BottomBarWrap>
           <FeatureButton onClick={toggleMike}>
             <img src={mikeOn ? Mike : MikeOff} alt="마이크" />
           </FeatureButton>
 
-          <FeaturePanel activeFeature={activeFeature} handleToggleFeature={setActiveFeature} />
+          <FeaturePanel
+            handleToggleInstrument={(instrument) => {
+              console.log('🎸 선택된 악기:', instrument)
+              setInstrument(instrument)
+            }}
+            activeInstrument={instrument}
+            activeFeature={activeFeature}
+            handleToggleFeature={setActiveFeature}
+          />
 
           <ButtonWrapper onClick={() => exitRoom()}>
             <LogOut Fill="white" />
@@ -165,9 +224,12 @@ const VideoWrap = styled.div`
 `
 
 const BottomBarWrap = styled.div`
+  position: absolute;
+  bottom: 2%;
+  width: 100%;
   display: flex;
   gap: 16px;
-  margin: 0 auto;
+  justify-content: center;
 `
 
 const ButtonWrapper = styled.button`
