@@ -83,12 +83,13 @@ export const ConcertRoom = () => {
   }, [entryRoom, owner])
 
   useEffect(() => {
-    Object.keys(remoteAudioRefs.current).forEach((peerId) => {
-      if (!remoteAudioRefs.current[peerId]) {
-        remoteAudioRefs.current[peerId] = React.createRef<HTMLAudioElement>()
+    participants.forEach((p) => {
+      if (!remoteAudioRefs.current[p.accountId]) {
+        remoteAudioRefs.current[p.accountId] = React.createRef<HTMLAudioElement>()
       }
     })
-  }, [])
+  }, [participants])
+
   useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, user?.accountId || '', audioStream, getLocalAudioStream)
 
   return (
@@ -144,6 +145,12 @@ export const ConcertRoom = () => {
             handleToggleInstrument={(instrument) => {
               console.log('🎸 선택된 악기:', instrument)
               setInstrument(instrument)
+            }}
+            handleChangeVolume={(volume) => {
+              console.log('🔊 볼륨 조절:', volume)
+              if (localAudioRef.current) {
+                localAudioRef.current.volume = volume / 100
+              }
             }}
             activeInstrument={instrument}
             activeFeature={activeFeature}
