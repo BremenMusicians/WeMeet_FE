@@ -100,10 +100,9 @@ export const ConcertRoom = () => {
       )}
       <Content>
         <audio ref={localAudioRef} id="local-audio" autoPlay playsInline />
-        {participants.map((p) => {
-          console.log('🎤 참가자 오디오:', p.mail, p.audioRef)
-          return <audio key={p.mail} ref={p.audioRef} autoPlay playsInline />
-        })}
+        {participants.map((p) => (
+          <audio key={p.mail} ref={p.audioRef} autoPlay playsInline />
+        ))}
 
         <TopBar>
           <TitleWrap>
@@ -133,9 +132,7 @@ export const ConcertRoom = () => {
                   return null
               }
             })()}
-          {participants.map((item) => (
-            <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img={item.profile} />
-          ))}
+          {participants.map((item) => item.accountId && <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img={item.profile} />)}
         </VideoWrap>
 
         <BottomBarWrap>
