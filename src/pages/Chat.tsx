@@ -21,7 +21,7 @@ function Chat() {
   const bottomRef = useRef<HTMLDivElement>(null) // 채팅 화면 스크롤 하단 조정
 
   useEffect(() => {
-    bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
+    if (bottomRef.current) bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
   }, [chatHistoryList]) // 채팅 목록이 변경된다면
 
   const wsRef = useRef<WebSocket | null>(null) // 웹소켓 설정
@@ -83,7 +83,7 @@ function Chat() {
     setNewChat(event.target.value)
   }
 
-  const mail = localStorage.getItem('mail')!
+  const mail = localStorage.getItem('mail') || ''
 
   const handleEnterPress = (e: KeyboardEvent) => {
     if (e.key == 'Enter') {
@@ -129,7 +129,7 @@ function Chat() {
                 setSelectedChatId(chat.chatId)
               }}
             >
-              <ProfileCard name={chat.accountId} introduce={chat.lastMessage || null} position={chat.position} profileImg={chat?.profile || Profile} children={undefined} />
+              <ProfileCard name={chat.accountId} introduce={chat.lastMessage || null} position={chat.position} profileImg={chat?.profile || Profile} />
             </ProfileCardBox>
           ))}
         </FriendList>
@@ -150,7 +150,13 @@ function Chat() {
           {chatHistoryList.map((chat, index) => (
             <MessageWrapper key={index} isMine={chat.sender === mail}>
               <MessageBubble isMine={chat.sender === mail}>{chat.content}</MessageBubble>
-              <MessageTime>{new Date(chat.sendAt).toLocaleTimeString()}</MessageTime>
+              <MessageTime>
+                {new Date(chat.sendAt).toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+              </MessageTime>
             </MessageWrapper>
           ))}
         </ChatHistory>
@@ -294,7 +300,8 @@ const ChatHistory = styled.div`
 
 const MessageWrapper = styled.div<{ isMine: boolean }>`
   display: flex;
-  align-items: ${({ isMine }) => (isMine ? 'flex-end' : 'flex-start')};
+  align-items: end;
+  flex-direction: ${({ isMine }) => (isMine ? 'row-reverse' : 'row')};
   gap: 8px;
 `
 
@@ -305,13 +312,13 @@ const MessageBubble = styled.div<{ isMine: boolean }>`
   ${({ theme }) => theme.font.body3}
   ${({ isMine, theme }) =>
     isMine
-      ? `background-color: ${theme.color.orange500};
-  color: 'white';
-  border-radius: 24px 0 24px;`
+      ? `background-color: ${theme.color.orange400};
+  color: #fff;
+  border-radius: 24px 0 24px 24px;`
       : `background-color: ${theme.color.gray100};
   color: ${theme.color.gray950};
   border-radius: 0 24px 24px;
-  boder: 1px solid ${theme.color.gray200}`}
+  border: 1px solid ${theme.color.gray200}`}
 `
 
 const MessageTime = styled.div`
