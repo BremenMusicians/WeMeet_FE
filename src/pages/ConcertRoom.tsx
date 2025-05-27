@@ -89,8 +89,6 @@ export const ConcertRoom = () => {
       }
     })
   }, [])
-
-
   useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, user?.accountId || '', audioStream, getLocalAudioStream)
 
   return (
@@ -102,9 +100,10 @@ export const ConcertRoom = () => {
       )}
       <Content>
         <audio ref={localAudioRef} id="local-audio" autoPlay playsInline />
-        {participants.map((p) => (
-          <audio key={p.mail} ref={p.audioRef} autoPlay playsInline />
-        ))}
+        {participants.map((p) => {
+          console.log('🎤 참가자 오디오:', p.mail, p.audioRef)
+          return <audio key={p.mail} ref={p.audioRef} autoPlay playsInline />
+        })}
 
         <TopBar>
           <TitleWrap>

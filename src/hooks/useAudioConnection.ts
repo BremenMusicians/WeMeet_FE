@@ -223,6 +223,30 @@ export const useAudioConnectionNN = (
           break
         }
 
+        case 'exist': {
+          console.log(`👋 참가자 입장 (${mail})`)
+          const parsed = typeof data === 'string' ? JSON.parse(data) : data
+          console.log('기존 참가자 정보:', parsed.mail)
+          if (Array.isArray(parsed)) {
+            parsed?.map((item) =>
+              useParticipantsStore.getState().addParticipant({
+                mail: item.mail,
+                accountId: item.accountId,
+                profile: item.profile,
+              }),
+            )
+          }
+          if (!audioStream.current) audioStream.current = await getLocalAudioStream()
+          console.log('🎤 로컬 오디오 스트림 가져옴 (join)', audioStream.current)
+          await setupPeerConnection(mail)
+
+          const offer = await peerConnections.current[mail].createOffer()
+          console.log(`📤 Offer 생성 (${mail})`, offer)
+          await peerConnections.current[mail].setLocalDescription(offer)
+          socket.current?.send(JSON.stringify({ type: 'offer', to: mail, data: offer, from: myAccountId }))
+          break
+        }
+
         case 'candidate': {
           console.log(`📩 ICE 후보 수신 (${mail})`, data)
           const candidate = new RTCIceCandidate(data)
@@ -286,7 +310,7 @@ export const useAudioConnectionNN = (
 
     const s = socket.current
     s.onopen = () => console.log('🔌 WebSocket 연결됨')
-    s.onclose = () => console.log('❌ WebSocket 연결 종료됨')
+    s.onclose = (e) => console.log('❌ WebSocket 연결 종료됨', e)
     s.onerror = (e) => console.error('⚠️ WebSocket 에러:', e)
 
     return () => {

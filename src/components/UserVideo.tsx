@@ -40,7 +40,7 @@ export const UserVideo = ({ owner = false, accountId, onClick, img }: UserVideoP
             </OptionContent>
           </Option>
         )}
-        <NickName>[드럼] {accountId}</NickName>
+        <NickName>{accountId}</NickName>
       </NickNameContainer>
     </Container>
   )
