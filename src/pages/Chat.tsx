@@ -132,6 +132,12 @@ function Chat() {
     setNewChat('')
   }
 
+  const handleNewChat = (item: UserType) => {
+    setProfileInfo(item)
+    setSelectedChatId(item.chatId)
+    setShowList(false)
+  }
+
   return (
     <Container>
       <FriendListContainer>
@@ -152,7 +158,9 @@ function Chat() {
                   {friendData?.pages
                     .flatMap((p) => p.friends)
                     .map((item: UserType) => (
-                      <ProfileCard profileImg={item.profile || Profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} />
+                      <ProfileCardBox key={item.mail} onClick={() => handleNewChat(item)}>
+                        <ProfileCard profileImg={item.profile || Profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} />
+                      </ProfileCardBox>
                     ))}
                 </ModalList>
               </ModalContainer>
@@ -257,7 +265,6 @@ const ModalContainer = styled.div`
 const ModalList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
   width: 100%;
   overflow-y: scroll;
 `
