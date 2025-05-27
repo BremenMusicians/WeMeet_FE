@@ -1,15 +1,17 @@
 import styled from 'styled-components'
 import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
-import { Plus, More, Profile, PaperPlane, Search } from '../assets'
+import { Plus, More, Profile, PaperPlane, Search, Emoji } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
 import { ChatListType, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
 import { useProfileStore } from '../stores/UserStores'
 import { theme } from '../styles/Theme'
-import { useGetMyFriendList } from '../apis/friends'
+import { useDeleteFriend, useGetMyFriendList } from '../apis/friends'
 import useDebounce from '../hooks/useDebounce'
-import { UserType } from '../apis/friends/type'
+import { DeleteFriendRequestType, UserType } from '../apis/friends/type'
+import Picker from '@emoji-mart/react'
+import { useClickOutside } from '../hooks/useClickOutside'
 
 const BASE_URL = 'wemeet-prod.xquare.app'
 const token = cookie.get('access_token')
@@ -20,24 +22,34 @@ function Chat() {
   const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([]) // 선택한 친구와의 채팅 내역
   const [newChat, setNewChat] = useState<string>('') // 채팅 값
   const [selectedChatId, setSelectedChatId] = useState<string>('') // 선택된 상대의 chatId
-  const [showMenu, setShowMenu] = useState<boolean>(false) // 케밥 메뉴
   const [searchKeyword, setSearchKeyword] = useState('')
-  const [showList, setShowList] = useState<boolean>(true)
   const debouncedSearchText = useDebounce(searchKeyword, 300)
   const { data: friendData } = useGetMyFriendList(debouncedSearchText)
+  const { mutate: deleteFriend } = useDeleteFriend({
+    onSuccess: () => {
+      refetch()
+    },
+  })
+
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  useClickOutside(emojiPickerRef, () => {
+    if (showEmojiPicker) setShowEmojiPicker(false)
+  })
 
   const friendListRef = useRef<HTMLDivElement>(null)
+  const [showList, setShowList] = useState<boolean>(false)
+  useClickOutside(friendListRef, () => {
+    if (showList) setShowList(false)
+  })
+
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+  const [showMenu, setShowMenu] = useState<boolean>(false) // 케밥 메뉴
+  useClickOutside(moreMenuRef, () => {
+    if (showMenu) setShowMenu(false)
+  })
+
   const bottomRef = useRef<HTMLDivElement>(null) // 채팅 화면 스크롤 하단 조정
-
-  const handleClickOutside = (e: MouseEvent) => {
-    const currentFriendListRef = friendListRef.current
-    if (currentFriendListRef && !currentFriendListRef.contains(e.target as Node)) setShowList(false)
-  }
-
-  useEffect(() => {
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [friendListRef.current])
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
@@ -138,21 +150,28 @@ function Chat() {
     setShowList(false)
   }
 
+  const handleDeleteFriend = (accountId: DeleteFriendRequestType) => {
+    setShowMenu(!showMenu)
+    deleteFriend(accountId)
+  }
+
   return (
     <Container>
       <FriendListContainer>
         <FriendListTitle>
           <FriendNumber>{chatList.length}명의 친구</FriendNumber>
           <AddFriendSection ref={friendListRef}>
-            <AddFriendButton onClick={() => setShowList((p) => !p)}>
+            <Button onClick={() => setShowList((p) => !p)}>
               <Plus Fill={theme.color.gray300} />
-            </AddFriendButton>
+            </Button>
             {showList && (
               <ModalContainer>
-                <ListSearchBox>
-                  <img width={18} height={18} src={Search} />
-                  <Input placeholder="이름 검색" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
-                </ListSearchBox>
+                <ListSearchContainer>
+                  <ListSearchBox>
+                    <img width={18} height={18} src={Search} />
+                    <Input placeholder="이름 검색" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
+                  </ListSearchBox>
+                </ListSearchContainer>
                 <ModalList>
                   <FriendListCount>{friendData?.pages[0]?.friendsCnt}명의 친구</FriendListCount>
                   {friendData?.pages
@@ -187,10 +206,12 @@ function Chat() {
             <ProfileImage src={profileInfo?.profile || Profile} />
             <Nickname>{profileInfo?.accountId}</Nickname>
           </ProfileInfo>
-          <KebabMenu onClick={() => setShowMenu(!showMenu)}>
-            <More />
-          </KebabMenu>
-          {showMenu && <Dropdown>친구 삭제</Dropdown>}
+          <Section>
+            <Button onClick={() => handleDeleteFriend({ accountId: profileInfo.accountId })}>
+              <More Fill={theme.color.gray400} />
+            </Button>
+            {showMenu && <Dropdown ref={moreMenuRef}>친구 삭제</Dropdown>}
+          </Section>
         </ChatHeader>
 
         <ChatHistory ref={bottomRef}>
@@ -210,7 +231,16 @@ function Chat() {
 
         <ChatInputBox>
           <InputBox>
-            <EmojiButton>😊</EmojiButton>
+            <Section ref={emojiPickerRef}>
+              <Button onClick={() => setShowEmojiPicker((p) => !p)}>
+                <img src={Emoji} />
+              </Button>
+              {showEmojiPicker && (
+                <PickerBox>
+                  <Picker theme="light" onEmojiSelect={({ native }: { native: string }) => setNewChat((p) => p + native)} />
+                </PickerBox>
+              )}
+            </Section>
             <Input onKeyDown={handleEnterPress} type="text" placeholder="메시지를 입력하세요" value={newChat} onChange={handleChange} />
             <SendButton disabled={!newChat.trim() || !profileInfo?.mail || !wsRef.current} onClick={handleSubmit}>
               <img src={PaperPlane} />
@@ -224,10 +254,25 @@ function Chat() {
 
 export default Chat
 
+const Section = styled.div`
+  position: relative;
+`
+
+const PickerBox = styled.div`
+  position: absolute;
+  bottom: 48px;
+  left: -16px;
+`
+
+const ListSearchContainer = styled.div`
+  width: 100%;
+  padding: 8px;
+`
+
 const FriendListCount = styled.p`
   color: ${({ theme }) => theme.color.gray400};
   ${({ theme }) => theme.font.body6}
-  padding-left: 4px;
+  padding: 4px 12px;
 `
 
 const ListSearchBox = styled.div`
@@ -253,20 +298,20 @@ const ModalContainer = styled.div`
   background-color: white;
   display: flex;
   flex-direction: column;
-  z-index: 10;
+  z-index: 100;
   height: 400px;
   position: absolute;
-  padding: 8px;
   border: 1px solid ${({ theme }) => theme.color.gray200};
-  border-radius: 12px;
-  gap: 16px;
+  border-radius: 16px;
+  gap: 8px;
 `
 
 const ModalList = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
   overflow-y: scroll;
+  width: 340px;
+  height: 100%;
 `
 
 const ChatContainer = styled.div`
@@ -281,7 +326,7 @@ const Container = styled.div`
   max-width: 1280px;
   width: 100%;
   height: 100vh;
-  padding: 70px 24px 0;
+  padding: 70px 0 0;
   justify-self: center;
   display: flex;
 `
@@ -291,8 +336,10 @@ const FriendListContainer = styled.div`
   flex-direction: column;
   padding: 24px 0 0;
   gap: 20px;
-  width: 360px;
+  width: 100%;
+  max-width: 360px;
   height: 100%;
+  min-width: 240px;
 `
 
 const FriendListTitle = styled.div`
@@ -308,10 +355,12 @@ const FriendNumber = styled.p`
   ${({ theme }) => theme.font.body3}
 `
 
-const AddFriendButton = styled.button`
+const Button = styled.button`
   background-color: transparent;
   cursor: pointer;
   position: relative;
+  display: flex;
+  align-items: center;
 `
 
 const FriendList = styled.div`
@@ -323,7 +372,7 @@ const FriendList = styled.div`
 `
 
 const ProfileCardBox = styled.div`
-  padding: 8px;
+  padding: 8px 12px;
   width: 100%;
   display: flex;
   &:hover {
@@ -355,20 +404,22 @@ const Nickname = styled.p`
   ${({ theme }) => theme.font.body2};
 `
 
-const KebabMenu = styled.button`
-  cursor: pointer;
-`
-
 const Dropdown = styled.div`
   position: absolute;
-  top: 60px;
-  right: 24px;
+  top: 36px;
+  right: 8px;
   background: white;
   padding: 8px 12px;
   border-radius: 6px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
   cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  ${({ theme }) => theme.font.body4}
+  &:hover {
+    background-color: ${({ theme }) => theme.color.orange50};
+    color: ${({ theme }) => theme.color.orange600};
+  }
 `
 
 const InputBox = styled.div`
@@ -379,6 +430,7 @@ const InputBox = styled.div`
   border-radius: 16px;
   border: 1px solid ${({ theme }) => theme.color.gray200};
   gap: 8px;
+  align-items: center;
 `
 
 const ChatHistory = styled.div`
@@ -452,10 +504,4 @@ const SendButton = styled.button`
       fill: ${({ theme }) => theme.color.gray300};
     }
   }
-`
-
-const EmojiButton = styled.button`
-  background-color: transparent;
-  cursor: pointer;
-  ${({ theme }) => theme.font.title1}
 `
