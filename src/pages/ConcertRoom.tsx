@@ -90,15 +90,6 @@ export const ConcertRoom = () => {
     })
   }, [])
 
-  useEffect(() => {
-    if (RoomData?.members) {
-      RoomData.members.forEach((participant) => {
-        if (!remoteAudioRefs.current[participant.mail]) {
-          remoteAudioRefs.current[participant.mail] = React.createRef<HTMLAudioElement | null>()
-        }
-      })
-    }
-  }, [RoomData])
 
   useAudioConnectionNN(isSocketReady && isAudioStarted, remoteAudioRefs.current, user?.accountId || '', audioStream, getLocalAudioStream)
 
@@ -144,7 +135,7 @@ export const ConcertRoom = () => {
               }
             })()}
           {participants.map((item) => (
-            <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img="" />
+            <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img={item.profile} />
           ))}
         </VideoWrap>
 
