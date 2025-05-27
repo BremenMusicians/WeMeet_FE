@@ -8,7 +8,7 @@ interface ProfileCard {
   introduce: string | null
   position: position[]
   profileImg?: string
-  children: React.ReactNode
+  children?: React.ReactNode
   chat?: boolean
 }
 

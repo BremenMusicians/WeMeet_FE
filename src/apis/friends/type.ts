@@ -11,7 +11,7 @@ export interface UserType {
 }
 
 export interface FriendResponseType {
-  users: UserType[]
+  friends: UserType[]
   friendsCnt: number
 }
 
