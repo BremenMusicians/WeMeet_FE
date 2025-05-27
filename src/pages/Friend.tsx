@@ -47,12 +47,12 @@ export const Friend = () => {
         </TopBar>
 
         <List>
-          <p>{currentMenu === 'request' ? `받은 친구 요청 (${requestList?.length ?? 0}명)` : `추천 친구 (${data?.pages?.[0]?.usersCnt ?? 0}명)`}</p>
+          <p>{currentMenu === 'request' ? `받은 친구 요청 (${requestList?.length ?? 0}명)` : `추천 친구 (${data?.pages?.[0]?.friendsCnt ?? 0}명)`}</p>
 
           <ListWrap>
             {currentMenu === 'recommend'
               ? data?.pages
-                  .flatMap((page) => page.users)
+                  .flatMap((page) => page.friends)
                   .map((item) => (
                     <ProfileCard key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position} profileImg={item.profile!}>
                       {item.isFriend === 'NOT_FRIEND' && (
@@ -80,7 +80,7 @@ export const Friend = () => {
                 ))}
 
             {currentMenu === 'request' && (requestList?.length ?? 0) < 1 && <P>친구 요청이 없습니다.</P>}
-            {currentMenu === 'recommend' && (data?.pages?.[0]?.users?.length ?? 0) < 1 && <P>해당 친구가 존재하지 않습니다.</P>}
+            {currentMenu === 'recommend' && (data?.pages?.[0]?.friends?.length ?? 0) < 1 && <P>해당 친구가 존재하지 않습니다.</P>}
             {currentMenu === 'recommend' && !isLoading && <ScrollObserver ref={ref} />}
             {isFetchingNextPage && <P>불러오는 중...</P>}
           </ListWrap>

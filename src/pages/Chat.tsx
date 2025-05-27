@@ -150,7 +150,8 @@ function Chat() {
     setShowList(false)
   }
 
-  const handleDeleteFriend = (accountId: DeleteFriendRequestType) => {
+  const handleDeleteFriend = (accountId: string) => {
+    console.log('삭제될놈:', accountId)
     setShowMenu(!showMenu)
     deleteFriend(accountId)
   }
@@ -207,7 +208,7 @@ function Chat() {
             <Nickname>{profileInfo?.accountId}</Nickname>
           </ProfileInfo>
           <Section>
-            <Button onClick={() => handleDeleteFriend({ accountId: profileInfo.accountId })}>
+            <Button onClick={() => handleDeleteFriend(profileInfo.accountId)}>
               <More Fill={theme.color.gray400} />
             </Button>
             {showMenu && <Dropdown ref={moreMenuRef}>친구 삭제</Dropdown>}
