@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { useEffect, useRef, useState } from 'react'
+import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
 import { Plus, More, Profile, PaperPlane } from '../assets'
 import { cookie } from '../utils/Auth'
@@ -11,8 +11,7 @@ const BASE_URL = 'wemeet-prod.xquare.app'
 const token = cookie.get('access_token')
 
 function Chat() {
-  const { profileInfo } = useProfileStore() // 선택한 친구의 프로필 정보
-  const { setProfileInfo } = useProfileStore() // 선택한 친구의 프로필 정보 변경
+  const { profileInfo, setProfileInfo } = useProfileStore() // 선택한 친구의 프로필 정보
   const [chatList, setChatList] = useState<ChatListType[]>([]) // 친구 목록
   const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([]) // 선택한 친구와의 채팅 내역
   const [newChat, setNewChat] = useState<string>('') // 채팅 값
@@ -23,12 +22,11 @@ function Chat() {
 
   useEffect(() => {
     bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
-    // bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) // 맨 아래로 이동
   }, [chatHistoryList]) // 채팅 목록이 변경된다면
 
   const wsRef = useRef<WebSocket | null>(null) // 웹소켓 설정
 
-  const { data: chatHistoryData, refetch } = useGetChatHistory(selectedChatId, !!selectedChatId)
+  const { data: chatHistoryData, refetch } = useGetChatHistory(profileInfo.chatId, profileInfo.chatId !== null)
 
   useEffect(() => {
     if (selectedChatId) {
@@ -37,10 +35,15 @@ function Chat() {
   }, [refetch, selectedChatId])
 
   useEffect(() => {
-    // 만약 chatId가 있다면 채팅 기록을 채팅 내역에 넣기
-    if (chatHistoryData) setChatHistoryList(chatHistoryData!)
-    else setChatHistoryList([])
-  }, [chatHistoryData, selectedChatId])
+    if (!profileInfo.chatId) {
+      setChatHistoryList([])
+      return
+    }
+
+    if (chatHistoryData) {
+      setChatHistoryList(chatHistoryData)
+    }
+  }, [chatHistoryData, profileInfo.chatId])
 
   // WebSocket 연결 설정
   useEffect(() => {
@@ -82,9 +85,15 @@ function Chat() {
 
   const mail = localStorage.getItem('mail')!
 
+  const handleEnterPress = (e: KeyboardEvent) => {
+    if (e.key == 'Enter') {
+      handleSubmit()
+    }
+  }
+
   const handleSubmit = () => {
     // 채팅 내용이 없고 선택된 chatId가 없거나, 이메일이 없고 웹소켓 설정이 안되어있다면
-    if (!newChat.trim() || !selectedChatId || !profileInfo?.mail || !wsRef.current) return
+    if (!newChat.trim() || !profileInfo?.mail || !wsRef.current) return
 
     // 보내는 형식
     const newMessage: SendMailFormat = {
@@ -149,8 +158,8 @@ function Chat() {
         <ChatInputBox>
           <InputBox>
             <EmojiButton>😊</EmojiButton>
-            <Input type="text" placeholder="메시지를 입력하세요" value={newChat} onChange={handleChange} />
-            <SendButton disabled={!newChat.trim() || !selectedChatId || !profileInfo?.mail || !wsRef.current} onClick={handleSubmit}>
+            <Input onKeyDown={handleEnterPress} type="text" placeholder="메시지를 입력하세요" value={newChat} onChange={handleChange} />
+            <SendButton disabled={!newChat.trim() || !profileInfo?.mail || !wsRef.current} onClick={handleSubmit}>
               <img src={PaperPlane} />
             </SendButton>
           </InputBox>
@@ -285,23 +294,30 @@ const ChatHistory = styled.div`
 
 const MessageWrapper = styled.div<{ isMine: boolean }>`
   display: flex;
-  flex-direction: column;
   align-items: ${({ isMine }) => (isMine ? 'flex-end' : 'flex-start')};
-  gap: 4px;
+  gap: 8px;
 `
 
 const MessageBubble = styled.div<{ isMine: boolean }>`
-  background-color: ${({ isMine, theme }) => (isMine ? theme.color.orange500 : theme.color.gray50)};
-  color: ${({ isMine, theme }) => (isMine ? 'white' : theme.color.gray900)};
   padding: 10px 14px;
   border-radius: 20px;
   max-width: 60%;
   ${({ theme }) => theme.font.body3}
+  ${({ isMine, theme }) =>
+    isMine
+      ? `background-color: ${theme.color.orange500};
+  color: 'white';
+  border-radius: 24px 0 24px;`
+      : `background-color: ${theme.color.gray100};
+  color: ${theme.color.gray950};
+  border-radius: 0 24px 24px;
+  boder: 1px solid ${theme.color.gray200}`}
 `
 
 const MessageTime = styled.div`
   font-size: 10px;
   color: ${({ theme }) => theme.color.gray300};
+  ${({ theme }) => theme.font.body6}
 `
 
 const ChatInputBox = styled.div`
@@ -327,7 +343,7 @@ const SendButton = styled.button`
   cursor: pointer;
   display: flex;
   &:disabled {
-    background-color: ${({ theme }) => theme.color.gray100};
+    background-color: ${({ theme }) => theme.color.gray200};
     svg {
       fill: ${({ theme }) => theme.color.gray300};
     }

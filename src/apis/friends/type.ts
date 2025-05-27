@@ -7,6 +7,7 @@ export interface UserType {
   aboutMe: null | string
   position: position[]
   isFriend: 'NOT_FRIEND' | 'FRIEND' | 'WAITING'
+  chatId: string
 }
 
 export interface FriendResponseType {
