@@ -32,21 +32,30 @@ function Chat() {
 
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  useClickOutside(emojiPickerRef, () => {
-    if (showEmojiPicker) setShowEmojiPicker(false)
-  })
+  useClickOutside(
+    emojiPickerRef,
+    useCallback(() => {
+      if (showEmojiPicker) setShowEmojiPicker(false)
+    }, [showEmojiPicker]),
+  )
 
   const friendListRef = useRef<HTMLDivElement>(null)
   const [showList, setShowList] = useState<boolean>(false)
-  useClickOutside(friendListRef, () => {
-    if (showList) setShowList(false)
-  })
+  useClickOutside(
+    friendListRef,
+    useCallback(() => {
+      if (showList) setShowList(false)
+    }, [showList]),
+  )
 
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const [showMenu, setShowMenu] = useState<boolean>(false) // 케밥 메뉴
-  useClickOutside(moreMenuRef, () => {
-    if (showMenu) setShowMenu(false)
-  })
+  useClickOutside(
+    moreMenuRef,
+    useCallback(() => {
+      if (showMenu) setShowMenu(false)
+    }, [showMenu]),
+  )
 
   const bottomRef = useRef<HTMLDivElement>(null) // 채팅 화면 스크롤 하단 조정
 
