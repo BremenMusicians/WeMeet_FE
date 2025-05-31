@@ -99,7 +99,8 @@ function Chat() {
       if (message.type === 'MESSAGE') {
         // 메시지를 받았다면 채팅 내역에 추가
         setChatHistoryList((prev) => [...prev, message])
-      } else if (message.type === 'UPDATE_CHAT_LIST') {
+      }
+      if (message.type === 'UPDATE_CHAT_LIST') {
         // 채팅 리스트를 받았다면 채팅 리스트에 저장
         setChatList(message.chats)
       }
