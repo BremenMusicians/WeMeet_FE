@@ -4,7 +4,7 @@ import { ProfileCard } from '../components/ProfileCard'
 import { Plus, More, Profile, PaperPlane, Search, Emoji } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
-import { ChatListType, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
+import { ChatListType, ChatUserProfile, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
 import { useProfileStore } from '../stores/UserStores'
 import { theme } from '../styles/Theme'
 import { useDeleteFriend, useGetMyFriendList } from '../apis/friends'
@@ -27,6 +27,11 @@ function Chat() {
   const { mutate: deleteFriend } = useDeleteFriend({
     onSuccess: () => {
       refetch()
+      if (profileInfo.accountId === selectedChatId) {
+        setProfileInfo({} as ChatUserProfile)
+        setChatHistoryList([])
+        setSelectedChatId('')
+      }
     },
   })
 
