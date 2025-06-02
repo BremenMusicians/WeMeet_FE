@@ -4,7 +4,7 @@ import { ProfileCard } from '../components/ProfileCard'
 import { Plus, More, Profile, PaperPlane, Search, Emoji } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
-import { ChatListType, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
+import { ChatListType, ChatUserProfile, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
 import { useProfileStore } from '../stores/UserStores'
 import { theme } from '../styles/Theme'
 import { useDeleteFriend, useGetMyFriendList } from '../apis/friends'
@@ -27,6 +27,11 @@ function Chat() {
   const { mutate: deleteFriend } = useDeleteFriend({
     onSuccess: () => {
       refetch()
+      if (profileInfo.chatId === selectedChatId) {
+        setProfileInfo({} as ChatUserProfile)
+        setChatHistoryList([])
+        setSelectedChatId('')
+      }
     },
   })
 
@@ -177,7 +182,7 @@ function Chat() {
                   </ListSearchBox>
                 </ListSearchContainer>
                 <ModalList>
-                  <FriendListCount>{friendData?.pages[0]?.friendsCnt}명의 친구</FriendListCount>
+                  <FriendListCount>{friendData?.pages[0]?.friendsCnt || 0}명의 친구</FriendListCount>
                   {friendData?.pages
                     .flatMap((p) => p.friends)
                     .map((item: UserType) => (
@@ -215,8 +220,8 @@ function Chat() {
               <More Fill={theme.color.gray400} />
             </Button>
             {showMenu && (
-              <Dropdown ref={moreMenuRef} onClick={() => deleteFriend(profileInfo.accountId)}>
-                친구 삭제
+              <Dropdown ref={moreMenuRef}>
+                <DropdownItem onClick={() => deleteFriend(profileInfo.accountId)}> 친구 삭제</DropdownItem>
               </Dropdown>
             )}
           </Section>
@@ -261,6 +266,16 @@ function Chat() {
 }
 
 export default Chat
+
+const DropdownItem = styled.div`
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  &:hover {
+    background-color: ${({ theme }) => theme.color.orange50};
+    color: ${({ theme }) => theme.color.orange600};
+  }
+`
 
 const Section = styled.div`
   position: relative;

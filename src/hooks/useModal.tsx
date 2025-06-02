@@ -1,8 +1,9 @@
 import React, { useContext, createContext, useState, ElementType } from 'react'
 
 type ModalsType = {
+  id: string
   Component: ElementType
-  props?: any
+  props?: Record<string, unknown>
 }
 
 type ModalContextType = {
@@ -15,8 +16,9 @@ const ModalContext = createContext<ModalContextType | null>(null)
 export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const [modals, setModals] = useState<ModalsType[]>([])
 
-  const openModal = (Component: ElementType, props = {}) => {
-    setModals((prev) => [...prev, { Component, props }])
+  const openModal = (Component: ElementType, props: Record<string, unknown> = {}) => {
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9)
+    setModals((prev) => [...prev, { id, Component, props }])
   }
 
   const closeModal = () => {
@@ -26,11 +28,15 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ModalContext.Provider value={{ openModal, closeModal }}>
       {children}
-      {modals.map(({ Component, props }, i) => (
-        <Component key={i} {...props} />
+      {modals.map(({ id, Component, props }) => (
+        <Component key={id} {...props} />
       ))}
     </ModalContext.Provider>
   )
 }
 
-export const useModal = () => useContext(ModalContext)
+export const useModal = () => {
+  const context = useContext(ModalContext)
+  if (!context) throw new Error('모달 에러')
+  return context
+}
