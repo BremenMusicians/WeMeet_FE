@@ -6,6 +6,7 @@ import { Synthesizer } from '../components/Synthesizer'
 import GuitarComponents from '../components/Guitar'
 import { DrumComponents } from '../components/Drum'
 import { BassComponents } from '../components/Bass'
+import { EffectModal } from '../components/EffectModal'
 
 export const Instrument = () => {
   const location = useLocation()
@@ -21,6 +22,7 @@ export const Instrument = () => {
         {currentInstrument === '신스' && <Synthesizer />}
         {currentInstrument === '기타' && <GuitarComponents />}
         {currentInstrument === '베이스' && <BassComponents />}
+        <EffectModal />
       </Content>
     </Container>
   )

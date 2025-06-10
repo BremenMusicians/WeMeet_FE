@@ -54,10 +54,12 @@ export { default as Emoji } from './Emoji.svg'
 export { default as CloseBlack } from './Close_MD.svg'
 export { default as BassHeader } from './BassHeader.webp'
 export * from './Bass'
+export * from './Double_Arrow'
 
 export interface IconProps {
   Fill?: string
   width?: number | string
   height?: number | string
   onClick?: () => void
+  direction?: 'left' | 'right' | 'up' | 'down'
 }
