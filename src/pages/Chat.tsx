@@ -34,6 +34,10 @@ function Chat() {
       }
     },
   })
+  const handleDeleteFriend = (accountId: string) => {
+    const result = confirm('선택한 친구를 삭제하시겠습니까?')
+    if (result) deleteFriend(accountId)
+  }
 
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -109,6 +113,7 @@ function Chat() {
         // 채팅 리스트를 받았다면 채팅 리스트에 저장
         setChatList(message.chats)
       }
+      console.log('왜돼:', message)
     }
 
     ws.onerror = (error) => {
@@ -221,7 +226,7 @@ function Chat() {
             </Button>
             {showMenu && (
               <Dropdown ref={moreMenuRef}>
-                <DropdownItem onClick={() => deleteFriend(profileInfo.accountId)}> 친구 삭제</DropdownItem>
+                <DropdownItem onClick={() => handleDeleteFriend(profileInfo.accountId)}> 친구 삭제</DropdownItem>
               </Dropdown>
             )}
           </Section>
@@ -229,8 +234,8 @@ function Chat() {
 
         <ChatHistory ref={bottomRef}>
           {chatHistoryList.map((chat, index) => (
-            <MessageWrapper key={index} isMine={chat.sender === mail}>
-              <MessageBubble isMine={chat.sender === mail}>{chat.content}</MessageBubble>
+            <MessageWrapper key={index} $isMine={chat.sender === mail}>
+              <MessageBubble $isMine={chat.sender === mail}>{chat.content}</MessageBubble>
               <MessageTime>
                 {new Date(chat.sendAt).toLocaleTimeString('ko-KR', {
                   hour: '2-digit',
@@ -467,20 +472,20 @@ const ChatHistory = styled.div`
   background-color: ${({ theme }) => theme.color.gray50};
 `
 
-const MessageWrapper = styled.div<{ isMine: boolean }>`
+const MessageWrapper = styled.div<{ $isMine: boolean }>`
   display: flex;
   align-items: end;
-  flex-direction: ${({ isMine }) => (isMine ? 'row-reverse' : 'row')};
+  flex-direction: ${({ $isMine }) => ($isMine ? 'row-reverse' : 'row')};
   gap: 8px;
 `
 
-const MessageBubble = styled.div<{ isMine: boolean }>`
+const MessageBubble = styled.div<{ $isMine: boolean }>`
   padding: 10px 14px;
   border-radius: 20px;
   max-width: 60%;
   ${({ theme }) => theme.font.body3}
-  ${({ isMine, theme }) =>
-    isMine
+  ${({ $isMine, theme }) =>
+    $isMine
       ? `background-color: ${theme.color.orange400};
   color: #fff;
   border-radius: 24px 0 24px 24px;`
