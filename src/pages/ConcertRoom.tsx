@@ -1,10 +1,9 @@
-import React from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
 import * as Tone from 'tone'
 
-import { Lock, LogOut, Mike, MikeOff } from '../assets'
+import { CloseBlack, Lock, LogOut, Mike, MikeOff } from '../assets'
 import { useEntryRoom, useExitConcertRoom, useGetRoomInfo } from '../apis/room'
 import { FeaturePanel } from '../components/FeaturePanel'
 import { InviteCodeBox } from '../components/InviteCodeBox'
@@ -32,13 +31,20 @@ export const ConcertRoom = () => {
 
   type FeatureType = 'instrument' | 'volume'
   const [activeFeature, setActiveFeature] = useState<FeatureType | null>(null)
-  const [isSocketReady, setIsSocketReady] = useState(false)
-  const [hasEntered, setHasEntered] = useState(false)
-  const [isAudioStarted, setIsAudioStarted] = useState(false)
-  const [instrument, setInstrument] = useState<InstrumentType>('기타')
+  const [isSocketReady, setIsSocketReady] = useState<boolean>(false)
+  const [hasEntered, setHasEntered] = useState<boolean>(false)
+  const [isAudioStarted, setIsAudioStarted] = useState<boolean>(false)
+  const [instrument, setInstrument] = useState<InstrumentType | undefined>(undefined)
 
   const localAudioRef = useRef<HTMLAudioElement | null>(null)
   const remoteAudioRefs = useRef<Record<string, React.RefObject<HTMLAudioElement | null>>>({})
+
+  useEffect(() => {
+    if (localAudioRef.current) {
+      localAudioRef.current.muted = true
+      localAudioRef.current.volume = 0
+    }
+  }, [])
 
   const { mutate: exitRoom } = useExitConcertRoom(
     {
@@ -100,9 +106,19 @@ export const ConcertRoom = () => {
         </AudioStartOverlay>
       )}
       <Content>
-        <audio ref={localAudioRef} id="local-audio" autoPlay playsInline />
+        <audio ref={localAudioRef} id="local-audio" autoPlay playsInline muted={true} />
         {participants.map((p) => (
-          <audio key={p.mail} ref={p.audioRef} autoPlay playsInline />
+          <audio
+            key={p.mail}
+            ref={p.audioRef}
+            autoPlay
+            playsInline
+            muted={false}
+            onPlay={() => console.log(`🎵 ${p.mail}의 오디오 재생 시작`)}
+            onError={(e) => console.error(`❌ ${p.mail}의 오디오 에러:`, e)}
+          >
+            <track kind="captions" />
+          </audio>
         ))}
 
         <TopBar>
@@ -115,8 +131,13 @@ export const ConcertRoom = () => {
           {RoomData?.password && <InviteCodeBox code={RoomData.password} />}
         </TopBar>
 
-        <VideoWrap>
-          {activeFeature === 'instrument' &&
+        <VideoWrap $active={instrument}>
+          {instrument && (
+            <Close onClick={() => setInstrument(undefined)}>
+              <img src={CloseBlack} alt="악기닫기" />
+            </Close>
+          )}
+          {(activeFeature === 'instrument' || instrument) &&
             (() => {
               switch (instrument) {
                 case '기타':
@@ -133,7 +154,8 @@ export const ConcertRoom = () => {
                   return null
               }
             })()}
-          {participants.map((item) => item.accountId && <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img={item.profile} />)}
+
+          {!instrument && participants.map((item) => item.accountId && <UserVideo key={item.accountId} accountId={item.accountId} onClick={() => {}} img={item.profile} />)}
         </VideoWrap>
 
         <BottomBarWrap>
@@ -203,18 +225,19 @@ const Description = styled.p`
   color: ${({ theme }) => theme.color.gray500};
 `
 
-const VideoWrap = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+const VideoWrap = styled.div<{ $active?: 'instrument' | 'volume' | null | InstrumentType }>`
+  display: ${({ $active }) => ($active ? '' : 'grid')};
+  grid-template-columns: ${({ $active }) => ($active ? '' : 'repeat(2, minmax(0, 1fr))')};
   gap: 10px;
   width: 100%;
   height: 100%;
   margin: auto;
-  padding: 0px 44px;
+  padding: ${({ $active }) => ($active ? '' : '0px 44px')};
 
   @media (max-width: 1440px) {
-    width: 70%;
+    width: ${({ $active }) => ($active ? '' : '70%')};
   }
+  position: relative;
 `
 
 const BottomBarWrap = styled.div`
@@ -224,6 +247,7 @@ const BottomBarWrap = styled.div`
   display: flex;
   gap: 16px;
   justify-content: center;
+  left: 0;
 `
 
 const ButtonWrapper = styled.button`
@@ -270,4 +294,11 @@ const AudioStartOverlay = styled.div`
     border-radius: 12px;
     cursor: pointer;
   }
+`
+
+const Close = styled.div`
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 100;
 `

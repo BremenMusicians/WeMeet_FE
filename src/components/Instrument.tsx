@@ -49,6 +49,7 @@ const Container = styled.div`
   position: absolute;
   bottom: 76px;
   left: -50%;
+  z-index: 100;
 `
 
 const InstrumentWrap = styled.div<{ $isActive: boolean }>`

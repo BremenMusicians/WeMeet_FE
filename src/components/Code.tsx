@@ -19,7 +19,7 @@ export const CodeInput = ({ onComplete }: CodeInputProps) => {
     setValues(newValues)
 
     const code = newValues.join('')
-    if (code.length === length && !newValues.includes('')) {
+    if (code?.length === length && !newValues.includes('')) {
       onComplete(code)
     }
 

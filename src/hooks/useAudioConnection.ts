@@ -29,7 +29,12 @@ export const useAudioConnectionNN = (
   const peerConnections = useRef<PeerConnections>({})
   const candidateQueue = useRef<{ [mail: string]: RTCIceCandidate[] }>({})
 
-  /** PeerConnection 설정 */
+  /** PeerConnection 설정
+   * @param {string} mail - 상대방의 이메일 주소
+   * @description WebRTC PeerConnection을 설정하고, ICE 후보를 처리합니다.
+   * @throws {Error} audioStream가 아직 준비되지 않은 경우, 로컬 오디오 스트림을 가져옵니다.
+   * @returns {Promise<void>} - PeerConnection 설정 완료 후 반환
+   */
   const setupPeerConnection = async (mail: string) => {
     console.log(`🔗 PeerConnection 생성 시작 (${mail})`)
 
@@ -56,6 +61,21 @@ export const useAudioConnectionNN = (
       }
     }
 
+    pc.oniceconnectionstatechange = () => {
+      console.log(`ICE 연결 상태 변경 (${mail}):`, pc.iceConnectionState)
+      if (pc.iceConnectionState === 'failed') {
+        console.error(`ICE 연결 실패 (${mail})`)
+      }
+    }
+
+    pc.onicegatheringstatechange = () => {
+      console.log(`ICE 수집 상태 변경 (${mail}):`, pc.iceGatheringState)
+    }
+
+    pc.onsignalingstatechange = () => {
+      console.log(`시그널링 상태 변경 (${mail}):`, pc.signalingState)
+    }
+
     /**
      * @description 상대방의 오디오 트랙을 수신하고, 해당 오디오 스트림을 지정된 audioRef에 연결합니다.
      * @param {RTCTrackEvent} event - 수신된 트랙 이벤트
@@ -65,7 +85,7 @@ export const useAudioConnectionNN = (
      */
     pc.ontrack = (event) => {
       const remoteStream = event.streams[0]
-      console.log('📥 상대방 오디오 수신됨:', remoteStream)
+      console.log('📥 상대방 오디오 수신됨:', remoteStream, '트랙:', event.track.kind)
 
       const participant = useParticipantsStore.getState().participants.find((p) => p.mail === mail)
       const ref = participant?.audioRef
@@ -80,13 +100,26 @@ export const useAudioConnectionNN = (
 
           if (delayedRef?.current) {
             delayedRef.current.srcObject = remoteStream
+            delayedRef.current.muted = false
             delayedRef.current.onplay = () => {
               console.log(`🔈 ${mail} 오디오 재생 시작됨`)
             }
             delayedRef.current.onerror = (e) => {
               console.error(`❌ ${mail} 오디오 재생 에러`, e)
             }
-            delayedRef.current.play().catch(console.error)
+            delayedRef.current
+              .play()
+              .then(() => console.log(`✅ ${mail} 오디오 재생 성공`))
+              .catch((err) => {
+                console.error(`❌ ${mail} 오디오 재생 실패:`, err)
+                // 재생 실패 시 추가 시도
+                setTimeout(() => {
+                  delayedRef.current
+                    ?.play()
+                    .then(() => console.log(`✅ ${mail} 오디오 재생 재시도 성공`))
+                    .catch(console.error)
+                }, 1000)
+              })
           } else {
             console.error(`❌ ${mail}의 audio ref 여전히 없음`)
           }
@@ -95,13 +128,26 @@ export const useAudioConnectionNN = (
       }
 
       ref.current.srcObject = remoteStream
+      ref.current.muted = false
       ref.current.onplay = () => {
         console.log(`🔈 ${mail} 오디오 재생 시작됨`)
       }
       ref.current.onerror = (e) => {
         console.error(`❌ ${mail} 오디오 재생 에러`, e)
       }
-      ref.current.play().catch(console.error)
+      ref.current
+        .play()
+        .then(() => console.log(`✅ ${mail} 오디오 재생 성공`))
+        .catch((err) => {
+          console.error(`❌ ${mail} 오디오 재생 실패:`, err)
+          // 재생 실패 시 추가 시도
+          setTimeout(() => {
+            ref.current
+              ?.play()
+              .then(() => console.log(`✅ ${mail} 오디오 재생 재시도 성공`))
+              .catch(console.error)
+          }, 1000)
+        })
     }
 
     if (audioStream.current) {
@@ -125,7 +171,12 @@ export const useAudioConnectionNN = (
     }
   }
 
-  /** 메시지 처리 */
+  /** 메시지 처리
+   * @param {MessageEvent} message - 수신된 메시지 이벤트
+   * @description WebSocket 메시지를 처리하고, 참가자 입장/퇴장, 오퍼/답변, ICE 후보 등을 관리합니다.
+   * @throws {Error} 메시지 파싱 실패 시 에러를 발생시킵니다.
+   * @returns {Promise<void>} - 메시지 처리 완료 후 반환
+   */
   const handleMessage = useCallback(
     async (message: MessageEvent) => {
       const { type, data, from } = JSON.parse(message.data)
@@ -298,12 +349,12 @@ export const useAudioConnectionNN = (
         audioStream.current = stream
         console.log('🎤 로컬 오디오 스트림 가져옴 (useEffect)', stream)
 
-        // 🎧 내 오디오도 재생되게 설정
+        // 🎧 내 오디오는 재생하지 않도록 수정
         const myAudio = audioRefs[myAccountId]
         if (myAudio?.current && stream) {
           myAudio.current.srcObject = stream
-          myAudio.current.muted = true // 에코 방지
-          myAudio.current.play().catch(console.error)
+          myAudio.current.muted = true // 자신의 소리는 들리지 않도록 설정
+          myAudio.current.volume = 0 // 볼륨도 0으로 설정
         }
       })
     }
@@ -323,10 +374,12 @@ export const useAudioConnectionNN = (
 
   useEffect(() => {
     if (isReady && socket.current?.readyState === WebSocket.OPEN) {
-      console.log(`🚀 소켓 준비 완료. ready 메시지 전송 (${myAccountId})`)
+       console.log(`🚀 소켓 준비 완료. ready 메시지 전송 (${myAccountId})`)
       socket.current.send(JSON.stringify({ type: 'ready', from: myAccountId }))
     }
   }, [isReady, socket])
+
+  console.log(isReady)
 
   return { socket }
 }
