@@ -99,7 +99,7 @@ export const Room = () => {
               <img src={PlusIcon} width={28} height={28} alt="검색" />
             </PlusButton>
           </SearchContainer>
-          <Title>{data?.pages?.[0]?.roomCount}개의 방</Title>
+          <Title>{data?.pages?.[0]?.roomCount || 0}개의 방</Title>
         </Topbar>
         <RoomList>
           {data?.pages
@@ -145,7 +145,7 @@ export const Room = () => {
                   방 제목 <Essential>*</Essential>
                 </p>
                 <Input type="text" name="name" value={createData.name} placeholder="제목을 입력해주세요" onChange={handleCreateRoomChange} />
-                <Length>{createData.name.length}/50 자</Length>
+                <Length>{createData.name?.length}/50 자</Length>
               </ContentWrap>
               <ContentWrap>
                 <p>
@@ -157,7 +157,7 @@ export const Room = () => {
               <ContentWrap>
                 <p>설명</p>
                 <Textarea placeholder="설명을 입력해주세요" onChange={handleCreateRoomChange} name="info" value={createData.info} />
-                <Length>{createData.info.length}/100 자</Length>
+                <Length>{createData.info?.length}/100 자</Length>
               </ContentWrap>
               <RadioWrap>
                 <CustomRadioComponents name="roomType" id="public" value="public" label="공개" checked={!isPrivate} onChange={() => setIsPrivate(false)} />

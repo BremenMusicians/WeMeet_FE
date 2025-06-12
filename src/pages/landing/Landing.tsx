@@ -1,4 +1,3 @@
-import React from 'react'
 import styled from 'styled-components'
 import { First } from './First'
 import { Second } from './Second'

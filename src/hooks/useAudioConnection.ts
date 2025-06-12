@@ -1,167 +1,385 @@
-import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useConcertSocket } from './useCurrentSocket';
-import React from 'react';
+import { useCallback, useEffect, useRef } from 'react'
+import { useConcertSocket } from './useCurrentSocket'
+import { useParticipantsStore } from '../stores/useParticipantsStore'
 
 interface PeerConnections {
-  [mail: string]: RTCPeerConnection;
+  [mail: string]: RTCPeerConnection
 }
 
-interface AudioRefs {
-  [mail: string]: React.RefObject<HTMLAudioElement>;
-}
-
+/**
+ * 오디오 연결을 위한 커스텀 훅
+ * @param {boolean} isReady - 소켓 준비 상태
+ * @param {Object} audioRefs - 오디오 엘리먼트 참조 객체
+ * @param {string} myAccountId - 내 계정 ID
+ * @param {React.RefObject<MediaStream | null>} audioStream - 오디오 스트림 참조
+ * @param {function} getLocalAudioStream - 로컬 오디오 스트림을 가져오는 함수
+ * @returns {{ socket: React.RefObject<WebSocket | null> }} - 소켓 객체
+ * @throws {Error} 소켓 연결 실패 시 에러를 발생시킵니다.
+ * @description 이 훅은 WebRTC를 사용하여 오디오 연결을 설정하고 관리합니다.
+ * 소켓을 통해 다른 사용자와 오디오 스트림을 주고받습니다.
+ */
 export const useAudioConnectionNN = (
   isReady: boolean,
-  audioRefs: AudioRefs,
-  localAudioRef: React.RefObject<HTMLAudioElement>,
-  myAccountId: string
+  audioRefs: { [mail: string]: React.RefObject<HTMLAudioElement | null> },
+  myAccountId: string,
+  audioStream: React.RefObject<MediaStream | null>,
+  getLocalAudioStream: () => Promise<MediaStream | null>,
 ) => {
-  const searchParams = new URLSearchParams(useLocation().search);
-  const roomId = searchParams.get('id');
+  const roomId = new URLSearchParams(window.location.search).get('id')
+  const peerConnections = useRef<PeerConnections>({})
+  const candidateQueue = useRef<{ [mail: string]: RTCIceCandidate[] }>({})
 
-  const { ws: socket } = useConcertSocket(roomId!, handleMessage);
-  const audioStream = useRef<MediaStream | null>(null);
-  const peerConnections = useRef<PeerConnections>({});
+  /** PeerConnection 설정
+   * @param {string} mail - 상대방의 이메일 주소
+   * @description WebRTC PeerConnection을 설정하고, ICE 후보를 처리합니다.
+   * @throws {Error} audioStream가 아직 준비되지 않은 경우, 로컬 오디오 스트림을 가져옵니다.
+   * @returns {Promise<void>} - PeerConnection 설정 완료 후 반환
+   */
+  const setupPeerConnection = async (mail: string) => {
+    console.log(`🔗 PeerConnection 생성 시작 (${mail})`)
 
-  const getLocalAudioStream = async () => {
-    try {
-      audioStream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('🎙️ 로컬 마이크 스트림 얻음:', audioStream.current);
-
-      if (localAudioRef.current) {
-        localAudioRef.current.srcObject = audioStream.current;
-        await localAudioRef.current.play();
-        console.log('🎧 로컬 오디오 재생 중');
-      }
-    } catch (error) {
-      console.error('🚫 마이크 접근 실패:', error);
+    if (!audioStream.current) {
+      console.warn('🔇 audioStream 없음. 스트림을 먼저 가져옵니다.')
+      audioStream.current = await getLocalAudioStream()
+      console.log('🎤 로컬 오디오 스트림 가져옴 (setupPeerConnection)', audioStream.current)
     }
-  };
-
-  const setupPeerConnection = (mail: string) => {
-    console.log(`🔧 ${mail}에 대한 PeerConnection 설정 중`);
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
+    })
 
     pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.current?.send(JSON.stringify({
-          type: 'candidate',
-          from: myAccountId,
-          to: mail,
-          data: event.candidate, 
-        }));
-        console.log(`📤 ${mail}에게 ICE 후보 전송`);
+      if (event.candidate && socket.current?.readyState === WebSocket.OPEN) {
+        socket.current.send(
+          JSON.stringify({
+            type: 'candidate',
+            from: myAccountId,
+            to: mail,
+            data: event.candidate,
+          }),
+        )
       }
-    };
-
-    pc.ontrack = (event) => {
-      console.log(`🔊 ${mail}의 트랙 수신`, event.streams);
-
-      const remoteStream = event.streams[0];
-      const ref = audioRefs[mail];
-
-      if (ref?.current) {
-        ref.current.srcObject = remoteStream;
-        ref.current.play().then(() => {
-          console.log(`✅ ${mail}의 오디오 재생 중`);
-        }).catch(console.error);
-      } else {
-        console.warn(`❌ ${mail}의 오디오 요소 없음`);
-      }
-    };
-
-    if (audioStream.current) {
-      audioStream.current.getTracks().forEach((track) => {
-        pc.addTrack(track, audioStream.current!);
-        console.log(`📤 ${mail}에게 트랙 전송`, track);
-      });
     }
 
-    peerConnections.current[mail] = pc;
-  };
-
-  async function handleMessage(message: MessageEvent) {
-    const { type, payload, data } = JSON.parse(message.data);
-
-    const JSONpayload = JSON.parse(payload);
-    const {mail} = JSONpayload
-
-    console.log(message.data)
-
-    console.log(`📩 메시지 수신: ${type} from: ${mail}`);
-
-    switch (type) {
-      case 'join': {
-        if (!audioStream.current) await getLocalAudioStream();
-        console.log(`👤 ${mail}이 방에 참여함`);
-        setupPeerConnection(mail);
-        const offer = await peerConnections.current[mail].createOffer();
-        await peerConnections.current[mail].setLocalDescription(offer);
-        socket.current?.send(JSON.stringify({ type: 'offer', to: mail, data: offer }));
-        console.log(`📤 ${mail}에게 Offer 전송`);
-        break;
+    pc.oniceconnectionstatechange = () => {
+      console.log(`ICE 연결 상태 변경 (${mail}):`, pc.iceConnectionState)
+      if (pc.iceConnectionState === 'failed') {
+        console.error(`ICE 연결 실패 (${mail})`)
       }
-      
-      case 'offer': {
-        if (!audioStream.current) await getLocalAudioStream();
-        setupPeerConnection(mail);
-        await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(data));
-        const answer = await peerConnections.current[mail].createAnswer();
-        await peerConnections.current[mail].setLocalDescription(answer);
-        socket.current?.send(JSON.stringify({ type: 'answer', to: mail, data: answer }));
-        console.log(`📤 ${mail}에게 Answer 전송`);
-        break;
+    }
+
+    pc.onicegatheringstatechange = () => {
+      console.log(`ICE 수집 상태 변경 (${mail}):`, pc.iceGatheringState)
+    }
+
+    pc.onsignalingstatechange = () => {
+      console.log(`시그널링 상태 변경 (${mail}):`, pc.signalingState)
+    }
+
+    /**
+     * @description 상대방의 오디오 트랙을 수신하고, 해당 오디오 스트림을 지정된 audioRef에 연결합니다.
+     * @param {RTCTrackEvent} event - 수신된 트랙 이벤트
+     * @param {string} mail - 상대방의 이메일 주소
+     * @throws {Error} audioRef가 아직 준비되지 않은 경우, 500ms 후 재시도합니다.
+     * @returns {void}
+     */
+    pc.ontrack = (event) => {
+      const remoteStream = event.streams[0]
+      console.log('📥 상대방 오디오 수신됨:', remoteStream, '트랙:', event.track.kind)
+
+      const participant = useParticipantsStore.getState().participants.find((p) => p.mail === mail)
+      const ref = participant?.audioRef
+
+      console.log(`🔍 ${mail}의 audioRef =`, ref)
+
+      if (!ref?.current) {
+        console.warn(`⏳ ${mail}의 audio ref 아직 없음. 500ms 후 재시도`)
+        setTimeout(() => {
+          const delayedParticipant = useParticipantsStore.getState().participants.find((p) => p.mail === mail)
+          const delayedRef = delayedParticipant?.audioRef
+
+          if (delayedRef?.current) {
+            delayedRef.current.srcObject = remoteStream
+            delayedRef.current.muted = false
+            delayedRef.current.onplay = () => {
+              console.log(`🔈 ${mail} 오디오 재생 시작됨`)
+            }
+            delayedRef.current.onerror = (e) => {
+              console.error(`❌ ${mail} 오디오 재생 에러`, e)
+            }
+            delayedRef.current
+              .play()
+              .then(() => console.log(`✅ ${mail} 오디오 재생 성공`))
+              .catch((err) => {
+                console.error(`❌ ${mail} 오디오 재생 실패:`, err)
+                // 재생 실패 시 추가 시도
+                setTimeout(() => {
+                  delayedRef.current
+                    ?.play()
+                    .then(() => console.log(`✅ ${mail} 오디오 재생 재시도 성공`))
+                    .catch(console.error)
+                }, 1000)
+              })
+          } else {
+            console.error(`❌ ${mail}의 audio ref 여전히 없음`)
+          }
+        }, 500)
+        return
       }
-      case 'answer': {
-        await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(mail));
-        console.log(`✅ ${mail}의 Answer 설정 완료`);
-        break;
+
+      ref.current.srcObject = remoteStream
+      ref.current.muted = false
+      ref.current.onplay = () => {
+        console.log(`🔈 ${mail} 오디오 재생 시작됨`)
       }
-      case 'candidate': {
-        if (data) {
-          await peerConnections.current[mail].addIceCandidate(new RTCIceCandidate(data));
-          console.log(`✅ ${mail}의 ICE 후보 추가`);
-        } else {
-          console.warn(`⚠️ ${mail}에게 받은 ICE 후보가 null`);
-        }
-        break;
+      ref.current.onerror = (e) => {
+        console.error(`❌ ${mail} 오디오 재생 에러`, e)
       }
-      default:
-        console.warn('❓ 알 수 없는 메시지 타입:', type);
+      ref.current
+        .play()
+        .then(() => console.log(`✅ ${mail} 오디오 재생 성공`))
+        .catch((err) => {
+          console.error(`❌ ${mail} 오디오 재생 실패:`, err)
+          // 재생 실패 시 추가 시도
+          setTimeout(() => {
+            ref.current
+              ?.play()
+              .then(() => console.log(`✅ ${mail} 오디오 재생 재시도 성공`))
+              .catch(console.error)
+          }, 1000)
+        })
+    }
+
+    if (audioStream.current) {
+      const tracks = audioStream.current.getTracks()
+      tracks.forEach((track) => {
+        pc.addTrack(track, audioStream.current!)
+      })
+
+      console.log('🎙️ 오디오 트랙 추가됨:', tracks)
+    }
+
+    peerConnections.current[mail] = pc
+
+    const queue = candidateQueue.current[mail]
+    if (queue) {
+      queue.forEach((candidate) => {
+        console.log(`🚀 큐에서 ICE 후보 적용 (${mail})`, candidate)
+        pc.addIceCandidate(candidate)
+      })
+      delete candidateQueue.current[mail]
     }
   }
 
-  useEffect(() => {
-    if (!isReady || !socket.current) return;
-    if (!audioStream.current) getLocalAudioStream();
+  /** 메시지 처리
+   * @param {MessageEvent} message - 수신된 메시지 이벤트
+   * @description WebSocket 메시지를 처리하고, 참가자 입장/퇴장, 오퍼/답변, ICE 후보 등을 관리합니다.
+   * @throws {Error} 메시지 파싱 실패 시 에러를 발생시킵니다.
+   * @returns {Promise<void>} - 메시지 처리 완료 후 반환
+   */
+  const handleMessage = useCallback(
+    async (message: MessageEvent) => {
+      const { type, data, from } = JSON.parse(message.data)
+      let mail: string
 
-    const s = socket.current;
-    s.onmessage = handleMessage;
-    s.onopen = () => console.log('🔌 WebSocket 연결됨');
-    s.onclose = () => console.log('🔌 WebSocket 연결 종료');
-    s.onerror = (e) => console.error('WebSocket 에러:', e);
+      console.log(`📬 메시지 수신 (${type})`, data)
+
+      if (type === 'candidate' || type === 'offer' || type === 'answer') {
+        mail = from
+      } else {
+        try {
+          // data가 문자열이면 파싱, 객체면 그대로 사용
+          const parsed = typeof data === 'string' ? JSON.parse(data) : data
+          mail = parsed.mail
+        } catch (err) {
+          console.error('❌ mail 파싱 실패:', err, '원본 data:', data)
+          return
+        }
+      }
+
+      console.log(`📩 수신된 메시지 (${type}) from ${mail}`)
+
+      switch (type) {
+        case 'join': {
+          console.log(`👋 참가자 입장 (${mail})`)
+          const parsed = typeof data === 'string' ? JSON.parse(data) : data
+          useParticipantsStore.getState().addParticipant({
+            mail: parsed.mail,
+            accountId: parsed.accountId,
+            profile: parsed.profile,
+          })
+          if (!audioStream.current) audioStream.current = await getLocalAudioStream()
+          console.log('🎤 로컬 오디오 스트림 가져옴 (join)', audioStream.current)
+          await setupPeerConnection(mail)
+
+          const offer = await peerConnections.current[mail].createOffer()
+          console.log(`📤 Offer 생성 (${mail})`, offer)
+          await peerConnections.current[mail].setLocalDescription(offer)
+          socket.current?.send(JSON.stringify({ type: 'offer', to: mail, data: offer, from: myAccountId }))
+          break
+        }
+
+        case 'offer': {
+          console.log(`📩 Offer 수신 (${mail})`, data)
+          if (!audioStream.current) audioStream.current = await getLocalAudioStream()
+          console.log('🎤 로컬 오디오 스트림 가져옴 (offer)', audioStream.current)
+          if (!peerConnections.current[mail]) {
+            await setupPeerConnection(mail)
+          }
+          await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(data))
+
+          const answer = await peerConnections.current[mail].createAnswer()
+          console.log(`📤 Answer 생성 (${mail})`, answer)
+          await peerConnections.current[mail].setLocalDescription(answer)
+          socket.current?.send(JSON.stringify({ type: 'answer', to: mail, data: answer }))
+          const queuedCandidates = candidateQueue.current[mail]
+          if (queuedCandidates && peerConnections.current[mail].remoteDescription) {
+            for (const c of queuedCandidates) {
+              try {
+                await peerConnections.current[mail].addIceCandidate(c)
+              } catch (err) {
+                console.error(`💥 큐에서 ICE 후보 추가 실패 (${mail})`, err)
+              }
+            }
+            delete candidateQueue.current[mail]
+          }
+
+          break
+        }
+
+        case 'answer': {
+          console.log(`📩 Answer 수신 (${mail})`, data)
+          await peerConnections.current[mail].setRemoteDescription(new RTCSessionDescription(data))
+          const queuedCandidates = candidateQueue.current[mail]
+          if (queuedCandidates) {
+            for (const c of queuedCandidates) {
+              await peerConnections.current[mail].addIceCandidate(c)
+            }
+            delete candidateQueue.current[mail]
+          }
+
+          break
+        }
+
+        case 'leave': {
+          console.log(`🚪 참가자 퇴장 (${mail})`)
+
+          useParticipantsStore.getState().removeParticipant(mail)
+
+          if (peerConnections.current[mail]) {
+            peerConnections.current[mail].close()
+            delete peerConnections.current[mail]
+          }
+
+          break
+        }
+
+        case 'exist': {
+          console.log(`👋 참가자 입장 (${mail})`)
+          const parsed = typeof data === 'string' ? JSON.parse(data) : data
+          console.log('기존 참가자 정보:', parsed.mail)
+          if (Array.isArray(parsed)) {
+            parsed?.map((item) =>
+              useParticipantsStore.getState().addParticipant({
+                mail: item.mail,
+                accountId: item.accountId,
+                profile: item.profile,
+              }),
+            )
+          }
+          if (!audioStream.current) audioStream.current = await getLocalAudioStream()
+          console.log('🎤 로컬 오디오 스트림 가져옴 (join)', audioStream.current)
+          await setupPeerConnection(mail)
+
+          const offer = await peerConnections.current[mail].createOffer()
+          console.log(`📤 Offer 생성 (${mail})`, offer)
+          await peerConnections.current[mail].setLocalDescription(offer)
+          socket.current?.send(JSON.stringify({ type: 'offer', to: mail, data: offer, from: myAccountId }))
+          break
+        }
+
+        case 'candidate': {
+          console.log(`📩 ICE 후보 수신 (${mail})`, data)
+          const candidate = new RTCIceCandidate(data)
+          const pc = peerConnections.current[mail]
+
+          if (!pc) {
+            console.warn(`❌ PeerConnection 없음. 큐에 저장: ${mail}`)
+            if (!candidateQueue.current[mail]) {
+              candidateQueue.current[mail] = []
+            }
+            candidateQueue.current[mail].push(candidate)
+            return
+          }
+
+          if (!pc.remoteDescription || !pc.remoteDescription.type) {
+            console.warn(`⏳ 아직 remoteDescription 없음. 큐에 저장: ${mail}`)
+            if (!candidateQueue.current[mail]) {
+              candidateQueue.current[mail] = []
+            }
+            candidateQueue.current[mail].push(candidate)
+            return
+          }
+
+          try {
+            await pc.addIceCandidate(candidate)
+            console.log(`✅ ICE 후보 추가됨: ${mail}`)
+          } catch (err) {
+            console.error(`💥 ICE 후보 추가 실패 (${mail})`, err)
+          }
+          break
+        }
+
+        default:
+          console.warn('❓ 알 수 없는 메시지 타입:', type)
+          break
+      }
+    },
+    [myAccountId, audioRefs, audioStream, getLocalAudioStream],
+  )
+
+  const socket = useConcertSocket(roomId!, handleMessage).ws
+
+  /** 소켓 연결 및 종료 */
+  useEffect(() => {
+    if (!isReady || !socket.current) return
+
+    if (!audioStream.current) {
+      getLocalAudioStream().then((stream) => {
+        audioStream.current = stream
+        console.log('🎤 로컬 오디오 스트림 가져옴 (useEffect)', stream)
+
+        // 🎧 내 오디오는 재생하지 않도록 수정
+        const myAudio = audioRefs[myAccountId]
+        if (myAudio?.current && stream) {
+          myAudio.current.srcObject = stream
+          myAudio.current.muted = true // 자신의 소리는 들리지 않도록 설정
+          myAudio.current.volume = 0 // 볼륨도 0으로 설정
+        }
+      })
+    }
+
+    const s = socket.current
+    s.onopen = () => console.log('🔌 WebSocket 연결됨')
+    s.onclose = (e) => console.log('❌ WebSocket 연결 종료됨', e)
+    s.onerror = (e) => console.error('⚠️ WebSocket 에러:', e)
 
     return () => {
-      s.onmessage = null;
-      Object.values(peerConnections.current).forEach((pc) => pc.close());
-      console.log('❎ PeerConnections 정리 완료');
+      Object.values(peerConnections.current).forEach((pc) => pc.close())
       if (audioStream.current) {
-        audioStream.current.getTracks().forEach((t) => t.stop());
+        audioStream.current.getTracks().forEach((t) => t.stop())
       }
-    };
-  }, [isReady, socket]);
+    }
+  }, [isReady, socket])
 
   useEffect(() => {
     if (isReady && socket.current?.readyState === WebSocket.OPEN) {
-      socket.current.send(JSON.stringify({
-        type: 'ready',
-        from: myAccountId,
-      }));
-      console.log('📡 ready 메시지 전송');
+       console.log(`🚀 소켓 준비 완료. ready 메시지 전송 (${myAccountId})`)
+      socket.current.send(JSON.stringify({ type: 'ready', from: myAccountId }))
     }
-  }, [isReady, socket]);
-};
+  }, [isReady, socket])
+
+  console.log(isReady)
+
+  return { socket }
+}

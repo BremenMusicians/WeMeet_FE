@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styled, { CSSProperties } from 'styled-components'
 
 interface ElementProps {
@@ -11,6 +11,7 @@ interface ElementProps {
 
 export const DrumElement = ({ src, style, onClick, note, type = 'tom' }: ElementProps) => {
   const [isHit, setIsHit] = useState(false)
+  const pressedKeys = useRef<Set<string>>(new Set())
 
   const handleMouseDown = () => {
     onClick()
@@ -19,27 +20,36 @@ export const DrumElement = ({ src, style, onClick, note, type = 'tom' }: Element
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (note === e.key.toUpperCase()) {
+    if (e.key.toLowerCase() === note && !pressedKeys.current.has(note)) {
+      pressedKeys.current.add(note)
       handleMouseDown()
+    }
+  }
+
+  const onKeyUp = (e: KeyboardEvent) => {
+    if (e.key.toLowerCase() === note) {
+      pressedKeys.current.delete(note)
     }
   }
 
   useEffect(() => {
     window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
     }
-  }, [onKeyDown])
+  }, [])
 
-  return <Layout type={type} isHit={isHit} style={style} src={src} onMouseDown={handleMouseDown} />
+  return <Layout type={type} $isHit={isHit} style={style} src={src} onMouseDown={handleMouseDown} />
 }
 
-const Layout = styled.img<{ isHit: boolean; type: 'tom' | 'cymbal' }>`
+const Layout = styled.img<{ $isHit: boolean; type: 'tom' | 'cymbal' }>`
   position: absolute;
   z-index: 100;
   cursor: pointer;
 
-  animation: ${({ isHit, type }) => isHit && (type === 'tom' ? 'tomHit 0.3s ease-out' : 'cymbalHit 0.6s ease-out')};
+  animation: ${({ $isHit, type }) => $isHit && (type === 'tom' ? 'tomHit 0.3s ease-out' : 'cymbalHit 0.6s ease-out')};
 
   @keyframes cymbalHit {
     0% {

@@ -1,22 +1,23 @@
 import styled from 'styled-components'
 import { InstrumentType } from '../utils/type'
-import { Check, Drum, Guitar, Piano, Slider } from '../assets'
+import { Bass, Check, Drum, Guitar, Piano, Slider } from '../assets'
 
 interface InstrumentListProps {
   activeInstrument?: InstrumentType
-  onSelect?: (instrument: InstrumentType) => void
+  onSelectInstrument?: (instrument: InstrumentType) => void
 }
 
-const instrumentList: InstrumentType[] = ['피아노', '드럼', '신스', '기타']
+const instrumentList: InstrumentType[] = ['피아노', '드럼', '신스', '기타', '베이스']
 
 const iconMap = {
   피아노: Piano,
   기타: Guitar,
   드럼: Drum,
   신스: Slider,
+  베이스: Bass,
 }
 
-export const InstrumentList = ({ activeInstrument, onSelect }: InstrumentListProps) => {
+export const InstrumentList = ({ activeInstrument, onSelectInstrument }: InstrumentListProps) => {
   return (
     <Container>
       {instrumentList.map((item) => {
@@ -24,7 +25,7 @@ export const InstrumentList = ({ activeInstrument, onSelect }: InstrumentListPro
         const isActive = activeInstrument === item
 
         return (
-          <InstrumentWrap key={item} $isActive={isActive} onClick={() => onSelect && onSelect(item)}>
+          <InstrumentWrap key={item} $isActive={isActive} onClick={() => onSelectInstrument && onSelectInstrument(item)}>
             <InstrumentLeft>
               <Icon Fill={isActive ? '#F75C3C' : '#A1A1AA'} />
               <p>{item}</p>
@@ -48,6 +49,7 @@ const Container = styled.div`
   position: absolute;
   bottom: 76px;
   left: -50%;
+  z-index: 100;
 `
 
 const InstrumentWrap = styled.div<{ $isActive: boolean }>`
