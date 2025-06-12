@@ -7,6 +7,7 @@ import { useChangeProfileImg, useDuplicateCheck, useEditMypage, useGetMyInformat
 import { editMypage, position, positionEnum } from '../../apis/user/type'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import { theme } from '../../styles/Theme'
 
 export const EditMyPage = () => {
   const navigator = useNavigate()
@@ -104,9 +105,9 @@ export const EditMyPage = () => {
           <ProfileImgWrap>
             <ProfileImg src={getProfileImageSrc()} alt="프로필" />
             <Label htmlFor="profile">
-              <img src={Plus} alt="프로필 변경" />
+              <Plus width={20} height={20} Fill="white" />
             </Label>
-            <AddProfile type="file" id="profile" onChange={handleImageChange} />
+            <AddProfile accept=".jpg, .jpeg, .png, .heic" type="file" id="profile" onChange={handleImageChange} />
           </ProfileImgWrap>
           <FeatureButton disabled={isDisabled} onClick={() => editMypageMutate()}>
             <Check Fill="#fff" />
@@ -259,13 +260,15 @@ const Label = styled.label`
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.color.gray100};
+  background-color: ${({ theme }) => theme.color.gray300};
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 4px;
+  outline: 2px solid white;
   cursor: pointer;
 `
 

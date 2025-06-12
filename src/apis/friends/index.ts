@@ -1,18 +1,17 @@
-import { MutationOptions, useMutation, useQuery } from "@tanstack/react-query"
-import { instance } from ".."
-import { ChangeFriendRequestType, DeleteFriendRequestType, RequestFriendListType } from "./type"
-import { useFriendListQuery } from "../../hooks/useFriendListQueryFactory"
+import { MutationOptions, useMutation, useQuery } from '@tanstack/react-query'
+import { instance } from '..'
+import { ChangeFriendRequestType, RequestFriendListType } from './type'
+import { useFriendListQuery } from '../../hooks/useFriendListQueryFactory'
 
 const router = '/friends'
 
-
 export const useFriendRequest = () => {
-    return useMutation({
-        mutationFn: async (friendId: string) => {
-            const { data } = await instance.post(`${router}/${friendId}`)
-            return data;
-        },
-    })
+  return useMutation({
+    mutationFn: async (friendId: string) => {
+      const { data } = await instance.post(`${router}/${friendId}`)
+      return data
+    },
+  })
 }
 
 export const useChangeFriend = (option: MutationOptions<void, Error, ChangeFriendRequestType>) => {
@@ -29,19 +28,19 @@ export const useGetRequestFriendList = () => {
   return useQuery({
     queryKey: ['getRequestFriendList'],
     queryFn: async () => {
-      const {data} = await instance.get<RequestFriendListType>(`${router}/request`);
+      const { data } = await instance.get<RequestFriendListType>(`${router}/request`)
       return data.friendRequests
-    }
+    },
   })
 }
 
-export const useDeleteFriend = (option:MutationOptions<void, Error, DeleteFriendRequestType>) => {
-  return useMutation<void, Error, DeleteFriendRequestType>({
+export const useDeleteFriend = (option: MutationOptions<void, Error, string>) => {
+  return useMutation<void, Error, string>({
     ...option,
-    mutationFn: async (accountId) => {
-      const {data} = await instance.delete(`${router}/${accountId}`)
+    mutationFn: async (accountId: string) => {
+      const { data } = await instance.delete(`${router}/${accountId}`)
       return data
-    }
+    },
   })
 }
 

@@ -1,36 +1,34 @@
-import { position } from "../user/type"
+import { position } from '../user/type'
 
 export interface UserType {
-    accountId: string,
-    profile: null | string,
-    aboutMe: null | string,
-    position: position[]
-    isFriend: "NOT_FRIEND"| "FRIEND"| "WAITING"
+  accountId: string
+  mail: string
+  profile: null | string
+  aboutMe: null | string
+  position: position[]
+  isFriend: 'NOT_FRIEND' | 'FRIEND' | 'WAITING'
+  chatId: string
 }
 
 export interface FriendResponseType {
-    users: UserType[]
-    friendsCnt: number
+  friends: UserType[]
+  friendsCnt: number
 }
 
 export interface ChangeFriendRequestType {
-    friendId: string,
-    accept: boolean
+  friendId: string
+  accept: boolean
 }
 
 export interface FriendType {
-    friendId: string,
-    accountId: string,
-    profile: null | string,
-    aboutMe: string | null,
-    position: position[]
+  friendId: string
+  accountId: string
+  profile: null | string
+  aboutMe: string | null
+  position: position[]
 }
 
 export interface RequestFriendListType {
-    friendRequests: FriendType[]
-    requestCnt: number
-}
-
-export interface DeleteFriendRequestType {
-    accountId: string
+  friendRequests: FriendType[]
+  requestCnt: number
 }

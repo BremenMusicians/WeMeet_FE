@@ -4,6 +4,7 @@ import { theme } from './styles/Theme'
 import GlobalStyle from './styles/GlobalStyle'
 import { Router } from './Router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ModalProvider } from './hooks/useModal'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,8 +20,10 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-        <GlobalStyle />
-        <Router />
+        <ModalProvider>
+          <GlobalStyle />
+          <Router />
+        </ModalProvider>
       </QueryClientProvider>
     </ThemeProvider>
   )

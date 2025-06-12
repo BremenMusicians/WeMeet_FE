@@ -11,6 +11,8 @@ import { useGetMyInformation } from '../../apis/user'
 import { useDeleteFriend, useGetMyFriendList } from '../../apis/friends'
 import { useInView } from 'react-intersection-observer'
 import useDebounce from '../../hooks/useDebounce'
+import { useProfileStore } from '../../stores/UserStores'
+import { UserType } from '../../apis/friends/type'
 
 export const MyPage = () => {
   const { data, isLoading } = useGetMyInformation()
@@ -44,6 +46,13 @@ export const MyPage = () => {
   }, [])
 
   const router = useNavigate()
+
+  const { setProfileInfo } = useProfileStore()
+
+  const handleChatRoute = (item: UserType) => {
+    setProfileInfo(item)
+    router(`/chat`)
+  }
 
   const handleDeleteToggle = (accountId: string) => {
     setVisibleDelete((prev) => ({
@@ -97,7 +106,7 @@ export const MyPage = () => {
             friendData?.pages[0].friends.map((item) => (
               <ProfileCard profileImg={item.profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
                 <RightContainer>
-                  <ClickOption src={Chat} onClick={() => {}} />
+                  <ClickOption src={Chat} onClick={() => handleChatRoute(item)} />
                   <div
                     ref={(el) => {
                       deleteRefs.current[item.accountId] = el
@@ -108,7 +117,7 @@ export const MyPage = () => {
                     {visibleDelete[item.accountId] && (
                       <DeleteFriend
                         onClick={() => {
-                          deleteFriend(item.accountId)
+                          deleteFriend({ accountId: item.accountId })
                         }}
                       />
                     )}

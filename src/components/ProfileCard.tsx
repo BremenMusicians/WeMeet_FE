@@ -8,7 +8,7 @@ interface ProfileCard {
   introduce: string | null
   position: position[]
   profileImg?: string
-  children: React.ReactNode
+  children?: React.ReactNode
   chat?: boolean
 }
 
@@ -67,6 +67,7 @@ const Introduce = styled.p`
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 235px;
+  text-align: start;
 `
 
 const Name = styled.h3<{ chat?: boolean }>`
