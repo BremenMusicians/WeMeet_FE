@@ -94,7 +94,7 @@ export const EditMyPage = () => {
     }
   }, [profileImage])
 
-  const isDisabled = !isUsernameChecked || isUsernameDuplicate || !data.accountId.trim() || data.position.length === 0
+  const isDisabled = !isUsernameChecked || isUsernameDuplicate || !data.accountId.trim() || data.position?.length === 0
 
   return (
     <Container>

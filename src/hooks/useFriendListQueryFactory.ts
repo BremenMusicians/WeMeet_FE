@@ -15,7 +15,7 @@ interface UseFriendListQueryOptions {
         return { ...data, page: pageParam }
       },
       getNextPageParam: (lastPage, allPages) => {
-        const totalFetched = allPages.reduce((acc, page) => acc + page.users.length, 0)
+        const totalFetched = allPages.reduce((acc, page) => acc + page.users?.length, 0)
         const totalAvailable = lastPage.usersCnt
         
         return totalFetched < totalAvailable ? lastPage.page + 1 : undefined

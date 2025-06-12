@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { SearchInput } from '../components/SearchInput'
 import { Lock, PlusIcon, User } from '../assets'
@@ -10,6 +10,8 @@ import { CustomRadioComponents } from '../components/Radio'
 import { useCheckPassword, useCreateRoom, useGetConcertRoom } from '../apis/room'
 import { createRoomType } from '../apis/room/type'
 import { useNavigate } from 'react-router-dom'
+import useDebounce from '../hooks/useDebounce'
+import { useInView } from 'react-intersection-observer'
 
 export const Room = () => {
   const [privateModal, setPrivateModal] = useState(false)
@@ -26,7 +28,10 @@ export const Room = () => {
     roomTitle: '',
   })
   const navigate = useNavigate()
-  const { data } = useGetConcertRoom()
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const debouncedSearchText = useDebounce(searchKeyword, 300)
+  const { ref, inView } = useInView()
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetConcertRoom(debouncedSearchText)
 
   const [createData, setCreateData] = useState<createRoomType>({
     name: '',
@@ -78,36 +83,44 @@ export const Room = () => {
     }
   }
 
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, hasNextPage, fetchNextPage])
+
   return (
     <Container>
       <Content>
         <Topbar>
           <SearchContainer>
-            <SearchInput name="" value="" onChange={() => {}} placeholder="검색어를 입력해주세요" /> {/*api연동 시 수정 */}
+            <SearchInput name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} placeholder="검색어를 입력해주세요" />
             <PlusButton onClick={() => setRoomOpen(true)}>
               <img src={PlusIcon} width={28} height={28} alt="검색" />
             </PlusButton>
           </SearchContainer>
-          <Title>{data?.roomCount}개의 방</Title>
+          <Title>{data?.pages?.[0]?.roomCount || 0}개의 방</Title>
         </Topbar>
         <RoomList>
-          {data?.rooms.map((item) => (
-            <RoomContent key={item.id} onClick={() => navigateConcertRoom(item.isPublic, item.id, item.name)}>
-              <TitleWrap>
-                <TitleContainer>
-                  {item.isPublic && <img src={Lock} alt="비공개" width={22} height={22} />}
-                  <RoomTitle>{item.name}</RoomTitle>
-                </TitleContainer>
-                <Description>{item.info}</Description>
-              </TitleWrap>
-              <TotalWrap>
-                <img src={User} alt="사람" />
-                <TotalPeople>
-                  {item.currentMember}/{item.maxMember}명
-                </TotalPeople>
-              </TotalWrap>
-            </RoomContent>
-          ))}
+          {data?.pages
+            .flatMap((page) => page.rooms)
+            .map((item) => (
+              <RoomContent key={item.id} onClick={() => navigateConcertRoom(item.isPublic, item.id, item.name)}>
+                <TitleWrap>
+                  <TitleContainer>
+                    {item.isPublic && <img src={Lock} alt="비공개" width={22} height={22} />}
+                    <RoomTitle>{item.name}</RoomTitle>
+                  </TitleContainer>
+                  <Description>{item.info}</Description>
+                </TitleWrap>
+                <TotalWrap>
+                  <img src={User} alt="사람" />
+                  <TotalPeople>
+                    {item.currentMember}/{item.maxMember}명
+                  </TotalPeople>
+                </TotalWrap>
+              </RoomContent>
+            ))}
         </RoomList>
         {privateModal && (
           <Modal onClick={() => CheckPassword()} onClose={() => setPrivateModal(false)}>
@@ -132,7 +145,7 @@ export const Room = () => {
                   방 제목 <Essential>*</Essential>
                 </p>
                 <Input type="text" name="name" value={createData.name} placeholder="제목을 입력해주세요" onChange={handleCreateRoomChange} />
-                <Length>{createData.name.length}/50 자</Length>
+                <Length>{createData.name?.length}/50 자</Length>
               </ContentWrap>
               <ContentWrap>
                 <p>
@@ -144,7 +157,7 @@ export const Room = () => {
               <ContentWrap>
                 <p>설명</p>
                 <Textarea placeholder="설명을 입력해주세요" onChange={handleCreateRoomChange} name="info" value={createData.info} />
-                <Length>{createData.info.length}/100 자</Length>
+                <Length>{createData.info?.length}/100 자</Length>
               </ContentWrap>
               <RadioWrap>
                 <CustomRadioComponents name="roomType" id="public" value="public" label="공개" checked={!isPrivate} onChange={() => setIsPrivate(false)} />
@@ -162,6 +175,8 @@ export const Room = () => {
             </ModalContent>
           </Modal>
         )}
+        {!isLoading && <ScrollObserver ref={ref} />}
+        {isFetchingNextPage && <P>불러오는 중...</P>}
       </Content>
     </Container>
   )
@@ -318,4 +333,18 @@ const LeftEx = styled.p`
 const RadioWrap = styled.div`
   display: flex;
   gap: 40px;
+`
+
+const P = styled.h2`
+  ${({ theme }) => theme.font.body2}
+  display: flex;
+  width: 100%;
+  height: 60dvh;
+  justify-content: center;
+  align-items: center;
+  color: ${({ theme }) => theme.color.gray400};
+`
+
+const ScrollObserver = styled.div`
+  height: 1px;
 `

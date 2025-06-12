@@ -90,12 +90,11 @@ export const MyPage = () => {
         </Title>
         <FriendContent>
           <FriendTopBar>
-            <p>{friendData?.pages?.[0]?.usersCnt ?? 0}명의 친구</p>
+            <p>{friendData?.pages?.[0]?.friendsCnt ?? 0}명의 친구</p>
             <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </FriendTopBar>
-          {friendData?.pages
-            .flatMap((page) => page.users)
-            .map((item) => (
+          {Array.isArray(friendData?.pages[0].friends) &&
+            friendData?.pages[0].friends.map((item) => (
               <ProfileCard profileImg={item.profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
                 <RightContainer>
                   <ClickOption src={Chat} onClick={() => {}} />

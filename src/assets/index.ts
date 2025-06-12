@@ -50,7 +50,9 @@ export { default as Smile } from './sticker/smile.svg'
 export { default as Snow } from './sticker/snow.svg'
 export { default as Star } from './sticker/star.svg'
 export { default as Double_Down_Arrow } from './Double_Down_Arrow.svg'
+export { default as CloseBlack } from './Close_MD.svg'
 export { default as BassHeader } from './BassHeader.webp'
+export * from './Bass'
 
 export interface IconProps {
   Fill?: string

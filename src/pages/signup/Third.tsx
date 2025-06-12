@@ -15,12 +15,12 @@ function Third({ form }: SetStateType) {
   const [input, setInput] = useState<ErrorType>({ accountId: '', position: [] })
   const [errors, setErrors] = useState<Record<string, string>>({ accountId: '', position: '' })
   const [checked, setChecked] = useState<boolean>(false)
-  const { login: isLogin } = useContext(AuthContext)
+  const { isLogin } = useContext(AuthContext)
 
   const validation = () => {
     const newErrors = { accountId: '', position: '' }
     if (!input.accountId.trim()) newErrors.accountId = '닉네임을 입력해주세요'
-    if (!input.position.length) newErrors.position = '포지션을 선택해주세요'
+    if (!input.position?.length) newErrors.position = '포지션을 선택해주세요'
 
     setErrors(newErrors)
     return Object.values(newErrors).every((error) => error === '')
@@ -79,7 +79,7 @@ function Third({ form }: SetStateType) {
           <ErrorMessage>{errors.position}</ErrorMessage>
         </SelectTagBox>
       </InputContainer>
-      <Button disabled={!(input.accountId.length && input.position.length && checked)} bigSize onClick={handleSubmit}>
+      <Button disabled={!(input.accountId?.length && input.position?.length && checked)} bigSize onClick={handleSubmit}>
         회원가입
       </Button>
     </>
