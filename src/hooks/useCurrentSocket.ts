@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { RoomSocketType } from '../utils/type'
 import { cookie } from '../utils/Auth'
 
-const BASE_URL = import.meta.env.VITE_BASE_URL
+const BASE_URL = import.meta.env.VITE_WS_BASE_URL
 
 /**
  * WebSocket을 사용하여 실시간 소켓 통신을 관리하는 훅
@@ -31,7 +31,7 @@ export const useConcertSocket = (roomId: string, onMessageHandler?: (e: MessageE
 
     if (ws.current) ws.current.close()
 
-    ws.current = new WebSocket(`wss://${BASE_URL}ws/rooms/${roomId}?token=${cookie.get('access_token')}`)
+    ws.current = new WebSocket(`wss://${BASE_URL}/ws/rooms/${roomId}?token=${cookie.get('access_token')}`)
 
     ws.current.onopen = () => console.log('🧩 소켓 연결 성공')
     ws.current.onerror = (error) => console.error('[소켓 에러]', error)

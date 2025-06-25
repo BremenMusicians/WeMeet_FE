@@ -7,7 +7,6 @@ import { useChangeProfileImg, useDuplicateCheck, useEditMypage, useGetMyInformat
 import { editMypage, position, positionEnum } from '../../apis/user/type'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { theme } from '../../styles/Theme'
 
 export const EditMyPage = () => {
   const navigator = useNavigate()

@@ -86,6 +86,9 @@ export const useAudioConnectionNN = (
     pc.ontrack = (event) => {
       const remoteStream = event.streams[0]
       console.log('📥 상대방 오디오 수신됨:', remoteStream, '트랙:', event.track.kind)
+      console.log(remoteStream.getAudioTracks()) // 최소 1개 이상 있어야 함
+      const audioTracks = remoteStream.getAudioTracks()
+      audioTracks.forEach((track) => console.log(track.readyState))
 
       const participant = useParticipantsStore.getState().participants.find((p) => p.mail === mail)
       const ref = participant?.audioRef
@@ -374,7 +377,7 @@ export const useAudioConnectionNN = (
 
   useEffect(() => {
     if (isReady && socket.current?.readyState === WebSocket.OPEN) {
-       console.log(`🚀 소켓 준비 완료. ready 메시지 전송 (${myAccountId})`)
+      console.log(`🚀 소켓 준비 완료. ready 메시지 전송 (${myAccountId})`)
       socket.current.send(JSON.stringify({ type: 'ready', from: myAccountId }))
     }
   }, [isReady, socket])
@@ -382,4 +385,4 @@ export const useAudioConnectionNN = (
   console.log(isReady)
 
   return { socket }
-}
+} 

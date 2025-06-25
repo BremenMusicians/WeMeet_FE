@@ -1,6 +1,6 @@
 import { MutateOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { authInstance, instance } from '..'
-import { AuthResponseType, editMypage, myPageType } from './type'
+import { AuthResponseType, editMypage, myPageType, userInfo } from './type'
 import { LoginRequestType, SignupRequestType } from '../user/type'
 import { saveToken } from '../../utils/Auth'
 
@@ -63,16 +63,15 @@ export const useChangeProfileImg = (option: MutateOptions, file: File) => {
   })
 }
 
-
 export const useUserQuery = (enabled: boolean) => {
   return useQuery({
     queryKey: ['user'],
     queryFn: async () => {
-      const {data} = await instance.get<{accountId:string}>(`${router}/accountId`)
+      const { data } = await instance.get<userInfo>(`${router}`)
       return data
     },
     retry: false,
     enabled: enabled,
     refetchOnWindowFocus: false,
-  });
-};
+  })
+}

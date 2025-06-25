@@ -47,3 +47,8 @@ export interface editMypage {
   aboutMe: string | null
   position: position[]
 }
+
+export interface userInfo {
+  accountId: string
+  profile: string
+}

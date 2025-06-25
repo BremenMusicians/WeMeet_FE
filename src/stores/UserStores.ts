@@ -3,6 +3,7 @@ import { ChatUserProfile } from '../apis/chat/type'
 
 type User = {
   accountId: string
+  profile: string
 }
 
 type UserStore = {

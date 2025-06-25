@@ -29,6 +29,8 @@ export const ConcertRoom = () => {
   const { user } = useUserStore()
   const { participants } = useParticipantsStore()
 
+  console.log('part', participants)
+
   type FeatureType = 'instrument' | 'volume'
   const [activeFeature, setActiveFeature] = useState<FeatureType | null>(null)
   const [isSocketReady, setIsSocketReady] = useState<boolean>(false)
@@ -107,19 +109,25 @@ export const ConcertRoom = () => {
       )}
       <Content>
         <audio ref={localAudioRef} id="local-audio" autoPlay playsInline muted={true} />
-        {participants.map((p) => (
-          <audio
-            key={p.mail}
-            ref={p.audioRef}
-            autoPlay
-            playsInline
-            muted={false}
-            onPlay={() => console.log(`🎵 ${p.mail}의 오디오 재생 시작`)}
-            onError={(e) => console.error(`❌ ${p.mail}의 오디오 에러:`, e)}
-          >
-            <track kind="captions" />
-          </audio>
-        ))}
+        {participants.map((p) => {
+          console.log('qwer' + p.audioRef)
+          console.log(p.audioRef.current?.volume) // 1.0 이어야 정상
+          console.log(p.audioRef.current?.muted) // false 여야 함
+
+          return (
+            <audio
+              key={p.mail}
+              ref={p.audioRef}
+              autoPlay
+              playsInline
+              muted={true}
+              onPlay={() => console.log(`🎵 ${p.mail}의 오디오 재생 시작`)}
+              onError={(e) => console.error(`❌ ${p.mail}의 오디오 에러:`, e)}
+            >
+              <track kind="captions" />
+            </audio>
+          )
+        })}
 
         <TopBar>
           <TitleWrap>
@@ -232,7 +240,7 @@ const VideoWrap = styled.div<{ $active?: 'instrument' | 'volume' | null | Instru
   width: 100%;
   height: 100%;
   margin: auto;
-  padding: ${({ $active }) => ($active ? '' : '0px 44px')};
+  padding: ${({ $active }) => ($active ? '' : '0px 44px 80px 44px')};
 
   @media (max-width: 1440px) {
     width: ${({ $active }) => ($active ? '' : '70%')};

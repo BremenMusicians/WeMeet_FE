@@ -103,29 +103,31 @@ export const MyPage = () => {
             <SearchInput width={480} placeholder="검색어를 입력해주세요" name="search" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </FriendTopBar>
           {Array.isArray(friendData?.pages[0].friends) &&
-            friendData?.pages[0].friends.map((item) => (
-              <ProfileCard profileImg={item.profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
-                <RightContainer>
-                  <ClickOption src={Chat} onClick={() => handleChatRoute(item)} />
-                  <div
-                    ref={(el) => {
-                      deleteRefs.current[item.accountId] = el
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
-                    {visibleDelete[item.accountId] && (
-                      <DeleteFriend
-                        onClick={() => {
-                          deleteFriend({ accountId: item.accountId })
-                        }}
-                      />
-                    )}
-                  </div>
-                </RightContainer>
-              </ProfileCard>
-            ))}
-          {!friendLoading && <ScrollObserver ref={ref} />}
+            friendData?.pages
+              .flatMap((page) => page.friends)
+              .map((item: UserType) => (
+                <ProfileCard profileImg={item.profile || Profile} key={item.accountId} name={item.accountId} introduce={item.aboutMe} position={item.position}>
+                  <RightContainer>
+                    <ClickOption src={Chat} onClick={() => handleChatRoute(item)} />
+                    <div
+                      ref={(el) => {
+                        deleteRefs.current[item.accountId] = el
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <More Fill="#A1A1AA" onClick={() => handleDeleteToggle(item.accountId)} />
+                      {visibleDelete[item.accountId] && (
+                        <DeleteFriend
+                          onClick={() => {
+                            deleteFriend(item.accountId)
+                          }}
+                        />
+                      )}
+                    </div>
+                  </RightContainer>
+                </ProfileCard>
+              ))}
+          {hasNextPage && !friendLoading && <ScrollObserver ref={ref} />}
           {isFetchingNextPage && <P>불러오는 중...</P>}
         </FriendContent>
       </Content>

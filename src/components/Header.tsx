@@ -25,6 +25,10 @@ export const Header = () => {
       router: '/friend',
       name: '친구',
     },
+    {
+      router: '/chat',
+      name: '채팅',
+    },
   ]
 
   const location = useLocation()
@@ -53,7 +57,7 @@ export const Header = () => {
 
         {isLogin ? (
           <ProfileContainer onClick={() => router('/mypage')}>
-            <ProfileImg src={Profile} alt="프로필" />
+            <ProfileImg src={user?.profile || Profile} alt="프로필" style={{ border: '1px solid #d9d9d9 ' }} />
             <Nickname>{user?.accountId}</Nickname>
           </ProfileContainer>
         ) : (
