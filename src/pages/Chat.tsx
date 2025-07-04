@@ -1,29 +1,38 @@
+import type React from 'react'
 import styled from 'styled-components'
-import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { ProfileCard } from '../components/ProfileCard'
 import { Plus, More, Profile, PaperPlane, Search, Emoji } from '../assets'
 import { cookie } from '../utils/Auth'
 import { useGetChatHistory } from '../apis/chat'
-import { ChatListType, ChatUserProfile, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
+import type { ChatListType, ChatUserProfile, ReceiveMailFormat, SendMailFormat } from '../apis/chat/type'
 import { useProfileStore } from '../stores/UserStores'
 import { theme } from '../styles/Theme'
 import { useDeleteFriend, useGetMyFriendList } from '../apis/friends'
 import useDebounce from '../hooks/useDebounce'
-import { UserType } from '../apis/friends/type'
+import type { UserType } from '../apis/friends/type'
 import Picker from '@emoji-mart/react'
 import { useClickOutside } from '../hooks/useClickOutside'
+
 const BASE_URL = import.meta.env.VITE_WS_BASE_URL
-const token = cookie.get('access_token')
 
 function Chat() {
-  const { profileInfo, setProfileInfo } = useProfileStore() // 선택한 친구의 프로필 정보
-  const [chatList, setChatList] = useState<ChatListType[]>([]) // 친구 목록
-  const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([]) // 선택한 친구와의 채팅 내역
-  const [newChat, setNewChat] = useState<string>('') // 채팅 값
-  const [selectedChatId, setSelectedChatId] = useState<string>('') // 선택된 상대의 chatId
+  const token = cookie.get('access_token')
+  const { profileInfo, setProfileInfo } = useProfileStore()
+  const [chatList, setChatList] = useState<ChatListType[]>([])
+  const [chatHistoryList, setChatHistoryList] = useState<ReceiveMailFormat[]>([])
+  const [newChat, setNewChat] = useState<string>('')
+  const [selectedChatId, setSelectedChatId] = useState<string>('')
   const [searchKeyword, setSearchKeyword] = useState('')
+
+  // WebSocket 연결 상태 관리
+  const [isConnected, setIsConnected] = useState(false)
+  const [reconnectAttempts, setReconnectAttempts] = useState(0)
+  const maxReconnectAttempts = 5
+
   const debouncedSearchText = useDebounce(searchKeyword, 300)
   const { data: friendData } = useGetMyFriendList(debouncedSearchText)
+
   const { mutate: deleteFriend } = useDeleteFriend({
     onSuccess: () => {
       refetch()
@@ -34,13 +43,23 @@ function Chat() {
       }
     },
   })
+
   const handleDeleteFriend = (accountId: string) => {
     const result = confirm('선택한 친구를 삭제하시겠습니까?')
     if (result) deleteFriend(accountId)
   }
 
+  // 기존 ref들
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const friendListRef = useRef<HTMLDivElement>(null)
+  const [showList, setShowList] = useState<boolean>(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+  const [showMenu, setShowMenu] = useState<boolean>(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const wsRef = useRef<WebSocket | null>(null)
+
+  // 클릭 아웃사이드 훅들
   useClickOutside(
     emojiPickerRef,
     useCallback(() => {
@@ -48,8 +67,6 @@ function Chat() {
     }, [showEmojiPicker]),
   )
 
-  const friendListRef = useRef<HTMLDivElement>(null)
-  const [showList, setShowList] = useState<boolean>(false)
   useClickOutside(
     friendListRef,
     useCallback(() => {
@@ -57,8 +74,6 @@ function Chat() {
     }, [showList]),
   )
 
-  const moreMenuRef = useRef<HTMLDivElement>(null)
-  const [showMenu, setShowMenu] = useState<boolean>(false) // 케밥 메뉴
   useClickOutside(
     moreMenuRef,
     useCallback(() => {
@@ -66,68 +81,127 @@ function Chat() {
     }, [showMenu]),
   )
 
-  const bottomRef = useRef<HTMLDivElement>(null) // 채팅 화면 스크롤 하단 조정
-
-  useEffect(() => {
-    if (bottomRef.current) bottomRef.current!.scrollTop = bottomRef.current!.scrollHeight
-  }, [chatHistoryList]) // 채팅 목록이 변경된다면
-
-  const wsRef = useRef<WebSocket | null>(null) // 웹소켓 설정
-
   const { data: chatHistoryData, refetch } = useGetChatHistory(profileInfo.chatId, profileInfo.chatId !== null)
 
+  // 채팅 히스토리 스크롤 조정
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollTop = bottomRef.current.scrollHeight
+    }
+  }, [chatHistoryList])
+
+  // 선택된 채팅 ID 변경 시 refetch
   useEffect(() => {
     if (selectedChatId) {
-      refetch() // chatId가 바뀔 때마다 강제로 refetch
+      refetch()
     }
   }, [refetch, selectedChatId])
 
+  // 채팅 히스토리 데이터 업데이트
   useEffect(() => {
     if (!profileInfo.chatId) {
       setChatHistoryList([])
       return
     }
-
-    if (chatHistoryData) {
-      setChatHistoryList(chatHistoryData)
-    }
+    if (chatHistoryData) setChatHistoryList(chatHistoryData)
   }, [chatHistoryData, profileInfo.chatId])
 
-  // WebSocket 연결 설정
-  useEffect(() => {
+  // WebSocket 연결 함수
+  const connectWebSocket = useCallback(() => {
+    if (!token) {
+      console.error('토큰이 없습니다.')
+      return
+    }
+
+    // 기존 연결이 있다면 정리
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
+    }
+
     const wsUrl = `wss://${BASE_URL}/ws/chat?token=${token}`
     const ws = new WebSocket(wsUrl)
     wsRef.current = ws
 
     ws.onopen = () => {
-      console.log('웹소켓 연결')
+      console.log('웹소켓 연결 성공')
+      setIsConnected(true)
+      setReconnectAttempts(0)
     }
 
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data)
-      if (message.type === 'MESSAGE') {
-        // 메시지를 받았다면 채팅 내역에 추가
-        setChatHistoryList((prev) => [...prev, message])
+      try {
+        const message = JSON.parse(event.data)
+        console.log('수신된 메시지:', message)
+
+        if (message.type === 'UPDATE_CHAT_LIST') {
+          setChatList(message.chats)
+        }
+
+        if (message.type === 'MESSAGE') {
+          setChatHistoryList((prev) => [...prev, message])
+        }
+      } catch (error) {
+        console.error('메시지 파싱 오류:', error)
       }
-      if (message.type === 'UPDATE_CHAT_LIST') {
-        // 채팅 리스트를 받았다면 채팅 리스트에 저장
-        setChatList(message.chats)
-      }
-      console.log('왜돼:', message)
     }
 
     ws.onerror = (error) => {
-      console.error('에러:', error)
+      console.error('웹소켓 오류:', error)
+      setIsConnected(false)
     }
 
     ws.onclose = (e) => {
-      console.log('웹소켓 연결 종료', e)
+      console.log('웹소켓 연결 종료:', e.code, e.reason)
+      setIsConnected(false)
+
+      // 비정상 종료인 경우 재연결 시도
+      if (e.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
+        setTimeout(() => {
+          console.log(`재연결 시도 ${reconnectAttempts + 1}/${maxReconnectAttempts}`)
+          setReconnectAttempts((prev) => prev + 1)
+          connectWebSocket()
+        }, 3000 * (reconnectAttempts + 1)) // 지수 백오프
+      }
     }
+  }, [token, reconnectAttempts])
+
+  // 컴포넌트 마운트 및 토큰 변경 시 WebSocket 연결
+  useEffect(() => {
+    connectWebSocket()
 
     return () => {
-      ws.close()
+      if (wsRef.current) {
+        wsRef.current.close()
+        wsRef.current = null
+      }
     }
-  }, [])
+  }, [connectWebSocket])
+
+  // 페이지 포커스 시 연결 상태 확인 및 재연결
+  useEffect(() => {
+    const handleFocus = () => {
+      if (!isConnected && wsRef.current?.readyState !== WebSocket.CONNECTING) {
+        console.log('페이지 포커스 시 재연결 시도')
+        connectWebSocket()
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isConnected) {
+        console.log('페이지 가시성 변경 시 재연결 시도')
+        connectWebSocket()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isConnected, connectWebSocket])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewChat(event.target.value)
@@ -142,25 +216,34 @@ function Chat() {
   }
 
   const handleSubmit = () => {
-    // 채팅 내용이 없고 선택된 chatId가 없거나, 이메일이 없고 웹소켓 설정이 안되어있다면
-    if (!newChat.trim() || !profileInfo?.mail || !wsRef.current) return
+    if (!newChat.trim() || !profileInfo?.mail || !wsRef.current || !isConnected) {
+      if (!isConnected) {
+        console.log('WebSocket 연결이 끊어져 있습니다. 재연결을 시도합니다.')
+        connectWebSocket()
+      }
+      return
+    }
 
-    // 보내는 형식
     const newMessage: SendMailFormat = {
       receiver: profileInfo.mail,
       content: newChat,
     }
-    wsRef.current.send(JSON.stringify(newMessage))
 
-    // 채팅 내역에 저장하는 형식
-    const saveMessage: ReceiveMailFormat = {
-      sender: mail,
-      sendAt: new Date().toISOString(),
-      content: newMessage.content,
+    try {
+      wsRef.current.send(JSON.stringify(newMessage))
+
+      const saveMessage: ReceiveMailFormat = {
+        sender: mail,
+        sendAt: new Date().toISOString(),
+        content: newMessage.content,
+      }
+
+      setChatHistoryList((prev) => [...prev, saveMessage])
+      setNewChat('')
+    } catch (error) {
+      console.error('메시지 전송 오류:', error)
+      connectWebSocket() // 전송 실패 시 재연결 시도
     }
-
-    setChatHistoryList((prev) => [...prev, saveMessage])
-    setNewChat('')
   }
 
   const handleNewChat = (item: UserType) => {
@@ -200,20 +283,26 @@ function Chat() {
             )}
           </AddFriendSection>
         </FriendListTitle>
+
         <FriendList>
-          {chatList.map((chat, index) => (
-            <ProfileCardBox
-              key={index}
-              onClick={() => {
-                setProfileInfo(chat)
-                setSelectedChatId(chat.chatId)
-              }}
-            >
-              <ProfileCard name={chat.accountId} introduce={chat.lastMessage || null} position={chat.position} profileImg={chat?.profile || Profile} />
-            </ProfileCardBox>
-          ))}
+          {chatList === null ? (
+            <div style={{ padding: '1rem' }}>채팅 리스트 불러오는 중...</div>
+          ) : (
+            chatList.map((chat, index) => (
+              <ProfileCardBox
+                key={index}
+                onClick={() => {
+                  setProfileInfo(chat)
+                  setSelectedChatId(chat.chatId)
+                }}
+              >
+                <ProfileCard name={chat.accountId} introduce={chat.lastMessage || null} position={chat.position} profileImg={chat?.profile || Profile} />
+              </ProfileCardBox>
+            ))
+          )}
         </FriendList>
       </FriendListContainer>
+
       <ChatContainer>
         <ChatHeader>
           <ProfileInfo>
@@ -226,7 +315,7 @@ function Chat() {
             </Button>
             {showMenu && (
               <Dropdown ref={moreMenuRef}>
-                <DropdownItem onClick={() => handleDeleteFriend(profileInfo.accountId)}> 친구 삭제</DropdownItem>
+                <DropdownItem onClick={() => handleDeleteFriend(profileInfo.accountId)}>친구 삭제</DropdownItem>
               </Dropdown>
             )}
           </Section>
@@ -260,7 +349,7 @@ function Chat() {
               )}
             </Section>
             <Input onKeyDown={handleEnterPress} type="text" placeholder="메시지를 입력하세요" value={newChat} onChange={handleChange} />
-            <SendButton disabled={!newChat.trim() || !profileInfo?.mail || !wsRef.current} onClick={handleSubmit}>
+            <SendButton disabled={!newChat.trim() || !profileInfo?.mail || !isConnected} onClick={handleSubmit}>
               <img src={PaperPlane} />
             </SendButton>
           </InputBox>
@@ -272,6 +361,7 @@ function Chat() {
 
 export default Chat
 
+// 기존 스타일 컴포넌트들...
 const DropdownItem = styled.div`
   padding: 8px 12px;
   cursor: pointer;
