@@ -64,9 +64,9 @@ export const Header = () => {
                 <ProfileImg src={user?.profile || Profile} alt="프로필" style={{ border: '1px solid #d9d9d9 ' }} />
                 <Nickname>{user?.accountId}</Nickname>
               </ProfileContainer>
-              <button style={{ backgroundColor: 'transparent' }} onClick={() => setModal((prev) => !prev)}>
+              <LogooutButton style={{ backgroundColor: 'transparent' }} onClick={() => setModal((prev) => !prev)}>
                 <LogOut Fill="#a1a1aa" />
-              </button>
+              </LogooutButton>
             </ProfileWrap>
           ) : (
             <RightContainer>
@@ -163,11 +163,25 @@ const LoginButton = styled.button`
 
 const LogoutMent = styled.h2`
   margin: 20px 0px;
-  ${({ theme }) => theme.font.header2}
+  ${({ theme }) => theme.font.title1}
 `
 
 const ProfileWrap = styled.div`
   display: flex;
   gap: 20px;
   align-items: center;
+`
+
+const LogooutButton = styled.button`
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.7;
+  }
 `
