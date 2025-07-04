@@ -44,7 +44,7 @@ export const useDeleteFriend = (option: MutationOptions<void, Error, string>) =>
   })
 }
 
-export const useGetMyFriendList = (name: string, p0?: { enabled: boolean }) => {
+export const useGetMyFriendList = (name: string) => {
   return useFriendListQuery({ queryKey: ['myFriendList', name], endpoint: `${router}/my`, name })
 }
 
