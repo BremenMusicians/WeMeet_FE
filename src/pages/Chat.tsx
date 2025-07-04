@@ -15,7 +15,6 @@ import Picker from '@emoji-mart/react'
 import { useClickOutside } from '../hooks/useClickOutside'
 
 const BASE_URL = import.meta.env.VITE_WS_BASE_URL
-console.log(cookie.get('access_token'))
 
 function Chat() {
   const token = cookie.get('access_token')
