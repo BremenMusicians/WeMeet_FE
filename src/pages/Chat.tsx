@@ -265,7 +265,7 @@ function Chat() {
               <ModalContainer>
                 <ListSearchContainer>
                   <ListSearchBox>
-                    <img width={18} height={18} src={Search || '/placeholder.svg'} />
+                    <img width={18} height={18} src={Search} />
                     <Input placeholder="이름 검색" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
                   </ListSearchBox>
                 </ListSearchContainer>
@@ -340,7 +340,7 @@ function Chat() {
           <InputBox>
             <Section ref={emojiPickerRef}>
               <Button onClick={() => setShowEmojiPicker((p) => !p)}>
-                <img src={Emoji || '/placeholder.svg'} />
+                <img src={Emoji} />
               </Button>
               {showEmojiPicker && (
                 <PickerBox>
@@ -350,7 +350,7 @@ function Chat() {
             </Section>
             <Input onKeyDown={handleEnterPress} type="text" placeholder="메시지를 입력하세요" value={newChat} onChange={handleChange} />
             <SendButton disabled={!newChat.trim() || !profileInfo?.mail || !isConnected} onClick={handleSubmit}>
-              <img src={PaperPlane || '/placeholder.svg'} />
+              <img src={PaperPlane} />
             </SendButton>
           </InputBox>
         </ChatInputBox>
