@@ -1,16 +1,18 @@
 import styled from 'styled-components'
-import { Letters_Logo, Profile } from '../assets'
+import { Letters_Logo, LogOut, Profile } from '../assets'
 import { Tab } from './Tab'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from './Button'
 import { cookie } from '../utils/Auth'
 import { useUserQuery } from '../apis/user'
 import { useUserStore } from '../stores/UserStores'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Modal } from './Modal'
 
 export const Header = () => {
   const setUser = useUserStore((state) => state.setUser)
   const user = useUserStore((state) => state.user)
+  const [modal, setModal] = useState<boolean>(false)
 
   const routerList = [
     {
@@ -44,30 +46,50 @@ export const Header = () => {
   }, [data, setUser])
 
   return (
-    <HeaderContainer>
-      <Box>
-        <LeftContainer>
-          <LogoImg src={Letters_Logo} alt="로고" onClick={() => router('/')} />
-          <FlexBox>
-            {routerList.map((item) => (
-              <Tab isActive={location.pathname === item.router.slice(0, 11)} key={item.name} name={item.name} onClick={() => router(`${item.router}`)} />
-            ))}
-          </FlexBox>
-        </LeftContainer>
+    <>
+      <HeaderContainer>
+        <Box>
+          <LeftContainer>
+            <LogoImg src={Letters_Logo} alt="로고" onClick={() => router('/')} />
+            <FlexBox>
+              {routerList.map((item) => (
+                <Tab isActive={location.pathname === item.router.slice(0, 11)} key={item.name} name={item.name} onClick={() => router(`${item.router}`)} />
+              ))}
+            </FlexBox>
+          </LeftContainer>
 
-        {isLogin ? (
-          <ProfileContainer onClick={() => router('/mypage')}>
-            <ProfileImg src={user?.profile || Profile} alt="프로필" style={{ border: '1px solid #d9d9d9 ' }} />
-            <Nickname>{user?.accountId}</Nickname>
-          </ProfileContainer>
-        ) : (
-          <RightContainer>
-            <LoginButton onClick={() => router('/login')}>로그인</LoginButton>
-            <Button onClick={() => router('/signup')}>회원가입</Button>
-          </RightContainer>
-        )}
-      </Box>
-    </HeaderContainer>
+          {isLogin ? (
+            <ProfileWrap>
+              <ProfileContainer onClick={() => router('/mypage')}>
+                <ProfileImg src={user?.profile || Profile} alt="프로필" style={{ border: '1px solid #d9d9d9 ' }} />
+                <Nickname>{user?.accountId}</Nickname>
+              </ProfileContainer>
+              <LogooutButton style={{ backgroundColor: 'transparent' }} onClick={() => setModal((prev) => !prev)}>
+                <LogOut Fill="#a1a1aa" />
+              </LogooutButton>
+            </ProfileWrap>
+          ) : (
+            <RightContainer>
+              <LoginButton onClick={() => router('/login')}>로그인</LoginButton>
+              <Button onClick={() => router('/signup')}>회원가입</Button>
+            </RightContainer>
+          )}
+        </Box>
+      </HeaderContainer>
+      {modal && (
+        <Modal
+          onClick={() => {
+            setModal(false)
+            cookie.remove('access_token')
+            cookie.remove('refresh_token')
+            window.location.href = '/'
+          }}
+          onClose={() => setModal(false)}
+        >
+          <LogoutMent>로그아웃 하시겠습니까?</LogoutMent>
+        </Modal>
+      )}
+    </>
   )
 }
 
@@ -137,4 +159,29 @@ const LoginButton = styled.button`
   cursor: pointer;
   border-radius: 6px;
   width: 100%;
+`
+
+const LogoutMent = styled.h2`
+  margin: 20px 0px;
+  ${({ theme }) => theme.font.title1}
+`
+
+const ProfileWrap = styled.div`
+  display: flex;
+  gap: 20px;
+  align-items: center;
+`
+
+const LogooutButton = styled.button`
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.7;
+  }
 `
