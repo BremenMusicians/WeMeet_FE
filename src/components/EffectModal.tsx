@@ -1,6 +1,7 @@
 import styled from 'styled-components'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Double_Arrow } from '../assets'
+import { AudioEffectsManager } from '../contexts/audioEffectsManager'
 
 // 이펙터 타입 정의
 type EffectType = 'reverb' | 'delay' | 'distortion' | 'eq' | 'compressor'
@@ -56,13 +57,49 @@ const initialEffectsState: Record<EffectType, EffectState> = {
   },
 }
 
-export const EffectModal = () => {
+interface EffectModalProps {
+  onEffectsChange?: (effectsManager: AudioEffectsManager | null) => void
+}
+
+export const EffectModal: React.FC<EffectModalProps> = ({ onEffectsChange }) => {
   const [openSidebar, setOpenSidebar] = useState<boolean>(true)
   const [effects, setEffects] = useState<Record<EffectType, EffectState>>(initialEffectsState)
   const [expandedEffect, setExpandedEffect] = useState<EffectType | null>(null)
+  const effectsManagerRef = useRef<AudioEffectsManager | null>(null)
+
+  // 이펙터 매니저 초기화
+  useEffect(() => {
+    effectsManagerRef.current = new AudioEffectsManager()
+
+    // 부모 컴포넌트에 이펙터 매니저 전달
+    if (onEffectsChange) {
+      onEffectsChange(effectsManagerRef.current)
+    }
+
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      if (effectsManagerRef.current) {
+        effectsManagerRef.current.dispose()
+      }
+    }
+  }, [onEffectsChange])
+
+  // 이펙터 상태 변경 시 오디오 이펙터 업데이트
+  useEffect(() => {
+    if (effectsManagerRef.current) {
+      Object.entries(effects).forEach(([effectType, state]) => {
+        effectsManagerRef.current?.updateEffect(effectType as EffectType, state)
+      })
+    }
+  }, [effects])
 
   // 이펙터 토글 핸들러
-  const toggleEffect = (effectType: EffectType) => {
+  const toggleEffect = async (effectType: EffectType) => {
+    // 오디오 컨텍스트 시작 (사용자 제스처 필요)
+    if (effectsManagerRef.current) {
+      await effectsManagerRef.current.resume()
+    }
+
     setEffects((prev) => ({
       ...prev,
       [effectType]: {
@@ -90,6 +127,12 @@ export const EffectModal = () => {
   const toggleExpand = (effectType: EffectType) => {
     setExpandedEffect(expandedEffect === effectType ? null : effectType)
   }
+
+  // 이펙터 초기화
+  const resetEffects = () => {
+    setEffects(initialEffectsState)
+  }
+
   return (
     <Sidebar $isOpen={openSidebar}>
       <CloseButton onClick={() => setOpenSidebar(!openSidebar)}>
@@ -97,6 +140,7 @@ export const EffectModal = () => {
       </CloseButton>
       <TitleBox>
         <Title>이펙터</Title>
+        <StatusIndicator>{Object.values(effects).some((effect) => effect.enabled) ? '🟢' : '🔴'}</StatusIndicator>
       </TitleBox>
 
       {/* 리버브 이펙터 */}
@@ -290,7 +334,7 @@ export const EffectModal = () => {
       </EffectPanel>
 
       <ResetButtonContainer>
-        <ResetButton onClick={() => setEffects(initialEffectsState)}>이펙터 초기화</ResetButton>
+        <ResetButton onClick={resetEffects}>이펙터 초기화</ResetButton>
       </ResetButtonContainer>
     </Sidebar>
   )
@@ -313,6 +357,7 @@ const Sidebar = styled.div<{ $isOpen: boolean }>`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  z-index: 10;
 `
 
 const TitleBox = styled.div`
@@ -527,4 +572,8 @@ const ResetButton = styled.button`
   &:hover {
     background-color: ${({ theme }) => theme.color.gray300};
   }
+`
+
+const StatusIndicator = styled.span`
+  font-size: 12px;
 `

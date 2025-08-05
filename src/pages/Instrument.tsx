@@ -7,6 +7,7 @@ import GuitarComponents from '../components/Guitar'
 import { DrumComponents } from '../components/Drum'
 import { BassComponents } from '../components/Bass'
 import { EffectModal } from '../components/EffectModal'
+import { EffectsProvider } from '../contexts/effectsContext'
 
 export const Instrument = () => {
   const location = useLocation()
@@ -14,17 +15,19 @@ export const Instrument = () => {
   const currentInstrument = searchParams.get('name')
 
   return (
-    <Container>
-      <Content>
-        <InstrumentBadge />
-        {currentInstrument === '피아노' && <PianoComponents />}
-        {currentInstrument === '드럼' && <DrumComponents />}
-        {currentInstrument === '신스' && <Synthesizer />}
-        {currentInstrument === '기타' && <GuitarComponents />}
-        {currentInstrument === '베이스' && <BassComponents />}
-        <EffectModal />
-      </Content>
-    </Container>
+    <EffectsProvider>
+      <Container>
+        <Content>
+          <InstrumentBadge />
+          {currentInstrument === '피아노' && <PianoComponents />}
+          {currentInstrument === '드럼' && <DrumComponents />}
+          {currentInstrument === '신스' && <Synthesizer />}
+          {currentInstrument === '기타' && <GuitarComponents />}
+          {currentInstrument === '베이스' && <BassComponents />}
+          <EffectModal />
+        </Content>
+      </Container>
+    </EffectsProvider>
   )
 }
 
